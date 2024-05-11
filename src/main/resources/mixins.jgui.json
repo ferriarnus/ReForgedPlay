@@ -5,8 +5,8 @@
   "server": [],
   "client": [
     //#if MC>=12000
-    //$$ "Mixin_PassEvents_HandleKeybinds",
-    //$$ "Mixin_PassEvents_HandleKeys",
+    "Mixin_PassEvents_HandleKeybinds",
+    "Mixin_PassEvents_HandleKeys",
     //#endif
     "Mixin_PassEventsExt",
     //#if MC>=11400
