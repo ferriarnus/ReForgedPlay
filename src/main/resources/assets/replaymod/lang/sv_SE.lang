@@ -1,0 +1,319 @@
+replaymod.title=Replay Mod
+
+#All of the chat messages
+replaymod.chat.recordingstarted=Inspelningen har startats
+replaymod.chat.recordingfailed=Misslyckades att starta inspelning
+
+replaymod.chat.savingthumb=Sparar miniatyr...
+replaymod.chat.savedthumb=Miniatyren har sparats
+replaymod.chat.failedthumb=Miniatyren kunde inte sparas
+
+replaymod.chat.addedmarker=Händelsemarkör har lagts till
+
+#Chat messages displayed in Replay Viewer
+replaymod.chat.morekeyframes=Minst 2 nyckelbilder för både position och tid krävs
+replaymod.chat.pathstarted=Kamerabanan har startats
+replaymod.chat.pathfinished=Kamerabanan har slutförts
+replaymod.chat.pathinterrupted=Kamerabanan har avbrutits
+
+#Common GUI-related strings
+replaymod.gui.cancel=Avbryt
+replaymod.gui.back=Tillbaka
+replaymod.gui.load=Läs in
+replaymod.gui.save=Spara
+replaymod.gui.rename=Byt namn
+replaymod.gui.remove=Ta bort
+replaymod.gui.delete=Radera
+replaymod.gui.recording=Spelar in
+replaymod.gui.paused=Pausad
+replaymod.gui.speed=Hastighet
+replaymod.gui.pleasewait=Var god vänta
+replaymod.gui.render=Rendera
+replaymod.gui.iphidden=Dold serveradress
+replaymod.gui.overwrite=Skriv över
+replaymod.gui.saveas=Spara som...
+replaymod.gui.done=Färdig
+replaymod.gui.close=Stäng
+replaymod.gui.notagain=Visa inte igen
+replaymod.gui.edit=Redigera
+
+replaymod.gui.recording.resume=Återuppta inspeln.
+replaymod.gui.recording.pause=Pausa inspelning
+replaymod.gui.recording.stop=Stoppa inspelning
+replaymod.gui.recording.start=Starta inspelning
+
+replaymod.gui.renderdonetitle=Videon har renderats
+replaymod.gui.openfolder=Öppna videomapp
+replaymod.gui.youtubeupload=Ladda upp till YouTube
+replaymod.gui.renderdone1=Din video har renderats.
+replaymod.gui.renderdone2=Hur vill du fortsätta?
+replaymod.gui.videotitle=Titel
+replaymod.gui.videodescription=Beskrivning
+replaymod.gui.videotags=Taggar,taggar,taggar
+replaymod.gui.videothumbnail=Videominiatyr
+replaymod.gui.videovisibility.private=Privat
+replaymod.gui.videovisibility.unlisted=Olistad
+replaymod.gui.videovisibility.public=Offentlig
+replaymod.gui.ytuploadprogress.auth=[1/4] Auktorisering
+replaymod.gui.ytuploadprogress.prepare_video=[2/4] Förbereder video: %%d %%%%
+replaymod.gui.ytuploadprogress.upload=[3/4] Laddar upp: %%d %%%%
+replaymod.gui.ytuploadprogress.cleanup=[4/4] Städar upp
+replaymod.gui.ytuploadprogress.done=Färdig: %s
+replaymod.gui.titleempty=Titeln kan inte vara tom
+replaymod.gui.videothumbnailtoolarge=Miniatyrens storlek överstrider 2MB
+replaymod.gui.videothumbnailformat=Miniatyren måste antingen ha formatet JPEG eller PNG
+
+replaymod.gui.hours=h
+replaymod.gui.minutes=m
+replaymod.gui.seconds=s
+replaymod.gui.milliseconds=ms
+
+replaymod.gui.pitch=Vertikal lutning
+replaymod.gui.yaw=Horisontal lutning
+replaymod.gui.roll=Rotation
+
+replaymod.gui.camera=Kamera
+replaymod.gui.position=Position
+
+replaymod.gui.unknownerror=Ett okänt fel uppstod
+
+replaymod.gui.exit=Avsluta repris
+
+replaymod.gui.settings=Inställningar
+
+replaymod.gui.keyframerepo.delete=Är du säker på att du vill radera dessa nyckelbilder?
+replaymod.gui.keyframerepo.overwrite=Är du säker på att du vill skriva över dessa nyckelbilder?
+
+replaymod.gui.restorereplay1=Det verkar som att Minecraft inte avslutades normalt.
+replaymod.gui.restorereplay2=Reprisen "%1$s" sparades inte på rätt sätt.
+replaymod.gui.restorereplay3=Vill du återskapa den?
+
+replaymod.gui.loadentitytracker=Läser in entitetspositioner: %%d %%%%
+replaymod.gui.loadquickmode=Läser in snabbläge: %%d %%%%
+replaymod.gui.noquickmode=Snabbläget är endast tillgängligt för Minecraft %1$s och senare
+replaymod.gui.minimalmode.unsupported=Denna funktion är inte tillgänglig för din nuvarande Minecraft-version.
+replaymod.gui.minimalmode.supportedversion=(endast Minecraft %1$s har stöd för din version av Replay Mod)
+
+#Only change these if it's neccessary
+replaymod.gui.replayviewer=Reprisvisare
+
+#Replay Viewer GUI
+replaymod.gui.viewer.rename.name=Reprisnamn
+replaymod.gui.viewer.replayfolder=Öppna reprismapp...
+
+replaymod.gui.viewer.delete.linea=Är du säker på att du vill radera denna repris?
+replaymod.gui.viewer.delete.failed1=Ditt operativsystem lät oss inte ta bort reprisen. Det finns
+replaymod.gui.viewer.delete.failed2=ingenting som vi kan göra åt detta. Du måste göra det själv.
+replaymod.gui.viewer.delete.lineb="%1$s" kommer att försvinna för alltid! (Väldigt länge!)
+
+#Replay Editor UI 2.0 (marker based UI)
+replaymod.gui.edit.apply=Verkställ
+replaymod.gui.edit.split=Dela upp
+replaymod.gui.edit.split.tooltip=Dela upp reprisen i flera repriser vid markeringspunkten
+replaymod.gui.edit.cut.start=Infoga klippstart
+replaymod.gui.edit.cut.end=Infoga klippslut
+replaymod.gui.edit.cut.tooltip=Klipp ut (ta bort) en del av reprisen
+
+#Cancel Replay GUI
+replaymod.gui.cancelrender.title=Avbryt rendering
+replaymod.gui.cancelrender.message=Är du säker på att du vill avbryta aktuell renderingsprocess?
+#Saving Replay GUI
+replaymod.gui.replaysaving.title=Sparar reprisfil...
+
+#Player Overview GUI
+replaymod.gui.playeroverview.visible=Synlighet
+replaymod.gui.playeroverview.hideall=Dölj alla
+replaymod.gui.playeroverview.showall=Visa alla
+replaymod.gui.playeroverview.spectate=Synliga spelare
+replaymod.gui.playeroverview.remembersettings=Kom ihåg dolda spelare
+replaymod.gui.playeroverview.remembersettings.description=Spara spelarnas synlighet i reprisfilen
+
+#Replay Mod Settings GUI
+replaymod.gui.settings.title=Inställningar för Replay Mod
+
+replaymod.gui.settings.notifications=Visa notifikationer
+replaymod.gui.settings.recordserver=Spela in på servrar
+replaymod.gui.settings.recordsingleplayer=Spela in i enspelarläge
+replaymod.gui.settings.indicator=Inspelningsindikator
+replaymod.gui.settings.pathpreview=Förhandsvisa bana
+replaymod.gui.settings.camera=Kamera
+replaymod.gui.settings.showchat=Visa chatt
+replaymod.gui.settings.interpolator=Standard
+replaymod.gui.settings.autostartrecording=Automatisk inspelning
+
+#Replay Mod Keybindings
+replaymod.input.lighting=Slå på/av ljus
+replaymod.input.thumbnail=Skapa miniatyr
+replaymod.input.playeroverview=Spelaröversikt
+replaymod.input.clearkeyframes=Rensa nyckelbilder
+replaymod.input.synctimeline=Synkronisera tidslinje
+replaymod.input.keyframerepository=Nyckelbildsförinställn.
+replaymod.input.rollclockwise=Rotera medurs
+replaymod.input.rollcounterclockwise=Rotera moturs
+replaymod.input.resettilt=Återställ kameralutning
+replaymod.input.playpause=Spela upp/pausa repris
+replaymod.input.marker=Lägg till händelsemarkör
+replaymod.input.pathpreview=Förhandsvisa bana
+replaymod.input.settings=Inställningar
+replaymod.input.quickmode=Snabbläge
+
+# CameraControllers
+replaymod.camera.classic=Klassisk
+replaymod.camera.vanilla=Vanilla-aktig
+
+#Keyframe Presets GUI
+replaymod.gui.keyframerepository.title=Förinställningar för nyckelbilder
+
+#Edit Keyframe GUI
+replaymod.gui.editkeyframe.title.pos=Redigera nyckelbild för position
+replaymod.gui.editkeyframe.title.time=Redigera nyckelbild för tid
+replaymod.gui.editkeyframe.title.marker=Redigera händelsemarkör
+replaymod.gui.editkeyframe.title.spec=Redigera nyckelbild för åskådning
+replaymod.gui.editkeyframe.xpos=X-position
+replaymod.gui.editkeyframe.ypos=Y-position
+replaymod.gui.editkeyframe.zpos=Z-position
+replaymod.gui.editkeyframe.campitch=Vertikal kameralutning
+replaymod.gui.editkeyframe.camyaw=Horisontal kameralutning
+replaymod.gui.editkeyframe.camroll=Kamerarotation
+replaymod.gui.editkeyframe.timelineposition=Position i tidslinje
+replaymod.gui.editkeyframe.markername=Namn på händelsemarkör
+replaymod.gui.editkeyframe.timestamp=Tidsindex
+
+replaymod.gui.editkeyframe.interpolator=Övergång
+replaymod.gui.editkeyframe.interpolator.default.name=Standardövergång
+replaymod.gui.editkeyframe.interpolator.default.desc=Använder standardövergången som definieras i inställningarna för Replay Mod.
+replaymod.gui.editkeyframe.interpolator.catmullrom.name=Catmull rom spline
+replaymod.gui.editkeyframe.interpolator.catmullrom.desc=Beräknar en catmull rom spline med anpassat alfavärde för en exakt och mjuk kamerabana.
+replaymod.gui.editkeyframe.interpolator.catmullrom.alpha=Alfa:
+replaymod.gui.editkeyframe.interpolator.cubic.name=Kubisk spline
+replaymod.gui.editkeyframe.interpolator.cubic.desc=Beräknar en kubisk ekvationsmatris för alla punkter för en mjuk kamerabana.
+replaymod.gui.editkeyframe.interpolator.linear.name=Linjär övergång
+replaymod.gui.editkeyframe.interpolator.linear.desc=Ritar raka linjer mellan nyckelbilderna.
+
+replaymod.gui.rendersettings.renderer=Renderingsmetod
+
+replaymod.gui.rendersettings.renderer.default=Standardrendering
+replaymod.gui.rendersettings.renderer.stereoscopic=Stereoskopisk rendering
+replaymod.gui.rendersettings.renderer.cubic=Kubisk rendering
+replaymod.gui.rendersettings.renderer.equirectangular=Ekvirektangulär rendering
+replaymod.gui.rendersettings.renderer.ods=ODS-rendering
+replaymod.gui.rendersettings.renderer.blend=Blender-export [experimentiell]
+
+replaymod.gui.rendersettings.renderer.default.description=Renderar videon i vald upplösning. Snabbaste renderingsalternativet.
+replaymod.gui.rendersettings.renderer.stereoscopic.description=Renderar videon som en stereoskopisk (sida-vid-sida) 3D-film, används av olika 3D-tekniker. Bilden för ett öga är hälften så bred som videon
+replaymod.gui.rendersettings.renderer.cubic.description=Renderar videon med en 360-graders panoramavy som använder kubisk projektion. Detta används av flera videospelare för 360 grader (och Oculus Rift), t.ex. VR Player.
+replaymod.gui.rendersettings.renderer.equirectangular.description=Renderar videon med en 360-graders panoramavy som använder ekvirektangulär projektion. Detta används av YouTubes nya videofunktion för 360 grader och flera videospelare (samt Oculus Rift), t.ex. VR Player.
+replaymod.gui.rendersettings.renderer.ods.description=Renderar videon med en stereoskopisk 360-graders panoramavy i 3D, även känd som VR Video. Detta används av YouTubes nya VR-videofunktion.
+replaymod.gui.rendersettings.renderer.blend.description=Exporterar synlig geometri som en fil med formatet .blend som kan öppnas i Blender. Väldigt experimentiell: Kräver mycket RAM, har många kända problem och skapar ibland trasiga Blender-filer.
+
+replaymod.gui.rendersettings.customresolution=Videoupplösning
+replaymod.gui.rendersettings.customresolution.warning.yuv420=För denna förinställning måste bredden och höjden vara jämna siffror
+replaymod.gui.rendersettings.customresolution.warning.yuv420.cubic=För denna förinställning måste bredden vara delbar med 6
+replaymod.gui.rendersettings.customresolution.warning.cubic.height=Kubisk rendering kräver en höjd som är delbar med 3
+replaymod.gui.rendersettings.bitrate=Bithastighet
+replaymod.gui.rendersettings.framerate=Bildfrekvens
+replaymod.gui.rendersettings.chromakey=Färgfiltrering
+replaymod.gui.rendersettings.nametags=Visa namnskyltar
+replaymod.gui.rendersettings.outputfile=Utmatningsfil
+replaymod.gui.rendersettings.sphericalFov=Sfäriskt synfält
+replaymod.gui.rendersettings.sphericalmetadata=Injicera sfärisk metadata
+replaymod.gui.rendersettings.sphericalmetadata.error=Sfärisk metadata kan endast läggas till i ekvirektangulära videor och ODS-videor i MP4-format
+
+replaymod.gui.rendersettings.command=Kommando
+replaymod.gui.rendersettings.arguments=Argument för kommandoraden
+replaymod.gui.rendersettings.ffmpeg.description=Om du är en avancerad användare kan du anpassa parametrarna i kommandoraden som används för att exportera videon. För mer information, se http://replaymod.com/docs
+
+replaymod.gui.rendersettings.stabilizecamera=Stabilisera kameran
+
+replaymod.gui.rendersettings.video=Grafikinställningar
+replaymod.gui.rendersettings.advanced=Avancerade inställningar
+replaymod.gui.rendersettings.commandline=Inställningar för kommandoraden
+
+replaymod.gui.rendersettings.presets=Förinställningar för kodning
+replaymod.gui.rendersettings.presets.mp4.custom=MP4 - Anpassad bithastighet
+replaymod.gui.rendersettings.presets.mp4.default=MP4 - Standardkvalitet
+replaymod.gui.rendersettings.presets.mp4.potato=MP4 - Usel kvalitet
+replaymod.gui.rendersettings.presets.webm.custom=WEBM - Anpassad bithastighet
+replaymod.gui.rendersettings.presets.mkv.lossless=MKV - Förlustfritt
+replaymod.gui.rendersettings.presets.blend=Blend-fil
+replaymod.gui.rendersettings.presets.png=PNG-sekvens
+
+replaymod.gui.rendersettings.antialiasing=Kantutjämning
+replaymod.gui.rendersettings.antialiasing.none=Ingen
+replaymod.gui.rendersettings.antialiasing.x2=2x
+replaymod.gui.rendersettings.antialiasing.x4=4x
+replaymod.gui.rendersettings.antialiasing.x8=8x
+
+#Render Queue GUI
+replaymod.gui.renderqueue.title=Renderingskö
+replaymod.gui.renderqueue.add=Lägg till aktuell konfig.
+
+#Rendering GUI
+replaymod.gui.rendering.title=Rendera video
+replaymod.gui.rendering.pause=Pausa rendering
+replaymod.gui.rendering.resume=Fortsätt rendering
+replaymod.gui.rendering.cancel=Avbryt rendering
+replaymod.gui.rendering.cancel.callback=Är du säker?
+replaymod.gui.rendering.preview=Visa förhandsvisning (prestandan kan variera)
+replaymod.gui.rendering.progress=Renderade bildrutor: %1$d / %2$d
+replaymod.gui.rendering.timetaken=Renderingstid
+replaymod.gui.rendering.timeleft=Återstående tid
+
+#Render Errors
+replaymod.gui.rendering.error.title=Rendering misslyckades
+replaymod.gui.rendering.error.message=För att rendera en video måste du installera ffmpeg.
+replaymod.gui.rendering.error.ffmpeglog=FFmpeg-utmatning:
+replaymod.gui.rendering.error.ffmpegargs.1=Det verkar som att du har ändrat argumenten i kommandoraden.
+replaymod.gui.rendering.error.ffmpegargs.2=Vill du återställa dem till dess standardvärden och försöka igen?
+
+#Ingame Menu
+replaymod.gui.ingame.menu.addposkeyframe=Lägg till nyckelbild för position
+replaymod.gui.ingame.menu.removeposkeyframe=Ta bort nyckelbild för position
+replaymod.gui.ingame.menu.addspeckeyframe=Lägg till nyckelbild för åskådning
+replaymod.gui.ingame.menu.removespeckeyframe=Ta bort nyckelbild för åskådning
+replaymod.gui.ingame.menu.addtimekeyframe=Lägg till nyckelbild för tid
+replaymod.gui.ingame.menu.removetimekeyframe=Ta bort nyckelbild för tid
+replaymod.gui.ingame.menu.pause=Pausa repris
+replaymod.gui.ingame.menu.unpause=Spela upp repris
+replaymod.gui.ingame.menu.renderpath=Rendera kamerabana
+replaymod.gui.ingame.menu.playpath=Spela upp kamerabana från pekarens position
+replaymod.gui.ingame.menu.playpathfromstart=Spela upp kamerabanan från början
+replaymod.gui.ingame.menu.pausepath=Pausa kamerabana
+replaymod.gui.ingame.menu.zoomin=Zooma in
+replaymod.gui.ingame.menu.zoomout=Zooma ut
+
+replaymod.gui.ingame.unnamedmarker=Namnlös händelsemarkör
+
+#Clear Keyframe Callback
+replaymod.gui.clearcallback.title=Rensa alla nyckelbilder?
+
+#Errors
+replaymod.error.unknownrestriction1=Denna repris kan inte spelas upp med din nuvarande version.
+replaymod.error.unknownrestriction2=Den försökte tvinga %s som är okänd.
+replaymod.error.negativetime1=En del av dina nyckelbilder för tid är i oordning.
+replaymod.error.negativetime2=Det finns inget stöd för att gå bakåt i tiden.
+replaymod.error.negativetime3=De ogiltiga delarna är rödmarkerade.
+
+#Replay Mod Incompatibility Warning
+replaymod.gui.modwarning.title=Inkompatibilitet har upptäckts
+replaymod.gui.modwarning.message1=En möjlig inkompatibilitet mellan din nuvarande
+replaymod.gui.modwarning.message2=Minecraft-version och denna repris har upptäckts.
+replaymod.gui.modwarning.message3=Om denna repris läses in kan fel eller en krasch uppstå.
+replaymod.gui.modwarning.name=Modnamn:
+replaymod.gui.modwarning.id=Mod-ID:
+replaymod.gui.modwarning.missing=Moddar som saknas
+replaymod.gui.modwarning.version=Olika modversioner
+replaymod.gui.modwarning.version.expected=Förväntades
+replaymod.gui.modwarning.version.found=Hittades
+
+#Advanced Screenshots Gui
+replaymod.gui.advancedscreenshots.title=Inställningar för skärmdumpar
+replaymod.gui.advancedscreenshots.create=Ta skärmdump
+replaymod.gui.advancedscreenshots.resolution=Upplösning
+
+# Screenshot Finished Gui
+replaymod.gui.advancedscreenshots.finished.description=Du tog en skärmdump!
+replaymod.gui.advancedscreenshots.finished.description.360=Du tog en skärmdump i 360 grader!
+replaymod.gui.advancedscreenshots.finished.description.veer=Ladda upp och se bilden i VR på VeeR.tv eller öppna den på din hårddisk.
+replaymod.gui.advancedscreenshots.finished.upload.veer=Ladda upp till VeeR.tv
+replaymod.gui.advancedscreenshots.finished.showfile=Visa filen på hårddisken

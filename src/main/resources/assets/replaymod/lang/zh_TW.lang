@@ -1,0 +1,224 @@
+replaymod.title=Replay Mod
+
+#All of the chat messages
+replaymod.chat.recordingstarted=開始錄製
+replaymod.chat.recordingfailed=無法啟動錄製
+
+replaymod.chat.savingthumb=儲存縮圖...
+replaymod.chat.savedthumb=縮圖已成功儲存
+replaymod.chat.failedthumb=縮圖無法保存
+
+replaymod.chat.addedmarker=已增加事件標籤
+
+#Chat messages displayed in Replay Viewer
+replaymod.chat.morekeyframes=至少需要兩個位置關鍵影格以及兩個時間關鍵影格
+replaymod.chat.pathstarted=啟動鏡頭路徑
+replaymod.chat.pathfinished=完成鏡頭路徑
+replaymod.chat.pathinterrupted=取消鏡頭路徑
+
+#Common GUI-related strings
+replaymod.gui.cancel=取消
+replaymod.gui.back=返回
+replaymod.gui.load=載入
+replaymod.gui.save=儲存
+replaymod.gui.rename=重新命名
+replaymod.gui.remove=移除
+replaymod.gui.delete=刪除
+replaymod.gui.recording=記錄
+replaymod.gui.speed=速率
+replaymod.gui.pleasewait=請稍後
+replaymod.gui.render=給予
+replaymod.gui.iphidden=伺服器IP隱藏
+replaymod.gui.overwrite=儲存
+replaymod.gui.saveas=另存為 ...
+replaymod.gui.done=完成
+replaymod.gui.close=關閉
+replaymod.gui.notagain=不再顯示
+
+replaymod.gui.renderdonetitle=已渲染影片
+replaymod.gui.openfolder=打開影片文件夾
+replaymod.gui.youtubeupload=上傳至 Youtube
+replaymod.gui.renderdone1=影片已渲染成功。
+replaymod.gui.videotitle=標題
+replaymod.gui.videodescription=描述
+replaymod.gui.videothumbnail=影片縮圖
+replaymod.gui.videovisibility.private=私人
+replaymod.gui.videovisibility.unlisted=不公開
+replaymod.gui.videovisibility.public=公開
+replaymod.gui.ytuploadprogress.auth=[1/4] 授權
+replaymod.gui.ytuploadprogress.prepare_video=[2/4] 影片預備中 : %%d%%%%
+replaymod.gui.ytuploadprogress.upload=[3/4] 上傳中 : %%d%%%%
+replaymod.gui.ytuploadprogress.cleanup=[4/4] 清除
+replaymod.gui.ytuploadprogress.done=完成: %s
+replaymod.gui.titleempty=標題不能填空
+replaymod.gui.videothumbnailtoolarge=縮圖大小超過 2MB
+replaymod.gui.videothumbnailformat=縮圖必須爲 JPEG 或 PNG 格式
+
+replaymod.gui.hours=小時
+replaymod.gui.minutes=分鐘
+replaymod.gui.seconds=秒
+replaymod.gui.milliseconds=毫秒
+
+replaymod.gui.pitch=間距
+replaymod.gui.yaw=偏擺
+replaymod.gui.roll=滾動
+
+replaymod.gui.camera=鏡頭
+replaymod.gui.position=位置
+
+replaymod.gui.unknownerror=一個未知錯誤
+
+replaymod.gui.exit=退出Replay
+
+replaymod.gui.settings=設定
+
+replaymod.gui.keyframerepo.delete=你真的要刪除這些關鍵幀格嗎?
+replaymod.gui.keyframerepo.overwrite=你真的要覆蓋這些關鍵幀格嗎?
+
+replaymod.gui.restorereplay1=似乎 Minecraft 並沒有正常關閉。
+replaymod.gui.restorereplay2=Replay "%1$s" 沒有被正確儲存。
+replaymod.gui.restorereplay3=要否將檔案復原?
+
+replaymod.gui.loadentitytracker=正在載入實體位置 : %%d%%%%
+
+#Only change these if it's neccessary
+replaymod.gui.replayviewer=Replay播放器
+
+#Replay Viewer GUI
+replaymod.gui.viewer.rename.name=Replay 名稱
+replaymod.gui.viewer.replayfolder=打開 Replay 檔案.
+
+replaymod.gui.viewer.delete.linea=你確定要刪除此 Replay?
+replaymod.gui.viewer.delete.failed1=你的操作系統不允許我們刪除這個 Replay。我們
+replaymod.gui.viewer.delete.failed2=對此並無辦法。煩請自行操作。
+replaymod.gui.viewer.delete.lineb=%1$s 將永遠消失! (很長一段時間!)
+
+#Cancel Replay GUI
+replaymod.gui.cancelrender.title=取消渲染
+replaymod.gui.cancelrender.message=你確定要取消渲染?
+#Saving Replay GUI
+replaymod.gui.replaysaving.title=儲存Replay檔案...
+
+#Player Overview GUI
+replaymod.gui.playeroverview.visible=可見的
+replaymod.gui.playeroverview.hideall=全部隱藏
+replaymod.gui.playeroverview.showall=全部顯示
+replaymod.gui.playeroverview.spectate=旁觀者
+replaymod.gui.playeroverview.remembersettings=持續影藏玩家
+replaymod.gui.playeroverview.remembersettings.description=儲存玩家可見的在 Replay 檔案
+
+#Replay Mod Settings GUI
+replaymod.gui.settings.title=Replay 模組設定
+
+replaymod.gui.settings.notifications=啟用通知
+replaymod.gui.settings.recordserver=記錄伺服器
+replaymod.gui.settings.recordsingleplayer=記錄單人
+replaymod.gui.settings.indicator=錄製指示燈
+replaymod.gui.settings.pathpreview=顯示路徑預覽
+replaymod.gui.settings.showchat=顯示聊天
+
+#Replay Mod Keybindings
+replaymod.input.lighting=切換照明
+replaymod.input.thumbnail=拍攝縮圖
+replaymod.input.playeroverview=玩家簡介
+replaymod.input.clearkeyframes=清除關鍵影格
+replaymod.input.synctimeline=同步時間軸
+replaymod.input.keyframerepository=打開預設關鍵影格
+replaymod.input.rollclockwise=順時針翻滾
+replaymod.input.rollcounterclockwise=逆時針翻滾
+replaymod.input.resettilt=重置鏡頭傾斜
+replaymod.input.playpause=播放/暫停 Replay
+replaymod.input.marker=新增事件標籤
+replaymod.input.pathpreview=切換路徑預覽
+replaymod.input.settings=ReplayMod 設定
+
+#Keyframe Presets GUI
+replaymod.gui.keyframerepository.title=關鍵影格儲存庫
+
+#Edit Keyframe GUI
+replaymod.gui.editkeyframe.title.pos=編輯位置關鍵影格
+replaymod.gui.editkeyframe.title.time=編輯時間關鍵影格
+replaymod.gui.editkeyframe.title.marker=編輯事件標籤
+replaymod.gui.editkeyframe.title.spec=編輯觀眾關鍵影格
+replaymod.gui.editkeyframe.xpos=X位置
+replaymod.gui.editkeyframe.ypos=Y位置
+replaymod.gui.editkeyframe.zpos=Z位置
+replaymod.gui.editkeyframe.campitch=鏡頭間距
+replaymod.gui.editkeyframe.camyaw=鏡頭偏航
+replaymod.gui.editkeyframe.camroll=鏡頭翻轉
+replaymod.gui.editkeyframe.timelineposition=時間軸位置
+replaymod.gui.editkeyframe.markername=事件標籤名稱
+replaymod.gui.editkeyframe.timestamp=時間指數
+
+replaymod.gui.rendersettings.renderer=渲染方法
+
+replaymod.gui.rendersettings.renderer.default=預設渲染
+replaymod.gui.rendersettings.renderer.stereoscopic=Stereoscopic渲染
+replaymod.gui.rendersettings.renderer.cubic=Cubic渲染
+replaymod.gui.rendersettings.renderer.equirectangular=Equirectangular渲染
+
+replaymod.gui.rendersettings.renderer.default.description=
+replaymod.gui.rendersettings.renderer.stereoscopic.description=Renders the video as a stereoscopic (side-by-side) 3D movie, useable by different 3D technologies. The image for one eye is half the width of the video
+replaymod.gui.rendersettings.renderer.cubic.description=Renders the video with a 360 degree panoramic view, using Cubic Projection. This is useable by several 360 degree video players (and the Oculus Rift), for example VR Player.
+replaymod.gui.rendersettings.renderer.equirectangular.description=Renders the video with a 360 degree panoramic view, using Equirectangular Projection. This is useable by YouTube's new 360 degree video function, and several video players (and the Oculus Rift), for example VR Player.
+
+replaymod.gui.rendersettings.customresolution=影片解析度
+replaymod.gui.rendersettings.customresolution.warning.yuv420=預設寬度與高度的值必為偶數
+replaymod.gui.rendersettings.framerate=影片幀數
+replaymod.gui.rendersettings.chromakey=彩度
+replaymod.gui.rendersettings.nametags=渲染名稱標籤
+replaymod.gui.rendersettings.outputfile=輸出檔案
+
+replaymod.gui.rendersettings.command=命令
+replaymod.gui.rendersettings.arguments=命令行參數
+replaymod.gui.rendersettings.ffmpeg.description=如果你是高級使用者，則你可以自定義影片輸出命令參數。影片命令參數資訊請洽: http://replaymod.com/docs
+
+replaymod.gui.rendersettings.stabilizecamera=穩定鏡頭
+
+replaymod.gui.rendersettings.video=影片設定
+replaymod.gui.rendersettings.advanced=進階設定
+replaymod.gui.rendersettings.commandline=命令行設定
+
+replaymod.gui.rendersettings.presets=編碼預設
+replaymod.gui.rendersettings.presets.mp4.custom=MP4 - 自定義
+replaymod.gui.rendersettings.presets.mp4.default=MP4 - 預設畫質
+replaymod.gui.rendersettings.presets.mp4.potato=MP4 - 手機畫質
+replaymod.gui.rendersettings.presets.webm.custom=WEBM - 自定義
+replaymod.gui.rendersettings.presets.mkv.lossless=MKV
+replaymod.gui.rendersettings.presets.png=PNG 序列
+
+#Rendering GUI
+replaymod.gui.rendering.title=渲染影片
+replaymod.gui.rendering.pause=暫停渲染
+replaymod.gui.rendering.resume=繼續渲染
+replaymod.gui.rendering.cancel=取消渲染
+replaymod.gui.rendering.cancel.callback=你確定嗎?
+replaymod.gui.rendering.preview=展示預覽(性能可能會受到影響)
+replaymod.gui.rendering.progress=幀渲染: %1$d / %2$d
+replaymod.gui.rendering.timetaken=渲染時間
+replaymod.gui.rendering.timeleft=剩餘時間
+
+#Render Errors
+replaymod.gui.rendering.error.title=渲染失敗
+replaymod.gui.rendering.error.message=影片要渲染，需要安裝ffmpeg。
+
+#Ingame Menu
+replaymod.gui.ingame.menu.addposkeyframe=新增位置關鍵影格
+replaymod.gui.ingame.menu.removeposkeyframe=刪除位置關鍵影格
+replaymod.gui.ingame.menu.addspeckeyframe=增加觀眾關鍵影格
+replaymod.gui.ingame.menu.removespeckeyframe=刪除觀眾關鍵影格
+replaymod.gui.ingame.menu.addtimekeyframe=新增時間關鍵影格
+replaymod.gui.ingame.menu.removetimekeyframe=刪除時間關鍵影格
+replaymod.gui.ingame.menu.pause=暫停 Replay
+replaymod.gui.ingame.menu.unpause=取消暫停 Replay
+replaymod.gui.ingame.menu.renderpath=渲染鏡頭路徑
+replaymod.gui.ingame.menu.playpath=播放鏡頭路徑
+replaymod.gui.ingame.menu.playpathfromstart=從鏡頭路徑首端開始撥放
+replaymod.gui.ingame.menu.pausepath=暫停鏡頭路徑
+replaymod.gui.ingame.menu.zoomin=放大
+replaymod.gui.ingame.menu.zoomout=縮小
+
+replaymod.gui.ingame.unnamedmarker=無事件標籤
+
+#Clear Keyframe Callback
+replaymod.gui.clearcallback.title=清除所有關鍵影格?

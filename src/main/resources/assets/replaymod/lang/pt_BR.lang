@@ -1,0 +1,317 @@
+replaymod.title=Replay Mod
+
+#All of the chat messages
+replaymod.chat.recordingstarted=Gravação Iniciada
+replaymod.chat.recordingfailed=Falha ao começar gravação
+
+replaymod.chat.savingthumb=Salvando Miniatura...
+replaymod.chat.savedthumb=A miniatura foi salva com sucesso
+replaymod.chat.failedthumb=Não foi possível salvar a miniatura
+
+replaymod.chat.addedmarker=Marcador de Evento foi adicionado
+
+#Chat messages displayed in Replay Viewer
+replaymod.chat.morekeyframes=São necessários pelo menos 2 keyframes de posição e 2 keyframe de tempo
+replaymod.chat.pathstarted=Caminho da Câmera iniciado
+replaymod.chat.pathfinished=Caminho da Câmera finalizado
+replaymod.chat.pathinterrupted=Caminho da Câmera cancelado
+
+#Common GUI-related strings
+replaymod.gui.cancel=Cancelar
+replaymod.gui.back=Voltar
+replaymod.gui.load=Carregar
+replaymod.gui.save=Salvar
+replaymod.gui.rename=Renomear
+replaymod.gui.remove=Remover
+replaymod.gui.delete=Excluir
+replaymod.gui.recording=Gravando
+replaymod.gui.paused=Pausado
+replaymod.gui.speed=Velocidade
+replaymod.gui.pleasewait=Por favor, espere
+replaymod.gui.render=Renderizar
+replaymod.gui.iphidden=IP do Server Oculto
+replaymod.gui.overwrite=Substituir
+replaymod.gui.saveas=Salvar como ...
+replaymod.gui.done=Finalizar
+replaymod.gui.close=Fechar
+replaymod.gui.notagain=Não mostrar novamente
+replaymod.gui.edit=Editar
+
+replaymod.gui.recording.resume=Voltar a gravação
+replaymod.gui.recording.pause=Pausar a gravação
+replaymod.gui.recording.stop=Parar a gravação
+replaymod.gui.recording.start=Começar a gravação
+
+replaymod.gui.renderdonetitle=Vídeo renderizado
+replaymod.gui.openfolder=Abrir Pasta do Vídeo
+replaymod.gui.youtubeupload=Postar no Youtube
+replaymod.gui.renderdone1=Seu vídeo foi renderizado com sucesso.
+replaymod.gui.renderdone2=Como você gostaria de prosseguir?
+replaymod.gui.videotitle=Título
+replaymod.gui.videodescription=Descrição
+replaymod.gui.videotags=Tags, Tags, Tags
+replaymod.gui.videothumbnail=Miniatura do Vídeo
+replaymod.gui.videovisibility.private=Privado
+replaymod.gui.videovisibility.unlisted=Não listado
+replaymod.gui.videovisibility.public=Público
+replaymod.gui.ytuploadprogress.auth=[1/4] Autorização
+replaymod.gui.ytuploadprogress.prepare_video=[2/4] Preparando vídeo: %%d%%%%
+replaymod.gui.ytuploadprogress.upload=[3/4] Enviando: %%d%%%%
+replaymod.gui.ytuploadprogress.cleanup=[4/4] Limpando
+replaymod.gui.ytuploadprogress.done=Finalizado: %s
+replaymod.gui.titleempty=O Título é obrigatório
+replaymod.gui.videothumbnailtoolarge=O tamanho da Miniatura excede 2MB
+replaymod.gui.videothumbnailformat=A Miniatura deve estar no formato JPEG ou PNG
+
+replaymod.gui.hours=h
+replaymod.gui.minutes=min
+replaymod.gui.seconds=seg
+replaymod.gui.milliseconds=ms
+
+replaymod.gui.pitch=Inclinação
+replaymod.gui.yaw=Rotação
+replaymod.gui.roll=Rolar
+
+replaymod.gui.camera=Câmera
+replaymod.gui.position=Posição
+
+replaymod.gui.unknownerror=Ocorreu um erro desconhecido
+
+replaymod.gui.exit=Sair do Replay
+
+replaymod.gui.settings=Configurações
+
+replaymod.gui.keyframerepo.delete=Tem certeza de que deseja excluir esses keyframes?
+replaymod.gui.keyframerepo.overwrite=Tem certeza de que deseja substituir esses keyframes?
+
+replaymod.gui.restorereplay1=Parece que o Minecraft não fechou normalmente.
+replaymod.gui.restorereplay2=O replay "%1$s" não foi salvo corretamente.
+replaymod.gui.restorereplay3=Você deseja recuperá-lo?
+
+replaymod.gui.loadentitytracker=Carregando posições da entidade: %%d%%%%
+replaymod.gui.loadquickmode=Carregando o Modo Rápido: %%d%%%%
+replaymod.gui.noquickmode=O Modo Rápido está disponível apenas no Minecraft %1$s e acima
+replaymod.gui.minimalmode.unsupported=Este recurso não está disponível para sua versão atual do Minecraft.
+replaymod.gui.minimalmode.supportedversion=(apenas Minecraft %1$s é suportado pela sua versão do Replay Mod)
+
+#Only change these if it's neccessary
+replaymod.gui.replayviewer=Visualizar Replay
+
+#Replay Viewer GUI
+replaymod.gui.viewer.rename.name=Nome do Replay
+replaymod.gui.viewer.replayfolder=Abrir pasta do Replay...
+
+replaymod.gui.viewer.delete.linea=Tem certeza de que deseja excluir este Replay?
+replaymod.gui.viewer.delete.failed1=Seu sistema operacional não nos permitiu remover o Replay. There is
+replaymod.gui.viewer.delete.failed2=Você terá que fazer apaga-lo manualmente.
+replaymod.gui.viewer.delete.lineb='%1$s' será perdido para sempre! (muito tempo!)
+
+#Replay Editor UI 2.0 (marker based UI)
+replaymod.gui.edit.apply=Aplicar
+replaymod.gui.edit.split=Inserir divisão
+replaymod.gui.edit.split.tooltip=Divida o Replay em vários Replays nos pontos marcados
+replaymod.gui.edit.cut.start=Inserir Corte
+replaymod.gui.edit.cut.end=Finalizar Corte
+replaymod.gui.edit.cut.tooltip=Cortar (remover) uma seção do Replay
+
+#Cancel Replay GUI
+replaymod.gui.cancelrender.title=Cancelar Renderização
+replaymod.gui.cancelrender.message=Tem certeza de que deseja cancelar o processo de renderização atual?
+#Saving Replay GUI
+replaymod.gui.replaysaving.title=Salvando Replay...
+
+#Player Overview GUI
+replaymod.gui.playeroverview.visible=Visível
+replaymod.gui.playeroverview.hideall=Esconder Tudo
+replaymod.gui.playeroverview.showall=Mostrar Tudo
+replaymod.gui.playeroverview.spectate=Jogador Espectador
+replaymod.gui.playeroverview.remembersettings=Lembrar de jogadores ocultos
+replaymod.gui.playeroverview.remembersettings.description=Salva a visibilidade do player no arquivo de Replay
+
+#Replay Mod Settings GUI
+replaymod.gui.settings.title=Configurações do Replay Mod
+
+replaymod.gui.settings.notifications=Habilitar Notificações
+replaymod.gui.settings.recordserver=Gravar Server
+replaymod.gui.settings.recordsingleplayer=Gravar Jogador Único
+replaymod.gui.settings.indicator=Indicador de Gravação
+replaymod.gui.settings.pathpreview=Mostrar prévia do caminho
+replaymod.gui.settings.camera=Câmera
+replaymod.gui.settings.showchat=Mostrar Chat
+replaymod.gui.settings.interpolator=Interpolador padrão
+replaymod.gui.settings.autostartrecording=Gravação automática
+
+#Replay Mod Keybindings
+replaymod.input.lighting=Alternar Iluminação
+replaymod.input.thumbnail=Capturar miniatura
+replaymod.input.playeroverview=Visão geral do jogador
+replaymod.input.clearkeyframes=Limpar Keyframe
+replaymod.input.synctimeline=Sincronizar Linha do Tempo
+replaymod.input.keyframerepository=Abrir predefinições do KeyFrame
+replaymod.input.rollclockwise=Girar sentido Horário
+replaymod.input.rollcounterclockwise=Girar sentido Anti-Horário
+replaymod.input.resettilt=Redefinir inclinação da câmera
+replaymod.input.playpause=Reproduzir/Pausar Replay
+replaymod.input.marker=Adicionar Marcador de Evento
+replaymod.input.pathpreview=Visualizador de caminho
+replaymod.input.settings=Configurações do ReplayMod
+replaymod.input.quickmode=Modo rápido
+
+# CameraControllers
+replaymod.camera.classic=Clássico
+
+#Keyframe Presets GUI
+replaymod.gui.keyframerepository.title=Repositório de Keyframe
+
+#Edit Keyframe GUI
+replaymod.gui.editkeyframe.title.pos=Editar posição do Keyframe
+replaymod.gui.editkeyframe.title.time=Editar tempo do Keyframe
+replaymod.gui.editkeyframe.title.marker=Editar Marcador de Evento
+replaymod.gui.editkeyframe.title.spec=Editar KeyFrame de Espectador
+replaymod.gui.editkeyframe.xpos=Posição X
+replaymod.gui.editkeyframe.ypos=Posição Y
+replaymod.gui.editkeyframe.zpos=Posição Z
+replaymod.gui.editkeyframe.campitch=Inclinação da Câmera
+replaymod.gui.editkeyframe.camyaw=Rotação da Câmera
+replaymod.gui.editkeyframe.camroll=Rolamento da Câmera
+replaymod.gui.editkeyframe.timelineposition=Posição da Linha do Tempo
+replaymod.gui.editkeyframe.markername=Nome do Marcador de Evento
+replaymod.gui.editkeyframe.timestamp=Índice de tempo
+
+replaymod.gui.editkeyframe.interpolator=Interpolador
+replaymod.gui.editkeyframe.interpolator.default.name=Padrão
+replaymod.gui.editkeyframe.interpolator.default.desc=Usa o interpolador padrão definido nas configurações do Replay Mod.
+replaymod.gui.editkeyframe.interpolator.catmullrom.name=Catmull Rom Spline
+replaymod.gui.editkeyframe.interpolator.catmullrom.desc=Calcula um Catmull Rom Spline com valor alfa personalizável para precisão e suavidade do caminho da câmera.
+replaymod.gui.editkeyframe.interpolator.catmullrom.alpha=Alfa:
+replaymod.gui.editkeyframe.interpolator.cubic.name=Cubic Spline
+replaymod.gui.editkeyframe.interpolator.cubic.desc=Calcula uma matriz de equações cúbicas para todos os pontos para um caminho suave da câmera.
+replaymod.gui.editkeyframe.interpolator.linear.name=Linear
+replaymod.gui.editkeyframe.interpolator.linear.desc=Desenha linhas retas entre os KeyFrames.
+
+replaymod.gui.rendersettings.renderer=Método de renderização
+
+replaymod.gui.rendersettings.renderer.default=Renderização Padrão
+replaymod.gui.rendersettings.renderer.stereoscopic=Renderização estereoscópica
+replaymod.gui.rendersettings.renderer.cubic=Renderização Cúbica
+replaymod.gui.rendersettings.renderer.equirectangular=Renderização retangular
+replaymod.gui.rendersettings.renderer.ods=Renderização ODS
+replaymod.gui.rendersettings.renderer.blend=Exportação para Blender [Experimental]
+
+replaymod.gui.rendersettings.renderer.default.description=Renderiza o vídeo na resolução especificada. Opção de renderização mais rápida.
+replaymod.gui.rendersettings.renderer.stereoscopic.description=Renderiza o vídeo como um filme 3D estereoscópico (lado a lado), utilizável por diferentes tecnologias 3D. A imagem de um olho tem metade da largura do vídeo
+replaymod.gui.rendersettings.renderer.cubic.description=Renderiza o vídeo com uma visão panorâmica de 360 graus, usando a projeção cúbica. Isso pode ser usado por vários players de vídeo de 360 graus (e o Oculus Rift), por exemplo, VR Player.
+replaymod.gui.rendersettings.renderer.equirectangular.description=Renderiza o vídeo com uma visão panorâmica de 360 graus, usando a projeção retangular. Isso pode ser usado pela nova função de vídeo em 360 graus do YouTube e vários reprodutores de vídeo (e o Oculus Rift), por exemplo, VR Player.
+replaymod.gui.rendersettings.renderer.ods.description=Renderiza o vídeo com uma visão panorâmica estereoscópica em 3D de 360 graus, também chamada VR Video. Isso pode ser usado pela nova função de vídeo VR do YouTube.
+replaymod.gui.rendersettings.renderer.blend.description=Exporta geometria visível como um arquivo .blend que pode ser aberto usando o software Blender. Altamente experimental: requer muita memória RAM, possui alguns problemas conhecidos e às vezes produz arquivos quebrados do Blender.
+
+replaymod.gui.rendersettings.customresolution=Resolução do Vídeo
+replaymod.gui.rendersettings.customresolution.warning.yuv420=Para essa predefinição, os valores de largura e altura precisam ser números pares
+replaymod.gui.rendersettings.customresolution.warning.yuv420.cubic=Para esta predefinição, a altura deve ser divisível por 6
+replaymod.gui.rendersettings.customresolution.warning.cubic.height=A renderização cúbica requer uma altura divisível por 3
+replaymod.gui.rendersettings.bitrate=Taxa de bits
+replaymod.gui.rendersettings.framerate=Taxa de quadros do vídeo
+replaymod.gui.rendersettings.nametags=Renderizar tags de nome
+replaymod.gui.rendersettings.outputfile=Arquivo de saída
+replaymod.gui.rendersettings.sphericalFov=FOV esférico
+replaymod.gui.rendersettings.sphericalmetadata=Injetar metadados esféricos
+replaymod.gui.rendersettings.sphericalmetadata.error=Metadados esféricos só podem ser adicionados a vídeos Equiretangular e ODS no formato MP4
+
+replaymod.gui.rendersettings.command=Commando
+replaymod.gui.rendersettings.arguments=Argumentos da linha de comando
+replaymod.gui.rendersettings.ffmpeg.description=Se você é um usuário avançado, pode personalizar os parâmetros da linha de comando usados para exportar o vídeo. Para mais informações, visite http://replaymod.com/docs
+
+replaymod.gui.rendersettings.stabilizecamera=Estabilizar Câmera
+
+replaymod.gui.rendersettings.video=Configurações de Vídeo
+replaymod.gui.rendersettings.advanced=Configurações Avançadas
+replaymod.gui.rendersettings.commandline=Configurações da linha de comando
+
+replaymod.gui.rendersettings.presets=Predefinições de codificação
+replaymod.gui.rendersettings.presets.mp4.custom=MP4 - Taxa de bits personalizada
+replaymod.gui.rendersettings.presets.mp4.default=MP4 - Qualidade Padrão
+replaymod.gui.rendersettings.presets.mp4.potato=MP4 - Qualidade Ruim
+replaymod.gui.rendersettings.presets.webm.custom=WEBM - Taxa de bits personalizada
+replaymod.gui.rendersettings.presets.mkv.lossless=MKV - Sem perdas
+replaymod.gui.rendersettings.presets.blend=Arquivo Blend
+replaymod.gui.rendersettings.presets.png=Sequência de PNG
+
+replaymod.gui.rendersettings.antialiasing=Anti-Serrilhado
+replaymod.gui.rendersettings.antialiasing.none=Nenhum
+replaymod.gui.rendersettings.antialiasing.x2=2x
+replaymod.gui.rendersettings.antialiasing.x4=4x
+replaymod.gui.rendersettings.antialiasing.x8=8x
+
+#Render Queue GUI
+replaymod.gui.renderqueue.title=Fila de Renderização
+replaymod.gui.renderqueue.add=Adicionar configuração atual
+
+#Rendering GUI
+replaymod.gui.rendering.title=Renderização Vídeo
+replaymod.gui.rendering.pause=Pausar Renderização
+replaymod.gui.rendering.resume=Retornar a Renderização
+replaymod.gui.rendering.cancel=Cancelar Renderização
+replaymod.gui.rendering.cancel.callback=Você tem certeza?
+replaymod.gui.rendering.preview=Mostrar pre-vizualização (O desempenho pode cair)
+replaymod.gui.rendering.progress=Frames Renderizados: %1$d / %2$d
+replaymod.gui.rendering.timetaken=Tempo de renderização
+replaymod.gui.rendering.timeleft=Tempo restante
+
+#Render Errors
+replaymod.gui.rendering.error.title=Falha na renderização
+replaymod.gui.rendering.error.message=Para renderizar um vídeo, você precisa ter o ffmpeg instalado.
+replaymod.gui.rendering.error.ffmpeglog=Saída FFmpeg:
+replaymod.gui.rendering.error.ffmpegargs.1=Parece que você modificou os argumentos da linha de comando.
+replaymod.gui.rendering.error.ffmpegargs.2=Deseja redefini-los para os padrões e tentar novamente?
+
+#Ingame Menu
+replaymod.gui.ingame.menu.addposkeyframe=Adicionar Posição do KeyFrame
+replaymod.gui.ingame.menu.removeposkeyframe=Remover Posição do KeyFrame
+replaymod.gui.ingame.menu.addspeckeyframe=Adicionar KeyFrame de Espectador
+replaymod.gui.ingame.menu.removespeckeyframe=Remover KeyFrame de Espectador
+replaymod.gui.ingame.menu.addtimekeyframe=Adicionar KeyFrame de Tempo
+replaymod.gui.ingame.menu.removetimekeyframe=Remover KeyFrame de Tempo
+replaymod.gui.ingame.menu.pause=Pausar Replay
+replaymod.gui.ingame.menu.unpause=Despausar Replay
+replaymod.gui.ingame.menu.renderpath=Renderizar caminho da câmera
+replaymod.gui.ingame.menu.playpath=Reproduzir caminho da câmera da posição do cursor
+replaymod.gui.ingame.menu.playpathfromstart=Reproduzir caminho da câmera desde o início
+replaymod.gui.ingame.menu.pausepath=Pausar caminho da câmera
+replaymod.gui.ingame.menu.zoomin=Mais Zoom
+replaymod.gui.ingame.menu.zoomout=Menos Zoom
+
+replaymod.gui.ingame.unnamedmarker=Marcador de Event sem Nome
+
+#Clear Keyframe Callback
+replaymod.gui.clearcallback.title=Limpar todos os KeyFrames?
+
+#Errors
+replaymod.error.unknownrestriction1=Esta reprodução não pode ser reproduzida com sua versão atual.
+replaymod.error.unknownrestriction2=Ele tentou aplicar %s que é desconhecido.
+replaymod.error.negativetime1=Alguns de seus KeyFrames de tempo estão fora de ordem.
+replaymod.error.negativetime2=Retroceder no tempo não é suportado.
+replaymod.error.negativetime3=As partes inválidas estão marcadas em vermelho.
+
+#Replay Mod Incompatibility Warning
+replaymod.gui.modwarning.title=Incompatibilidade detectada
+replaymod.gui.modwarning.message1=Uma possível incompatibilidade entre a sua atual
+replaymod.gui.modwarning.message2=versão do Minecraft e este Replay foram detectados.
+replaymod.gui.modwarning.message3=O carregamento desse Replay pode resultar em erros ou falha.
+replaymod.gui.modwarning.name=Nome:
+replaymod.gui.modwarning.id=Id:
+replaymod.gui.modwarning.missing=Mods Ausentes
+replaymod.gui.modwarning.version=Versões diferentes do Mod
+replaymod.gui.modwarning.version.expected=Esperado
+replaymod.gui.modwarning.version.found=Encontrado
+
+#Advanced Screenshots Gui
+replaymod.gui.advancedscreenshots.title=Configurações de captura de tela
+replaymod.gui.advancedscreenshots.create=Capturar Tela
+replaymod.gui.advancedscreenshots.resolution=Resolução
+
+# Screenshot Finished Gui
+replaymod.gui.advancedscreenshots.finished.description=Você criou com êxito uma captura de tela!
+replaymod.gui.advancedscreenshots.finished.description.360=Você criou com sucesso uma captura de tela em 360°!
+replaymod.gui.advancedscreenshots.finished.description.veer=Poste e veja a imagem em VR no VeeR.tv ou abra-a no seu disco.
+replaymod.gui.advancedscreenshots.finished.upload.veer=Postar no VeeR.tv
+replaymod.gui.advancedscreenshots.finished.showfile=Mostrar arquivo no disco

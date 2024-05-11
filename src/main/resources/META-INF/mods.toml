@@ -1,0 +1,58 @@
+modLoader="javafml"
+loaderVersion="[1,)"
+license="LGPL-3.0"
+[[mods]]
+modId="replaymod"
+version="${version}"
+displayName="Acedium"
+displayTest = "IGNORE_SERVER_VERSION"
+#logoFile="assets/nvidium/nvidium.png"
+authors="Cortex, Ferri_Arnus"
+description='''
+Experimental port of nvidium, bugs will be present
+Replacement rendering engine for sodium/embeddium
+'''
+
+[[dependencies.replaymod]]
+modId = "neoforge"
+type="required"
+versionRange = "[20.4.40-beta,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.replaymod]]
+modId = "minecraft"
+type="required"
+versionRange = "[1.20.4,1.20.5)"
+ordering = "NONE"
+side = "BOTH"
+
+[[mixins]]
+config = "mixins.compat.mapwriter.replaymod.json"
+
+[[mixins]]
+config = "mixins.compat.shaders.replaymod.json"
+
+[[mixins]]
+config = "mixins.core.replaymod.json"
+
+[[mixins]]
+config = "mixins.extras.playeroverview.replaymod.json"
+
+[[mixins]]
+config = "mixins.jgui.json"
+
+[[mixins]]
+config = "mixins.nonmmlauncher.replaymod.json"
+
+[[mixins]]
+config = "mixins.recording.replaymod.json"
+
+[[mixins]]
+config = "mixins.render.blend.replaymod.json"
+
+[[mixins]]
+config = "mixins.render.replaymod.json"
+
+[[mixins]]
+config = "mixins.replay.replaymod.json"
