@@ -1,26 +1,24 @@
 modLoader="javafml"
 loaderVersion="[1,)"
-license="LGPL-3.0"
+license="GPL-3.0-or-later"
 [[mods]]
-modId="replaymod"
+modId="reforgedplaymod"
 version="${version}"
-displayName="Acedium"
+displayName="ReForgedPlay Mod"
 displayTest = "IGNORE_SERVER_VERSION"
-#logoFile="assets/nvidium/nvidium.png"
-authors="Cortex, Ferri_Arnus"
+authors="CrushedPixel, johni0702, Ferri_Arnus"
 description='''
-Experimental port of nvidium, bugs will be present
-Replacement rendering engine for sodium/embeddium
+A Mod which allows you to record, replay and share your Minecraft experience.
 '''
 
-[[dependencies.replaymod]]
+[[dependencies.reforgedplaymod]]
 modId = "neoforge"
 type="required"
 versionRange = "[20.4.40-beta,)"
 ordering = "NONE"
 side = "BOTH"
 
-[[dependencies.replaymod]]
+[[dependencies.reforgedplaymod]]
 modId = "minecraft"
 type="required"
 versionRange = "[1.20.4,1.20.5)"
@@ -56,3 +54,15 @@ config = "mixins.render.replaymod.json"
 
 [[mixins]]
 config = "mixins.replay.replaymod.json"
+
+[[mods]]
+modId="replaymod"
+version="${version}"
+displayName="Replay Mod"
+license="GPL-3.0-or-later"
+displayTest = "IGNORE_SERVER_VERSION"
+logoFile="assets/replaymod/favicon_logo.png"
+authors="CrushedPixel, johni0702"
+description='''
+A Mod which allows you to record, replay and share your Minecraft experience.
+'''
