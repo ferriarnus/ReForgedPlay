@@ -22,12 +22,10 @@ import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.OtherClientPlayerEntity;
 import net.minecraft.client.gui.screen.DownloadingTerrainScreen;
 import net.minecraft.client.gui.screen.NoticeScreen;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.NetworkState;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.PacketByteBuf;
@@ -53,7 +51,6 @@ import net.minecraft.network.packet.s2c.play.PlayerRespawnS2CPacket;
 import net.minecraft.network.packet.s2c.play.SignEditorOpenS2CPacket;
 import net.minecraft.network.packet.s2c.play.StatisticsS2CPacket;
 import net.minecraft.text.Text;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -97,7 +94,6 @@ import net.minecraft.network.packet.s2c.play.PlayerActionResponseS2CPacket;
 import net.minecraft.network.packet.s2c.play.OpenScreenS2CPacket;
 import net.minecraft.network.packet.s2c.play.OpenWrittenBookS2CPacket;
 import net.minecraft.entity.EntityType;
-import net.minecraft.text.TranslatableTextContent;
 import net.minecraft.world.chunk.ChunkManager;
 import net.minecraft.world.chunk.WorldChunk;
 import net.minecraft.world.chunk.light.LightingProvider;
@@ -148,7 +144,6 @@ import net.minecraft.network.NetworkSide;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -427,7 +422,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
 
         if (msg instanceof byte[]) {
             try {
-                Packet p = deserializePacket((byte[]) msg);
+                Packet p = deserializePacket((byte[]) msg, ctx);
 
                 if (p != null) {
                     p = processPacket(p);
@@ -473,7 +468,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
 
     }
 
-    private Packet deserializePacket(byte[] bytes) throws IOException, IllegalAccessException, InstantiationException {
+    private Packet deserializePacket(byte[] bytes, ChannelHandlerContext ctx) throws IOException, IllegalAccessException, InstantiationException {
         ByteBuf bb = Unpooled.wrappedBuffer(bytes);
         PacketByteBuf pb = new PacketByteBuf(bb);
 
@@ -481,7 +476,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
 
         NetworkState state = asMc(registry.getState());
         //#if MC>=12002
-        Packet p = state.getHandler(NetworkSide.CLIENTBOUND).createPacket(i, pb);
+        Packet p = state.getHandler(NetworkSide.CLIENTBOUND).createPacket(i, pb, ctx);
         //#elseif MC>=11700
         //$$ Packet p = state.getPacketHandler(NetworkSide.CLIENTBOUND, i, pb);
         //#else

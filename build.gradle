@@ -1,7 +1,7 @@
 plugins {
     id 'dev.architectury.loom' version '1.4-SNAPSHOT'
     id 'maven-publish'
-    id "com.github.johnrengelman.shadow" version "7.1.2"
+    id "com.github.johnrengelman.shadow" version "8.1.1"
 }
 
 version = project.mod_version
@@ -37,6 +37,9 @@ processResources {
 }
 
 repositories {
+    flatDir {
+        dirs 'libs'
+    }
     maven {
         name = "Modrinth"
         url = "https://api.modrinth.com/maven"
@@ -50,7 +53,6 @@ repositories {
 }
 
 shadowJar {
-
     configurations = [
             project.configurations.bundle
     ]
@@ -61,7 +63,6 @@ remapJar {
     input.set shadowJar.archiveFile
     dependsOn shadowJar
 }
-
 
 dependencies {
 
@@ -74,22 +75,24 @@ dependencies {
     //mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
     neoForge "net.neoforged:neoforge:${project.neoforge_version}"
 
-    include(implementation("com.github.ReplayMod:ReplayStudio:d9f7c11") {
-        transitive(false)
-    })
-    minecraftRuntimeLibraries("com.github.ReplayMod:ReplayStudio:d9f7c11")
+    bundle("com.github.ReplayMod:ReplayStudio:d9f7c11-slim")
+    minecraftRuntimeLibraries(implementation("com.github.ReplayMod:ReplayStudio:d9f7c11"))
     include(implementation("com.github.viaversion:opennbt:0a02214"))
-    include(implementation("com.github.ReplayMod:lwjgl-utils:27dcd66") {
-        transitive(false)
-    })
+    include(implementation("com.github.ReplayMod:lwjgl-utils:27dcd66"))
     minecraftRuntimeLibraries("com.github.ReplayMod:lwjgl-utils:27dcd66")
     include(implementation("com.github.javagl.JglTF:jgltf-model:3af6de4"))
     include(implementation("com.github.ReplayMod.JavaBlend:2.79.0:a0696f8"))
     include(implementation("org.aspectj:aspectjrt:1.8.2"))
     include(implementation("org.lwjgl:lwjgl-tinyexr:3.3.1"))
-    bundle("org.lwjgl:lwjgl-tinyexr:3.3.1:natives-windows")
-    bundle("org.lwjgl:lwjgl-tinyexr:3.3.1:natives-linux")
-    bundle("org.lwjgl:lwjgl-tinyexr:3.3.1:natives-macos")
+    bundle("org.lwjgl:lwjgl-tinyexr:3.3.1:natives-windows") {
+        transitive = false
+    }
+    bundle("org.lwjgl:lwjgl-tinyexr:3.3.1:natives-linux") {
+        transitive = false
+    }
+    bundle("org.lwjgl:lwjgl-tinyexr:3.3.1:natives-macos") {
+        transitive = false
+    }
     include(implementation('com.googlecode.mp4parser:isoparser:1.1.7'))
     include(implementation('org.apache.commons:commons-exec:1.3'))
     include(implementation('com.google.apis:google-api-services-youtube:v3-rev178-1.22.0'))
