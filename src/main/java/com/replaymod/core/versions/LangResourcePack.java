@@ -75,7 +75,7 @@ public class LangResourcePack extends AbstractFileResourcePack {
         if (container == null) {
             throw new IllegalStateException("Could not find ReplayMod container for " + ReplayMod.MOD_ID);
         }
-        this.basePath = container.getFile().getFilePath();
+        this.basePath = container.getFile().getSecureJar().getRootPath();
         //#else
         //$$ this.basePath = null; // stub
         //#endif
