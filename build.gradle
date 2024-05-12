@@ -11,6 +11,21 @@ sourceCompatibility = JavaVersion.VERSION_17
 targetCompatibility = JavaVersion.VERSION_17
 
 loom {
+    mixin.defaultRefmapName = "mixins.replaymod.refmap.json"
+    forge {
+        mixinConfigs = [
+                "mixins.compat.mapwriter.replaymod.json",
+                "mixins.compat.shaders.replaymod.json",
+                "mixins.core.replaymod.json",
+                "mixins.extras.playeroverview.replaymod.json",
+                "mixins.jgui.json",
+                "mixins.nonmmlauncher.replaymod.json",
+                "mixins.recording.replaymod.json",
+                "mixins.render.blend.replaymod.json",
+                "mixins.render.replaymod.json",
+                "mixins.replay.replaymod.json"
+        ]
+    }
     runs {
         it.configureEach {
             vmArgs("-Xmx8G", "-XX:+UseZGC")
@@ -73,7 +88,7 @@ dependencies {
     // To change the versions see the gradle.properties file
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
     //mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
-    neoForge "net.neoforged:neoforge:${project.neoforge_version}"
+    forge "net.minecraftforge:forge:${project.minecraft_version}-${project.forge_version}"
 
     bundle("com.github.ReplayMod:ReplayStudio:d9f7c11-slim")
     minecraftRuntimeLibraries(implementation("com.github.ReplayMod:ReplayStudio:d9f7c11"))

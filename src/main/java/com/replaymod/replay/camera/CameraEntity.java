@@ -41,7 +41,7 @@ import net.minecraft.util.math.Box;
 //#endif
 
 //#if MC>=12002
-import net.minecraft.client.util.SkinTextures;
+//$$ import net.minecraft.client.util.SkinTextures;
 //#endif
 
 //#if MC>=11400
@@ -480,24 +480,24 @@ public class CameraEntity
     }
 
     //#if MC>=12002
-    @Override
-    public SkinTextures getSkinTextures() {
-        Entity view = this.client.getCameraEntity();
-        if (view != this && view instanceof AbstractClientPlayerEntity) {
-            return ((AbstractClientPlayerEntity) view).getSkinTextures();
-        }
-        return super.getSkinTextures();
-    }
-    //#else
     //$$ @Override
-    //$$ public Identifier getSkinTexture() {
+    //$$ public SkinTextures getSkinTextures() {
     //$$     Entity view = this.client.getCameraEntity();
     //$$     if (view != this && view instanceof AbstractClientPlayerEntity) {
-    //$$         return ((AbstractClientPlayerEntity) view).getSkinTexture();
+    //$$         return ((AbstractClientPlayerEntity) view).getSkinTextures();
     //$$     }
-    //$$     return super.getSkinTexture();
+    //$$     return super.getSkinTextures();
     //$$ }
-    //$$
+    //#else
+    @Override
+    public Identifier getSkinTexture() {
+        Entity view = this.client.getCameraEntity();
+        if (view != this && view instanceof AbstractClientPlayerEntity) {
+            return ((AbstractClientPlayerEntity) view).getSkinTexture();
+        }
+     return super.getSkinTexture();
+    }
+
     //#if MC>=10800
     //$$ @Override
     //$$ public String getModel() {

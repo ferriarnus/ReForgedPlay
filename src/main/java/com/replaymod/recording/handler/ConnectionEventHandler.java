@@ -113,9 +113,9 @@ public class ConnectionEventHandler {
                 serverName = worldName;
             //#if MC>=11100
             //#if MC>=12002
-            } else if (serverInfo != null && serverInfo.isRealm()) {
+            //$$ } else if (serverInfo != null && serverInfo.isRealm()) {
             //#else
-            //$$ } else if (mc.isConnectedToRealms()) {
+            } else if (mc.isConnectedToRealms()) {
             //#endif
                 // we can't access the server name without tapping too deep in the Realms Library
                 worldName = "A Realms Server";

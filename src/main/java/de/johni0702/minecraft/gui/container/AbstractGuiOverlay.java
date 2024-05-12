@@ -349,7 +349,7 @@ public abstract class AbstractGuiOverlay<T extends AbstractGuiOverlay<T>> extend
                 double mouseY,
                 //#endif
                 //#if MC>=12002
-                double dWheelHorizontal,
+                //$$ double dWheelHorizontal,
                 //#endif
                 double dWheel
         ) {
@@ -398,9 +398,9 @@ public abstract class AbstractGuiOverlay<T extends AbstractGuiOverlay<T>> extend
         }
 
         //#if MC>=12002
-        @Override
-        public void renderBackground(DrawContext context, int mouseX, int mouseY, float delta) {
-        }
+        //$$ @Override
+        //$$ public void renderBackground(DrawContext context, int mouseX, int mouseY, float delta) {
+        //$$ }
         //#endif
 
         public AbstractGuiOverlay<T> getOverlay() {
