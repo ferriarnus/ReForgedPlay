@@ -18,7 +18,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(VanillaGuiOverlay.class)
 public class Mixin_RenderHudCallback {
     @Inject(
-            method = "lambda$static$19", at = @At("HEAD")
+            method = "lambda$static$19", at = @At("HEAD"), remap = false
             //#if MC>=12002
             //$$ at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/hud/DebugHud;shouldShowDebugHud()Z")
             //#else

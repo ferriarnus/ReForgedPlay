@@ -17,7 +17,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(Keyboard.class)
 public class MixinKeyboardListener {
     @Inject(
-            method = "lambda$keyPress$5",
+            method = "lambda$keyPress$5", remap = false,
             //#if MC>=11700
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screen/Screen;keyPressed(III)Z"),
             //#else
@@ -40,7 +40,7 @@ public class MixinKeyboardListener {
     }
 
     @Inject(
-            method = "lambda$keyPress$5",
+            method = "lambda$keyPress$5", remap = false,
             //#if MC>=11700
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screen/Screen;keyReleased(III)Z"),
             //#else

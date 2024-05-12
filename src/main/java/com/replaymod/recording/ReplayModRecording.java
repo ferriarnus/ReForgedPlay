@@ -12,8 +12,7 @@ import com.replaymod.recording.packet.PacketListener;
 import io.netty.channel.Channel;
 import io.netty.util.AttributeKey;
 import net.minecraft.network.ClientConnection;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.network.NetworkRegistry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -32,7 +31,6 @@ import org.apache.logging.log4j.Logger;
 //$$ import io.netty.channel.ChannelHandler;
 //#endif
 
-@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD, modid = ReplayMod.MOD_ID)
 public class ReplayModRecording implements Module {
 
     private static final Logger LOGGER = LogManager.getLogger();
@@ -72,16 +70,15 @@ public class ReplayModRecording implements Module {
         connectionEventHandler = new ConnectionEventHandler(LOGGER, core);
 
         new GuiHandler(core).register();
-
         //#if FABRIC>=1
         //#if MC>=11700
-        //TODO ClientPlayNetworking.registerGlobalReceiver(Restrictions.PLUGIN_CHANNEL, (client, handler, buf, resp) -> {});
+        // ClientPlayNetworking.registerGlobalReceiver(Restrictions.PLUGIN_CHANNEL, (client, handler, buf, resp) -> {});
         //#else
         //$$ ClientSidePacketRegistry.INSTANCE.register(Restrictions.PLUGIN_CHANNEL, (packetContext, packetByteBuf) -> {});
         //#endif
         //#else
         //#if MC>=11400
-        //$$ NetworkRegistry.newEventChannel(Restrictions.PLUGIN_CHANNEL, () -> "0", any -> true, any -> true);
+        NetworkRegistry.newEventChannel(Restrictions.PLUGIN_CHANNEL, () -> "0", s -> true, s -> true);
         //#else
         //$$ NetworkRegistry.INSTANCE.newChannel(Restrictions.PLUGIN_CHANNEL, new RestrictionsChannelHandler());
         //#endif
@@ -107,9 +104,4 @@ public class ReplayModRecording implements Module {
         return connectionEventHandler;
     }
 
-//    @SubscribeEvent
-//    public static void registerNetwork(RegisterPayloadHandlerEvent event) {
-//        final IPayloadRegistrar registrar = event.registrar(ReplayMod.MOD_ID).optional();
-//        registrar.play(Restrictions.PLUGIN_CHANNEL, packetByteBuf -> null, (arg, playPayloadContext) -> {});
-//    }
 }

@@ -21,7 +21,7 @@ public abstract class MixinMouseListener {
     @Accessor // Note: for some reason Mixin doesn't include this in the refmap json if it's just a @Shadow field
     abstract int getActiveButton();
 
-    @Inject(method = "method_1611", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "method_1611", at = @At("HEAD"), cancellable = true, remap = false)
     //#if MC>=11700
     private void mouseDown(boolean[] result, Screen screen, double x, double y, int button, CallbackInfo ci) {
     //#else
@@ -33,7 +33,7 @@ public abstract class MixinMouseListener {
         }
     }
 
-    @Inject(method = "method_1605", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "method_1605", at = @At("HEAD"), cancellable = true, remap = false)
     //#if MC>=11700
     private void mouseUp(boolean[] result, Screen screen, double x, double y, int button, CallbackInfo ci) {
     //#else
@@ -45,7 +45,7 @@ public abstract class MixinMouseListener {
         }
     }
 
-    @Inject(method = "method_1602", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "method_1602", at = @At("HEAD"), cancellable = true, remap = false)
     //#if MC>=11700
     private void mouseDrag(Screen screen, double x, double y, double dx, double dy, CallbackInfo ci) {
     //#else
