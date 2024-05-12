@@ -3,7 +3,7 @@ package com.replaymod.render.mixin;
 
 import com.replaymod.render.capturer.IrisODSFrameCapturer;
 import net.coderbot.iris.Iris;
-import net.neoforged.fml.loading.LoadingModList;
+import net.minecraftforge.fml.loading.LoadingModList;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Pseudo;
 import org.spongepowered.asm.mixin.injection.At;

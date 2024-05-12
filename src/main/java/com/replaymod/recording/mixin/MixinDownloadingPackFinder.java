@@ -1,29 +1,68 @@
+//#if MC>=10800
 package com.replaymod.recording.mixin;
 
-import com.replaymod.recording.ReplayModRecording;
-import com.replaymod.recording.packet.PacketListener;
-import net.minecraft.client.resource.server.ServerResourcePackManager;
-import net.minecraft.util.Downloader;
+import com.replaymod.recording.packet.ResourcePackRecorder;
+import de.johni0702.minecraft.gui.utils.Consumer;
+import net.minecraft.client.resource.ServerResourcePackProvider;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Coerce;
+
+import java.io.File;
+
+//#if MC>=11600
+import net.minecraft.resource.ResourcePackSource;
+//#endif
+
+//#if MC>=10800
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+//#else
+//$$ import org.spongepowered.asm.mixin.injection.Redirect;
+//$$ import net.minecraft.util.HttpUtil;
+//$$ import java.lang.reflect.Proxy;
+//$$ import java.util.Map;
+//#endif
 
-import java.nio.file.Path;
-import java.util.Map;
-import java.util.UUID;
+@Mixin(ServerResourcePackProvider.class)
+public abstract class MixinDownloadingPackFinder implements ResourcePackRecorder.IDownloadingPackFinder {
+    private Consumer<File> requestCallback;
 
-@Mixin(ServerResourcePackManager.class)
-public abstract class MixinDownloadingPackFinder {
-    @Inject(method = "onDownload", at = @At("HEAD"))
-    private void recordDownloadedPack(@Coerce Object packs, Downloader.DownloadResult result, CallbackInfo ci) {
-        PacketListener packetListener = ReplayModRecording.instance.getConnectionEventHandler().getPacketListener();
-        if (packetListener == null) {
-            return;
-        }
-        for (Map.Entry<UUID, Path> entry : result.downloaded().entrySet()) {
-            packetListener.getResourcePackRecorder().recordResourcePack(entry.getValue(), entry.getKey());
+    @Override
+    public void setRequestCallback(Consumer<File> callback) {
+        requestCallback = callback;
+    }
+
+    //#if MC>=10800
+    //#if MC>=11900
+    @Inject(method = "loadServerPack(Ljava/io/File;Lnet/minecraft/resource/ResourcePackSource;)Ljava/util/concurrent/CompletableFuture;", at = @At("HEAD"))
+    //#else
+    //$$ @Inject(method = "loadServerPack", at = @At("HEAD"))
+    //#endif
+    private void recordDownloadedPack(
+            File file,
+            //#if MC>=11600
+            ResourcePackSource arg,
+            //#endif
+            CallbackInfoReturnable ci
+    ) {
+        if (requestCallback != null) {
+            requestCallback.consume(file);
+            requestCallback = null;
         }
     }
+    //#else
+    //$$ @Redirect(method = "func_148528_a", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/HttpUtil;downloadResourcePack(Ljava/io/File;Ljava/lang/String;Lnet/minecraft/util/HttpUtil$DownloadListener;Ljava/util/Map;ILnet/minecraft/util/HttpUtil$IProgressUpdate;Ljava/net/Proxy;)V"))
+    //$$ private void downloadResourcePack(File dst, String url, HttpUtil.DownloadListener callback, final Map headers, final int maxSize, final HttpUtil.IProgressUpdate progress, Proxy proxy) {
+    //$$     HttpUtil.downloadResourcePack(dst, url, new HttpUtil.DownloadListener() {
+    //$$         public void onDownloadComplete(File file) {
+    //$$             if (requestCallback != null) {
+    //$$                 requestCallback.consume(file);
+    //$$                 requestCallback = null;
+    //$$             }
+    //$$             callback.onDownloadComplete(file);
+    //$$         }
+    //$$     }, headers, maxSize, progress, proxy);
+    //$$ }
+    //#endif
 }
+//#endif

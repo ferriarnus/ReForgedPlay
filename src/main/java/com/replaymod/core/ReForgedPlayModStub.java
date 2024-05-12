@@ -1,6 +1,6 @@
 package com.replaymod.core;
 
-import net.neoforged.fml.common.Mod;
+import net.minecraftforge.fml.common.Mod;
 
 @Mod("reforgedplaymod")
 public class ReForgedPlayModStub {

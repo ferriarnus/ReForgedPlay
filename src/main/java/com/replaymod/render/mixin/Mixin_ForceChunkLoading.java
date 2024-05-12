@@ -3,9 +3,9 @@ package com.replaymod.render.mixin;
 import com.replaymod.render.hooks.ForceChunkLoadingHook;
 import com.replaymod.render.hooks.IForceChunkLoading;
 import com.replaymod.render.utils.FlawlessFrames;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.Camera;
-import net.minecraft.client.render.ChunkRenderingDataPreparer;
 import net.minecraft.client.render.Frustum;
 import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.render.LightmapTextureManager;
@@ -21,10 +21,12 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Mixin(WorldRenderer.class)
 public abstract class Mixin_ForceChunkLoading implements IForceChunkLoading {
@@ -35,9 +37,7 @@ public abstract class Mixin_ForceChunkLoading implements IForceChunkLoading {
         this.replayModRender_hook = hook;
     }
 
-    @Shadow private ChunkBuilder field_45614;
-
-    @Shadow @Final private ChunkRenderingDataPreparer field_45615;
+    @Shadow private ChunkBuilder chunkBuilder;
 
     @Shadow protected abstract void setupTerrain(Camera par1, Frustum par2, boolean par3, boolean par4);
 
@@ -47,10 +47,20 @@ public abstract class Mixin_ForceChunkLoading implements IForceChunkLoading {
 
     @Shadow @Final private MinecraftClient client;
 
+    @Shadow @Final private ObjectArrayList<ChunkInfoAccessor> chunkInfos;
+
+    @Shadow private boolean shouldUpdate;
+
+    @Shadow @Final private BlockingQueue<ChunkBuilder.BuiltChunk> builtChunks;
+
+    @Shadow private Future<?> fullUpdateFuture;
+
+    @Shadow @Final private AtomicBoolean updateFinished;
+
     @Shadow protected abstract void applyFrustum(Frustum par1);
 
     @Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/WorldRenderer;setupTerrain(Lnet/minecraft/client/render/Camera;Lnet/minecraft/client/render/Frustum;ZZ)V"))
-    private void forceAllChunks(MatrixStack matrices, float tickDelta, long limitTime, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager, Matrix4f matrix4f, CallbackInfo ci) {
+    private void forceAllChunks(MatrixStack matrices, float tickDelta, long limitTime, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager, Matrix4f positionMatrix, CallbackInfo ci) {
         if (replayModRender_hook == null) {
             return;
         }
@@ -60,21 +70,16 @@ public abstract class Mixin_ForceChunkLoading implements IForceChunkLoading {
 
         assert this.client.player != null;
 
-        ChunkRenderingDataPreparer renderingData = this.field_45615;
-        ChunkRenderingDataPreparerAccessor renderingDataAcc = (ChunkRenderingDataPreparerAccessor) renderingData;
         ChunkRendererRegionBuilder chunkRendererRegionBuilder = new ChunkRendererRegionBuilder();
 
         do {
-            boolean areWeDoneYet = true;
-
             // Determine which chunks shall be visible
             setupTerrain(camera, this.frustum, this.capturedFrustum != null, this.client.player.isSpectator());
 
             // Wait for async processing to be complete
-            Future<?> fullUpdateFuture = renderingDataAcc.fullUpdateFuture();
-            if (fullUpdateFuture != null) {
+            if (this.fullUpdateFuture != null) {
                 try {
-                    fullUpdateFuture.get(5, TimeUnit.SECONDS);
+                    this.fullUpdateFuture.get(5, TimeUnit.SECONDS);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                     return;
@@ -87,33 +92,28 @@ public abstract class Mixin_ForceChunkLoading implements IForceChunkLoading {
 
             // If that async processing did change the chunk graph, we need to re-apply the frustum (otherwise this is
             // only done in the next setupTerrain call, which not happen this frame)
-            if (renderingData.method_52836()) {
-                this.applyFrustum((new Frustum(frustum)).coverBoxAroundSetPosition(8)); // call based on the one in setupTerrain
+            if (this.updateFinished.compareAndSet(true, false)) {
+                this.applyFrustum((new Frustum(frustum)).method_38557(8)); // call based on the one in setupTerrain
             }
 
             // Schedule all chunks which need rebuilding (we schedule even important rebuilds because we wait for
             // all of them anyway and this way we can take advantage of threading)
-            for (ChunkBuilder.BuiltChunk builtChunk : renderingDataAcc.builtChunkStorage().chunks) {
+            for (ChunkInfoAccessor chunkInfo : this.chunkInfos) {
+                ChunkBuilder.BuiltChunk builtChunk = chunkInfo.getChunk();
                 if (!builtChunk.needsRebuild()) {
                     continue;
                 }
                 // MC sometimes schedules invalid chunks when you're outside of loaded chunks (e.g. y > 256)
                 if (builtChunk.shouldBuild()) {
-                    builtChunk.scheduleRebuild(this.field_45614, chunkRendererRegionBuilder);
-                    areWeDoneYet = false;
+                    builtChunk.scheduleRebuild(this.chunkBuilder, chunkRendererRegionBuilder);
                 }
                 builtChunk.cancelRebuild();
             }
 
             // Upload all chunks
-            if (((ForceChunkLoadingHook.IBlockOnChunkRebuilds) this.field_45614).uploadEverythingBlocking()) {
-                areWeDoneYet = false;
-            }
+            this.shouldUpdate |= ((ForceChunkLoadingHook.IBlockOnChunkRebuilds) this.chunkBuilder).uploadEverythingBlocking();
 
             // Repeat until no more updates are needed
-            if (!areWeDoneYet) {
-                renderingData.method_52817(); // sets shouldUpdate to true
-            }
-        } while (renderingDataAcc.shouldUpdate());
+        } while (this.shouldUpdate || !this.builtChunks.isEmpty());
     }
 }

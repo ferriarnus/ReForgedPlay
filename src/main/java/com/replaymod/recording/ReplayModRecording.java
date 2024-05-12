@@ -12,10 +12,8 @@ import com.replaymod.recording.packet.PacketListener;
 import io.netty.channel.Channel;
 import io.netty.util.AttributeKey;
 import net.minecraft.network.ClientConnection;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.Mod;
-import net.neoforged.neoforge.network.event.RegisterPayloadHandlerEvent;
-import net.neoforged.neoforge.network.registration.IPayloadRegistrar;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -109,9 +107,9 @@ public class ReplayModRecording implements Module {
         return connectionEventHandler;
     }
 
-    @SubscribeEvent
-    public static void registerNetwork(RegisterPayloadHandlerEvent event) {
-        final IPayloadRegistrar registrar = event.registrar(ReplayMod.MOD_ID).optional();
-        registrar.play(Restrictions.PLUGIN_CHANNEL, packetByteBuf -> null, (arg, playPayloadContext) -> {});
-    }
+//    @SubscribeEvent
+//    public static void registerNetwork(RegisterPayloadHandlerEvent event) {
+//        final IPayloadRegistrar registrar = event.registrar(ReplayMod.MOD_ID).optional();
+//        registrar.play(Restrictions.PLUGIN_CHANNEL, packetByteBuf -> null, (arg, playPayloadContext) -> {});
+//    }
 }

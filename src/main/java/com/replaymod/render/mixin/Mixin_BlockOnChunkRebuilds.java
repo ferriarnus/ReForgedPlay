@@ -22,23 +22,23 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 //#if MC>=12003
-import net.minecraft.client.render.chunk.BlockBufferBuilderPool;
+//$$ import net.minecraft.client.render.chunk.BlockBufferBuilderPool;
 //#endif
 
 @Mixin(ChunkBuilder.class)
 public abstract class Mixin_BlockOnChunkRebuilds implements ForceChunkLoadingHook.IBlockOnChunkRebuilds {
     //#if MC>=12003
-    @Shadow @Final private BlockBufferBuilderPool buffersPool;
-    @Unique
-    private int getAvailableBufferCount() {
-        return this.buffersPool.getAvailableBuilderCount();
-    }
-    //#else
-    //$$ @Shadow @Final private Queue<BlockBufferBuilderStorage> threadBuffers;
+    //$$ @Shadow @Final private BlockBufferBuilderPool buffersPool;
     //$$ @Unique
     //$$ private int getAvailableBufferCount() {
-    //$$     return threadBuffers.size();
+    //$$     return this.buffersPool.getAvailableBuilderCount();
     //$$ }
+    //#else
+    @Shadow @Final private Queue<BlockBufferBuilderStorage> threadBuffers;
+    @Unique
+    private int getAvailableBufferCount() {
+        return threadBuffers.size();
+    }
     //#endif
 
     //#if MC>=11800

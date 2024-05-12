@@ -6,9 +6,9 @@
   "client": [
     //#if MC>=11800
     //#if MC>=12002
-    "ChunkRenderingDataPreparerAccessor",
+    //$$ "ChunkRenderingDataPreparerAccessor",
     //#else
-    //$$ "ChunkInfoAccessor",
+    "ChunkInfoAccessor",
     //#endif
     //#endif
     "Mixin_ChromaKeyColorSky",

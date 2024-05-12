@@ -1,6 +1,6 @@
 package com.replaymod.core.utils;
 
-import net.minecraft.network.packet.s2c.common.CustomPayloadS2CPacket;
+import net.minecraft.network.packet.s2c.play.CustomPayloadS2CPacket;
 import net.minecraft.network.PacketByteBuf;
 //#if MC>=10904
 import net.minecraft.util.Identifier;
@@ -27,10 +27,10 @@ public class Restrictions {
 
     public String handle(CustomPayloadS2CPacket packet) {
         //#if MC>=12002
-        PacketByteBuf buffer = new PacketByteBuf(Unpooled.buffer());
-        packet.write(buffer);
+        //$$ PacketByteBuf buffer = new PacketByteBuf(Unpooled.buffer());
+        //$$ packet.write(buffer);
         //#elseif MC>=10800
-        //$$ PacketByteBuf buffer = packet.getData();
+        PacketByteBuf buffer = packet.getData();
         //#else
         //$$ PacketBuffer buffer = new PacketBuffer(Unpooled.wrappedBuffer(packet.func_149168_d()));
         //#endif

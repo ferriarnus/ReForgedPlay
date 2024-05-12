@@ -1,5 +1,5 @@
 modLoader="javafml"
-loaderVersion="[1,)"
+loaderVersion="[47,)"
 license="GPL-3.0-or-later"
 [[mods]]
 modId="reforgedplaymod"
@@ -12,16 +12,16 @@ A Mod which allows you to record, replay and share your Minecraft experience.
 '''
 
 [[dependencies.reforgedplaymod]]
-modId = "neoforge"
-type="required"
-versionRange = "[20.4.40-beta,)"
+modId = "forge"
+mandatory= true
+versionRange = "[46,)"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.reforgedplaymod]]
 modId = "minecraft"
-type="required"
-versionRange = "[1.20.4,1.20.5)"
+mandatory= true
+versionRange = "[1.20.1,1.20.2)"
 ordering = "NONE"
 side = "BOTH"
 

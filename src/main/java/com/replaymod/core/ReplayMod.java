@@ -19,7 +19,7 @@ import com.replaymod.replaystudio.util.I18n;
 import com.replaymod.simplepathing.ReplayModSimplePathing;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.resource.DirectoryResourcePack;
-import net.minecraft.text.PlainTextContent;
+import net.minecraft.text.LiteralTextContent;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableTextContent;

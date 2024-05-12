@@ -95,7 +95,7 @@ public class PlayerOverviewGui extends GuiScreen implements Closeable {
         Collections.sort(players, new PlayerComparator()); // Sort by name, spectators last
         for (final PlayerEntity p : players) {
             if (!(p instanceof AbstractClientPlayerEntity)) continue;
-            final Identifier texture = ((AbstractClientPlayerEntity) p).getSkinTextures().texture();
+            final Identifier texture = ((AbstractClientPlayerEntity) p).getSkinTexture();
             final GuiClickable panel = new GuiClickable().setLayout(new HorizontalLayout().setSpacing(2)).addElements(
                     new HorizontalLayout.Data(0.5), new GuiImage() {
                         @Override

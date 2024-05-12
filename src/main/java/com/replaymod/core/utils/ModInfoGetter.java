@@ -3,7 +3,7 @@ import com.replaymod.replaystudio.data.ModInfo;
 import net.minecraft.util.Identifier;
 
 import net.minecraft.registry.Registry;
-import net.neoforged.fml.loading.LoadingModList;
+import net.minecraftforge.fml.loading.LoadingModList;
 
 import java.util.*;
 import java.util.function.Function;

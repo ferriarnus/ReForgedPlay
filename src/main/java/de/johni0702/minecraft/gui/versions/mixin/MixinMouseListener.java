@@ -23,7 +23,7 @@ public abstract class MixinMouseListener {
 
     @Inject(method = "method_1611", at = @At("HEAD"), cancellable = true)
     //#if MC>=11700
-    private static void mouseDown(boolean[] result, Screen screen, double x, double y, int button, CallbackInfo ci) {
+    private void mouseDown(boolean[] result, Screen screen, double x, double y, int button, CallbackInfo ci) {
     //#else
     //$$ private void mouseDown(boolean[] result, double x, double y, int button, CallbackInfo ci) {
     //#endif
@@ -35,7 +35,7 @@ public abstract class MixinMouseListener {
 
     @Inject(method = "method_1605", at = @At("HEAD"), cancellable = true)
     //#if MC>=11700
-    private static void mouseUp(boolean[] result, Screen screen, double x, double y, int button, CallbackInfo ci) {
+    private void mouseUp(boolean[] result, Screen screen, double x, double y, int button, CallbackInfo ci) {
     //#else
     //$$ private void mouseUp(boolean[] result, double x, double y, int button, CallbackInfo ci) {
     //#endif
@@ -60,28 +60,28 @@ public abstract class MixinMouseListener {
             method = "onMouseScroll",
             at = @At(value = "INVOKE",
                     //#if MC>=12002
-                    target = "Lnet/minecraft/client/gui/screen/Screen;mouseScrolled(DDDD)Z"
+                    //$$ target = "Lnet/minecraft/client/gui/screen/Screen;mouseScrolled(DDDD)Z"
                     //#else
-                    //$$ target = "Lnet/minecraft/client/gui/screen/Screen;mouseScrolled(DDD)Z"
+                    target = "Lnet/minecraft/client/gui/screen/Screen;mouseScrolled(DDD)Z"
                     //#endif
             )
     )
     private boolean mouseScroll(Screen element, double x, double y,
                                 //#if MC>=12002
-                                double horizontal,
+                                //$$ double horizontal,
                                 //#endif
                                 double vertical
     ) {
         //#if MC<12002
-        //$$ double horizontal = 0;
+        double horizontal = 0;
         //#endif
         if (MouseCallback.EVENT.invoker().mouseScroll(x, y, horizontal, vertical)) {
             return true;
         } else {
             //#if MC>=12002
-            return element.mouseScrolled(x, y, horizontal, vertical);
+            //$$ return element.mouseScrolled(x, y, horizontal, vertical);
             //#else
-            //$$ return element.mouseScrolled(x, y, vertical);
+            return element.mouseScrolled(x, y, vertical);
             //#endif
         }
     }

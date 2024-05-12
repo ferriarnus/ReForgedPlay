@@ -6,12 +6,12 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ConfirmScreen;
 import net.minecraft.client.network.ServerInfo;
 import net.minecraft.client.option.ServerList;
-import net.minecraft.client.resource.server.ServerResourcePackLoader;
+import net.minecraft.client.resource.ServerResourcePackProvider;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 //#if MC>=12003
-import java.util.UUID;
+//$$ import java.util.UUID;
 //#endif
 
 //#if MC>=11900
@@ -34,13 +34,14 @@ import de.johni0702.minecraft.gui.utils.Consumer;
 //#endif
 
 //#if MC>=10800
-import net.minecraft.network.packet.c2s.common.ResourcePackStatusC2SPacket;
-import net.minecraft.network.packet.c2s.common.ResourcePackStatusC2SPacket.Status;
-import net.minecraft.network.packet.s2c.common.ResourcePackSendS2CPacket;
+import net.minecraft.network.packet.c2s.play.ResourcePackStatusC2SPacket;
+import net.minecraft.network.packet.c2s.play.ResourcePackStatusC2SPacket.Status;
+import net.minecraft.network.packet.s2c.play.ResourcePackSendS2CPacket;
 //#endif
 
 //#if MC>=10800
 //#if MC>=11400
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 //#else
 //$$ import com.google.common.util.concurrent.ListenableFuture;
@@ -111,135 +112,135 @@ public class ResourcePackRecorder {
     }
 
     //#if MC>=12003
-    private final Map<UUID, Integer> mcIdToReplayId = new HashMap<>();
+    //$$ private final Map<UUID, Integer> mcIdToReplayId = new HashMap<>();
 
-    public synchronized ResourcePackSendS2CPacket handleResourcePack(ClientConnection netManager, ResourcePackSendS2CPacket packet) {
-        final int requestId = nextRequestId++;
-        mcIdToReplayId.put(packet.id(), requestId);
-        return new ResourcePackSendS2CPacket(packet.id(), "replay://" + requestId, "", packet.required(), packet.prompt());
-    }
+    //$$ public synchronized ResourcePackSendS2CPacket handleResourcePack(ClientConnection netManager, ResourcePackSendS2CPacket packet) {
+    //$$     final int requestId = nextRequestId++;
+    //$$     mcIdToReplayId.put(packet.id(), requestId);
+    //$$     return new ResourcePackSendS2CPacket(packet.id(), "replay://" + requestId, "", packet.required(), packet.prompt());
+    //$$ }
 
-    public void recordResourcePack(Path file, UUID uuid) {
-        Integer id = mcIdToReplayId.get(uuid);
-        if (id == null) {
-            logger.warn("Got resource pack download for unexpected uuid " + uuid + " at " + file);
-            return;
-        }
-        recordResourcePack(file, id);
-    }
+    //$$ public void recordResourcePack(Path file, UUID uuid) {
+    //$$     Integer id = mcIdToReplayId.get(uuid);
+    //$$     if (id == null) {
+    //$$         logger.warn("Got resource pack download for unexpected uuid " + uuid + " at " + file);
+    //$$         return;
+    //$$     }
+    //$$     recordResourcePack(file, id);
+    //$$ }
     //#elseif MC>=10800
-    //$$ public ResourcePackStatusC2SPacket makeStatusPacket(String hash, Status action) {
+    public ResourcePackStatusC2SPacket makeStatusPacket(String hash, Status action) {
         //#if MC>=11002
-        //$$ return new ResourcePackStatusC2SPacket(action);
+        return new ResourcePackStatusC2SPacket(action);
         //#else
         //$$ return new CPacketResourcePackStatus(hash, action);
         //#endif
-    //$$ }
-    //$$
-    //$$
-    //$$ public synchronized ResourcePackSendS2CPacket handleResourcePack(ClientConnection netManager, ResourcePackSendS2CPacket packet) {
-    //$$     final int requestId = nextRequestId++;
-    //$$     final String url = packet.getUrl();
-    //$$     final String hash = packet.getHash();
-    //$$
-    //$$     if (url.startsWith("level://")) {
-    //$$         String levelName = url.substring("level://".length());
-    //$$         File savesDir = new File(mc.runDirectory, "saves");
-    //$$         final File levelDir = new File(savesDir, levelName);
-    //$$
-    //$$         if (levelDir.isFile()) {
-    //$$             netManager.send(makeStatusPacket(hash, Status.ACCEPTED));
-    //$$             addCallback(setServerResourcePack(levelDir), result -> {
-    //$$                 recordResourcePack(levelDir.toPath(), requestId);
-    //$$                 netManager.send(makeStatusPacket(hash, Status.SUCCESSFULLY_LOADED));
-    //$$             }, throwable -> {
-    //$$                 netManager.send(makeStatusPacket(hash, Status.FAILED_DOWNLOAD));
-    //$$             });
-    //$$         } else {
-    //$$             netManager.send(makeStatusPacket(hash, Status.FAILED_DOWNLOAD));
-    //$$         }
-    //$$     } else {
-    //$$         final ServerInfo serverData = mc.getCurrentServerEntry();
-    //$$         if (serverData != null && serverData.getResourcePackPolicy() == ServerInfo.ResourcePackPolicy.ENABLED) {
-    //$$             netManager.send(makeStatusPacket(hash, Status.ACCEPTED));
-    //$$             downloadResourcePackFuture(netManager, requestId, url, hash);
-    //$$         } else if (serverData != null && serverData.getResourcePackPolicy() != ServerInfo.ResourcePackPolicy.PROMPT) {
-    //$$             netManager.send(makeStatusPacket(hash, Status.DECLINED));
-    //$$         } else {
-    //$$             // Lambdas MUST NOT be used with methods that need re-obfuscation in FG prior to 2.2 (will result in AbstractMethodError)
+    }
+
+
+    public synchronized ResourcePackSendS2CPacket handleResourcePack(ClientConnection netManager, ResourcePackSendS2CPacket packet) {
+        final int requestId = nextRequestId++;
+        final String url = packet.getURL();
+        final String hash = packet.getSHA1();
+
+        if (url.startsWith("level://")) {
+            String levelName = url.substring("level://".length());
+            File savesDir = new File(mc.runDirectory, "saves");
+            final File levelDir = new File(savesDir, levelName);
+
+            if (levelDir.isFile()) {
+                netManager.send(makeStatusPacket(hash, Status.ACCEPTED));
+                addCallback(setServerResourcePack(levelDir), result -> {
+                    recordResourcePack(levelDir.toPath(), requestId);
+                    netManager.send(makeStatusPacket(hash, Status.SUCCESSFULLY_LOADED));
+                }, throwable -> {
+                    netManager.send(makeStatusPacket(hash, Status.FAILED_DOWNLOAD));
+                });
+            } else {
+                netManager.send(makeStatusPacket(hash, Status.FAILED_DOWNLOAD));
+            }
+        } else {
+            final ServerInfo serverData = mc.getCurrentServerEntry();
+            if (serverData != null && serverData.getResourcePackPolicy() == ServerInfo.ResourcePackPolicy.ENABLED) {
+                netManager.send(makeStatusPacket(hash, Status.ACCEPTED));
+                downloadResourcePackFuture(netManager, requestId, url, hash);
+            } else if (serverData != null && serverData.getResourcePackPolicy() != ServerInfo.ResourcePackPolicy.PROMPT) {
+                netManager.send(makeStatusPacket(hash, Status.DECLINED));
+            } else {
+                // Lambdas MUST NOT be used with methods that need re-obfuscation in FG prior to 2.2 (will result in AbstractMethodError)
                 //#if MC>=11400
-                //$$ mc.execute(() -> mc.setScreen(new ConfirmScreen(result -> {
+                mc.execute(() -> mc.setScreen(new ConfirmScreen(result -> {
                 //#else
                 //$$ //noinspection Convert2Lambda
                 //$$ mc.addScheduledTask(() -> mc.displayGuiScreen(new GuiYesNo(new GuiYesNoCallback() {
                 //$$     @Override
                 //$$     public void confirmClicked(boolean result, int id) {
                 //#endif
-    //$$                     if (serverData != null) {
-    //$$                         serverData.setResourcePackPolicy(result ? ServerInfo.ResourcePackPolicy.ENABLED : ServerInfo.ResourcePackPolicy.DISABLED);
-    //$$                     }
-    //$$                     if (result) {
-    //$$                         netManager.send(makeStatusPacket(hash, Status.ACCEPTED));
-    //$$                         downloadResourcePackFuture(netManager, requestId, url, hash);
-    //$$                     } else {
-    //$$                         netManager.send(makeStatusPacket(hash, Status.DECLINED));
-    //$$                     }
-    //$$
-    //$$                     ServerList.updateServerListEntry(serverData);
-    //$$                     mc.setScreen(null);
-    //$$                 }
+                         if (serverData != null) {
+                             serverData.setResourcePackPolicy(result ? ServerInfo.ResourcePackPolicy.ENABLED : ServerInfo.ResourcePackPolicy.DISABLED);
+                         }
+                         if (result) {
+                             netManager.send(makeStatusPacket(hash, Status.ACCEPTED));
+                             downloadResourcePackFuture(netManager, requestId, url, hash);
+                         } else {
+                            netManager.send(makeStatusPacket(hash, Status.DECLINED));
+                         }
+
+                        ServerList.updateServerListEntry(serverData);
+                        mc.setScreen(null);
+                    }
                 //#if MC>=11400
-                //$$ , net.minecraft.text.Text.translatable("multiplayer.texturePrompt.line1"), net.minecraft.text.Text.translatable("multiplayer.texturePrompt.line2"))));
+                , net.minecraft.text.Text.translatable("multiplayer.texturePrompt.line1"), net.minecraft.text.Text.translatable("multiplayer.texturePrompt.line2"))));
                 //#else
                 //$$ }, I18n.format("multiplayer.texturePrompt.line1"), I18n.format("multiplayer.texturePrompt.line2"), 0)));
                 //#endif
-    //$$         }
-    //$$     }
+            }
+        }
     //$$
-    //$$     return new ResourcePackSendS2CPacket(
-    //$$             "replay://" + requestId, ""
+        return new ResourcePackSendS2CPacket(
+                "replay://" + requestId, ""
                 //#if MC>=11700
-                //$$ , packet.isRequired(), packet.getPrompt()
+                , packet.isRequired(), packet.getPrompt()
                 //#endif
-    //$$     );
-    //$$ }
+        );
+    }
     //$$
-    //$$ private void downloadResourcePackFuture(ClientConnection connection, int requestId, String url, final String hash) {
-    //$$     addCallback(downloadResourcePack(requestId, url, hash),
-    //$$             result -> connection.send(makeStatusPacket(hash, Status.SUCCESSFULLY_LOADED)),
-    //$$             throwable -> connection.send(makeStatusPacket(hash, Status.FAILED_DOWNLOAD)));
-    //$$ }
+    private void downloadResourcePackFuture(ClientConnection connection, int requestId, String url, final String hash) {
+        addCallback(downloadResourcePack(requestId, url, hash),
+                result -> connection.send(makeStatusPacket(hash, Status.SUCCESSFULLY_LOADED)),
+                throwable -> connection.send(makeStatusPacket(hash, Status.FAILED_DOWNLOAD)));
+    }
     //$$
-    //$$ private
+    private
     //#if MC>=11400
-    //$$ CompletableFuture<?>
+    CompletableFuture<?>
     //#else
     //$$ ListenableFuture<?>
     //#endif
-    //$$ downloadResourcePack(final int requestId, String url, String hash) {
-    //$$     ServerResourcePackProvider packFinder = mc.getServerResourcePackProvider();
-    //$$     ((IDownloadingPackFinder) packFinder).setRequestCallback(file -> recordResourcePack(file.toPath(), requestId));
+    downloadResourcePack(final int requestId, String url, String hash) {
+        ServerResourcePackProvider packFinder = mc.getServerResourcePackProvider();
+        ((IDownloadingPackFinder) packFinder).setRequestCallback(file -> recordResourcePack(file.toPath(), requestId));
         //#if MC>=11900
-        //$$ try {
-        //$$     URL theUrl = new URL(url);
-        //$$     String protocol = theUrl.getProtocol();
-        //$$     if (!"http".equals(protocol) && !"https".equals(protocol)) {
-        //$$         throw new MalformedURLException("Unsupported protocol.");
-        //$$     }
-        //$$     return packFinder.download(theUrl, hash, true);
-        //$$ } catch (MalformedURLException e) {
-        //$$     return CompletableFuture.failedFuture(e);
-        //$$ }
+        try {
+            URL theUrl = new URL(url);
+            String protocol = theUrl.getProtocol();
+            if (!"http".equals(protocol) && !"https".equals(protocol)) {
+                throw new MalformedURLException("Unsupported protocol.");
+            }
+            return packFinder.download(theUrl, hash, true);
+        } catch (MalformedURLException e) {
+            return CompletableFuture.failedFuture(e);
+        }
         //#elseif MC>=11700
         //$$ return packFinder.download(url, hash, true);
         //#else
         //$$ return packFinder.download(url, hash);
         //#endif
-    //$$ }
-    //$$
-    //$$ public interface IDownloadingPackFinder {
-    //$$     void setRequestCallback(Consumer<File> callback);
-    //$$ }
+    }
+
+    public interface IDownloadingPackFinder {
+        void setRequestCallback(Consumer<File> callback);
+    }
     //#else
     //$$ public synchronized S3FPacketCustomPayload handleResourcePack(S3FPacketCustomPayload packet) {
     //$$     final int requestId = nextRequestId++;

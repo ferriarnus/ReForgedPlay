@@ -39,7 +39,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.crash.CrashException;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.client.render.RenderTickCounter;
-import net.neoforged.fml.loading.LoadingModList;
+import net.minecraftforge.fml.loading.LoadingModList;
 import org.lwjgl.glfw.GLFW;
 
 //#if MC>=12000
@@ -320,12 +320,12 @@ public class VideoRenderer implements RenderInfo {
         //$$     Display.setResizable(false);
         //$$ }
         //#endif
-        if (mc.getDebugHud().shouldShowDebugHud()) {
+        if (mc.options.debugEnabled) {
             debugInfoWasShown = true;
             //#if MC>=12002
-            mc.getDebugHud().toggleDebugHud();
+            //$$ mc.getDebugHud().toggleDebugHud();
             //#else
-            //$$ mc.options.debugEnabled = false;
+            mc.options.debugEnabled = false;
             //#endif
         }
         //#if MC>=11400
@@ -392,9 +392,9 @@ public class VideoRenderer implements RenderInfo {
         //#endif
         if (debugInfoWasShown) {
             //#if MC>=12002
-            mc.getDebugHud().toggleDebugHud();
+            //$$ mc.getDebugHud().toggleDebugHud();
             //#else
-            //$$ mc.options.debugEnabled = true;
+            mc.options.debugEnabled = true;
             //#endif
         }
         if (mouseWasGrabbed) {

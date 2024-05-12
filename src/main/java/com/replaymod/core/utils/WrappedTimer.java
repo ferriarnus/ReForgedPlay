@@ -10,9 +10,9 @@ public class WrappedTimer extends RenderTickCounter {
 
     public WrappedTimer(RenderTickCounter wrapped) {
         //#if MC>=12003
-        super(0, 0, f -> f);
+        //$$ super(0, 0, f -> f);
         //#elseif MC>=11400
-        //$$ super(0, 0);
+        super(0, 0);
         //#else
         //$$ super(0);
         //#endif

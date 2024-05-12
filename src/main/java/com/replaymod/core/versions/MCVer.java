@@ -110,7 +110,7 @@ public class MCVer {
             case STATUS: return NetworkState.STATUS;
             case LOGIN: return NetworkState.LOGIN;
             //#if MC>=12002
-            case CONFIGURATION: return NetworkState.CONFIGURATION;
+            //$$ case CONFIGURATION: return NetworkState.CONFIGURATION;
             //#endif
             case PLAY: return NetworkState.PLAY;
         }
@@ -123,7 +123,7 @@ public class MCVer {
             case STATUS: return State.STATUS;
             case LOGIN: return State.LOGIN;
             //#if MC>=12002
-            case CONFIGURATION: return State.CONFIGURATION;
+            //$$ case CONFIGURATION: return State.CONFIGURATION;
             //#endif
             case PLAY: return State.PLAY;
         }
@@ -169,20 +169,20 @@ public class MCVer {
     //#endif
 
     //#if MC<12003
-    //$$ public static
+    public static
     //#if MC>=11400
-    //$$ CompletableFuture<?>
+    CompletableFuture<?>
     //#else
     //$$ ListenableFuture<?>
     //#endif
-    //$$ setServerResourcePack(File file) {
+    setServerResourcePack(File file) {
         //#if MC>=11400
-        //$$ return getMinecraft().getServerResourcePackProvider().loadServerPack(
-        //$$         file
+        return getMinecraft().getServerResourcePackProvider().loadServerPack(
+                file
                 //#if MC>=11600
-                //$$ , ResourcePackSource.SERVER
+                , ResourcePackSource.SERVER
                 //#endif
-        //$$ );
+        );
         //#else
         //$$ ResourcePackRepository repo = getMinecraft().getResourcePackRepository();
         //#if MC>=10800
@@ -195,7 +195,7 @@ public class MCVer {
         //$$ return Futures.immediateFuture(null);
         //#endif
         //#endif
-    //$$ }
+    }
     //#endif
 
     public static <T> void addCallback(

@@ -21,10 +21,10 @@ import com.replaymod.core.versions.LangResourcePack;
 //#endif
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.util.Identifier;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.Mod;
-import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 
 import static com.replaymod.core.ReplayMod.MOD_ID;
 //#else

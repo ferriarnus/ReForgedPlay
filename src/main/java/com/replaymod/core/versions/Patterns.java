@@ -20,11 +20,11 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.network.NetworkSide;
 import net.minecraft.network.NetworkState;
 import net.minecraft.network.packet.Packet;
-import net.minecraft.network.packet.s2c.common.CustomPayloadS2CPacket;
+import net.minecraft.network.packet.s2c.play.CustomPayloadS2CPacket;
 import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.sound.SoundCategory;
-import net.minecraft.text.PlainTextContent;
+import net.minecraft.text.LiteralTextContent;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableTextContent;
 import net.minecraft.util.crash.CrashException;
@@ -916,9 +916,9 @@ class Patterns {
     @Pattern
     public Object channel(CustomPayloadS2CPacket packet) {
         //#if MC>=12002
-        return packet.payload().id();
+        //$$ return packet.payload().id();
         //#else
-        //$$ return packet.getChannel();
+        return packet.getChannel();
         //#endif
     }
 
@@ -926,27 +926,27 @@ class Patterns {
     @Pattern
     public Integer getPacketId(NetworkState state, NetworkSide side, Packet<?> packet) throws Exception {
         //#if MC>=12002
-        return state.getHandler(side).getId(packet);
+        //$$ return state.getHandler(side).getId(packet);
         //#else
-        //$$ return state.getPacketId(side, packet);
+        return state.getPacketId(side, packet);
         //#endif
     }
 
     @Pattern
     public int UnloadChunkPacket_getX(UnloadChunkS2CPacket packet) {
         //#if MC>=12002
-        return packet.pos().x;
+        //$$ return packet.pos().x;
         //#else
-        //$$ return packet.getX();
+        return packet.getX();
         //#endif
     }
 
     @Pattern
     public int UnloadChunkPacket_getZ(UnloadChunkS2CPacket packet) {
         //#if MC>=12002
-        return packet.pos().z;
+        //$$ return packet.pos().z;
         //#else
-        //$$ return packet.getZ();
+        return packet.getZ();
         //#endif
     }
     //#else
@@ -958,18 +958,18 @@ class Patterns {
     @Pattern
     public Identifier getSkinTexture(AbstractClientPlayerEntity player) {
         //#if MC>=12002
-        return player.getSkinTextures().texture();
+        //$$ return player.getSkinTextures().texture();
         //#else
-        //$$ return player.getSkinTexture();
+        return player.getSkinTexture();
         //#endif
     }
 
     @Pattern
     public boolean isDebugHudEnabled(MinecraftClient mc) {
         //#if MC>=12002
-        return mc.getDebugHud().shouldShowDebugHud();
+        //$$ return mc.getDebugHud().shouldShowDebugHud();
         //#else
-        //$$ return mc.options.debugEnabled;
+        return mc.options.debugEnabled;
         //#endif
     }
 }

@@ -17,7 +17,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(Keyboard.class)
 public class MixinKeyboardListener {
     @Inject(
-            method = "method_1454",
+            method = "lambda$keyPress$5",
             //#if MC>=11700
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screen/Screen;keyPressed(III)Z"),
             //#else
@@ -29,7 +29,7 @@ public class MixinKeyboardListener {
     //#if MC>=11903
     static
     //#endif
-    private void keyPressed(int i, Screen screen, boolean[] bls, int keyCode, int scanCode, int modifiers, CallbackInfo ci) {
+    private void keyPressed(int i, boolean[] bls, Screen screen, int keyCode, int scanCode, int modifiers, CallbackInfo ci) {
     //#else
     //$$ private void keyPressed(int i, boolean[] bls, ParentElement element, int keyCode, int scanCode, int modifiers, CallbackInfo ci) {
     //#endif
@@ -40,7 +40,7 @@ public class MixinKeyboardListener {
     }
 
     @Inject(
-            method = "method_1454",
+            method = "lambda$keyPress$5",
             //#if MC>=11700
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screen/Screen;keyReleased(III)Z"),
             //#else
@@ -52,7 +52,7 @@ public class MixinKeyboardListener {
     //#if MC>=11903
     static
     //#endif
-    private void keyReleased(int i, Screen screen, boolean[] bls, int keyCode, int scanCode, int modifiers, CallbackInfo ci) {
+    private void keyReleased(int i, boolean[] bls, Screen screen, int keyCode, int scanCode, int modifiers, CallbackInfo ci) {
     //#else
     //$$ private void keyReleased(int i, boolean[] bls, ParentElement element, int keyCode, int scanCode, int modifiers, CallbackInfo ci) {
     //#endif

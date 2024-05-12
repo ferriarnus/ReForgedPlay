@@ -30,8 +30,8 @@ import net.minecraft.network.NetworkState;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.s2c.play.GameMessageS2CPacket;
-import net.minecraft.network.packet.s2c.common.CustomPayloadS2CPacket;
-import net.minecraft.network.packet.s2c.common.DisconnectS2CPacket;
+import net.minecraft.network.packet.s2c.play.CustomPayloadS2CPacket;
+import net.minecraft.network.packet.s2c.play.DisconnectS2CPacket;
 import net.minecraft.network.packet.s2c.play.EntitiesDestroyS2CPacket;
 import net.minecraft.network.packet.s2c.play.EntitySpawnS2CPacket;
 import net.minecraft.network.packet.s2c.play.ExperienceBarUpdateS2CPacket;
@@ -56,11 +56,11 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
 //#if MC>=12002
-import net.minecraft.network.packet.s2c.config.ReadyS2CPacket;
-import net.minecraft.network.packet.s2c.play.CommonPlayerSpawnInfo;
-import net.minecraft.network.packet.s2c.play.EnterReconfigurationS2CPacket;
+//$$ import net.minecraft.network.packet.s2c.config.ReadyS2CPacket;
+//$$ import net.minecraft.network.packet.s2c.play.CommonPlayerSpawnInfo;
+//$$ import net.minecraft.network.packet.s2c.play.EnterReconfigurationS2CPacket;
 //#else
-//$$ import net.minecraft.network.packet.s2c.play.PlayerSpawnS2CPacket;
+import net.minecraft.network.packet.s2c.play.PlayerSpawnS2CPacket;
 //#endif
 
 //#if MC>=11904
@@ -133,7 +133,7 @@ import net.minecraft.network.packet.s2c.play.UnloadChunkS2CPacket;
 //#endif
 
 //#if MC>=10800
-import net.minecraft.network.packet.s2c.common.ResourcePackSendS2CPacket;
+import net.minecraft.network.packet.s2c.play.ResourcePackSendS2CPacket;
 import net.minecraft.network.packet.s2c.play.SetCameraEntityS2CPacket;
 import net.minecraft.network.packet.s2c.play.TitleS2CPacket;
 import net.minecraft.network.NetworkSide;
@@ -476,9 +476,9 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
 
         NetworkState state = asMc(registry.getState());
         //#if MC>=12002
-        Packet p = state.getHandler(NetworkSide.CLIENTBOUND).createPacket(i, pb, ctx);
+        //$$ Packet p = state.getHandler(NetworkSide.CLIENTBOUND).createPacket(i, pb, ctx);
         //#elseif MC>=11700
-        //$$ Packet p = state.getPacketHandler(NetworkSide.CLIENTBOUND, i, pb);
+        Packet p = state.getPacketHandler(NetworkSide.CLIENTBOUND, i, pb);
         //#else
         //#if MC>=10800
         //$$ Packet p = state.getPacketHandler(NetworkSide.CLIENTBOUND, i);
@@ -501,7 +501,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
 
         boolean relevantPacket = packet instanceof EntitySpawnS2CPacket
                 //#if MC<12002
-                //$$ || packet instanceof PlayerSpawnS2CPacket
+                || packet instanceof PlayerSpawnS2CPacket
                 //#endif
                 //#if MC<11900
                 //$$ || packet instanceof MobSpawnS2CPacket
@@ -569,20 +569,20 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             return p;
         }
         //#if MC>=12002
-        if (p instanceof ReadyS2CPacket) {
-            registry = registry.withState(State.PLAY);
-            return p;
-        }
-        if (p instanceof EnterReconfigurationS2CPacket) {
-            registry = registry.withState(State.CONFIGURATION);
-            hasWorldLoaded = false;
-            return p;
-        }
+        //$$ if (p instanceof ReadyS2CPacket) {
+        //$$     registry = registry.withState(State.PLAY);
+        //$$     return p;
+        //$$ }
+        //$$ if (p instanceof EnterReconfigurationS2CPacket) {
+        //$$     registry = registry.withState(State.CONFIGURATION);
+        //$$     hasWorldLoaded = false;
+        //$$     return p;
+        //$$ }
         //#endif
 
         if (p instanceof CustomPayloadS2CPacket) {
             CustomPayloadS2CPacket packet = (CustomPayloadS2CPacket) p;
-            if (Restrictions.PLUGIN_CHANNEL.equals(packet.payload().id())) {
+            if (Restrictions.PLUGIN_CHANNEL.equals(packet.getChannel())) {
                 final String unknown = replayHandler.getRestrictions().handle(packet);
                 if (unknown == null) {
                     return null;
@@ -625,7 +625,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
         if (p instanceof CustomPayloadS2CPacket) {
             CustomPayloadS2CPacket packet = (CustomPayloadS2CPacket) p;
             //#if MC>=11400
-            Identifier channelName = packet.payload().id();
+            Identifier channelName = packet.getChannel();
             //#else
             //$$ String channelName = packet.getChannelName();
             //#endif
@@ -651,9 +651,9 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
         if(p instanceof ResourcePackSendS2CPacket) {
             ResourcePackSendS2CPacket packet = (ResourcePackSendS2CPacket) p;
             //#if MC>=12003
-            String url = packet.url();
+            //$$ String url = packet.url();
             //#else
-            //$$ String url = packet.getUrl();
+            String url = packet.getURL();
             //#endif
             if (url.startsWith("replay://")) {
         //#else
@@ -671,9 +671,9 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                             IOUtils.copy(replayFile.getResourcePack(hash).get(), new FileOutputStream(file));
                         }
                         //#if MC>=12003
-                        schedulePacketHandler(() -> mc.getServerResourcePackProvider().addResourcePack(packet.id(), file.toPath()));
+                        //$$ schedulePacketHandler(() -> mc.getServerResourcePackProvider().addResourcePack(packet.id(), file.toPath()));
                         //#else
-                        //$$ setServerResourcePack(file);
+                        setServerResourcePack(file);
                         //#endif
                     }
                 }
@@ -691,22 +691,22 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             p = new GameJoinS2CPacket(
                     entId,
                     //#if MC>=12002
-                    packet.hardcore(),
-                    packet.dimensionIds(),
-                    packet.maxPlayers(),
-                    packet.viewDistance(),
-                    packet.simulationDistance(),
-                    packet.reducedDebugInfo(),
-                    packet.showDeathScreen(),
-                    packet.doLimitedCrafting(),
-                    withSpectatorMode(packet.commonPlayerSpawnInfo())
+                    //$$ packet.hardcore(),
+                    //$$ packet.dimensionIds(),
+                    //$$ packet.maxPlayers(),
+                    //$$ packet.viewDistance(),
+                    //$$ packet.simulationDistance(),
+                    //$$ packet.reducedDebugInfo(),
+                    //$$ packet.showDeathScreen(),
+                    //$$ packet.doLimitedCrafting(),
+                    //$$ withSpectatorMode(packet.commonPlayerSpawnInfo())
                     //#else
                     //#if MC>=11800
-                    //$$ packet.hardcore(),
+                    packet.hardcore(),
                     //#endif
-                    //$$ GameMode.SPECTATOR,
+                    GameMode.SPECTATOR,
                     //#if MC>=11600
-                    //$$ GameMode.SPECTATOR,
+                    GameMode.SPECTATOR,
                     //#endif
                     //#if MC<11800
                     //#if MC>=11500
@@ -716,46 +716,46 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                     //#endif
                     //#if MC>=11600
                     //#if MC>=11603
-                    //$$ packet.dimensionIds(),
+                    packet.dimensionIds(),
                     //#if MC>=11800
-                    //$$ packet.registryManager(),
+                    packet.registryManager(),
                     //#else
                     //$$ (net.minecraft.util.registry.DynamicRegistryManager.Impl) packet.getRegistryManager(),
                     //#endif
-                    //$$ packet.dimensionType(),
+                    packet.dimensionType(),
                     //#else
                     //$$ packet.method_29443(),
                     //$$ (net.minecraft.util.registry.RegistryTracker.Modifiable) packet.getDimension(),
                     //$$ packet.method_29444(),
                     //#endif
-                    //$$ packet.dimensionId(),
+                    packet.dimensionId(),
                     //#else
                     //$$ packet.getDimension(),
                     //#endif
                     //#if MC>=11800
-                    //$$ packet.sha256Seed(),
+                    packet.sha256Seed(),
                     //#endif
-                    //$$ 0, // max players (has no getter -> never actually used)
+                    0, // max players (has no getter -> never actually used)
                     //#if MC<11600
                     //$$ packet.getGeneratorType(),
                     //#endif
-                    //$$ packet.viewDistance(),
+                    packet.viewDistance(),
                     //#if MC>=11800
-                    //$$ packet.simulationDistance(),
+                    packet.simulationDistance(),
                     //#endif
-                    //$$ packet.reducedDebugInfo()
+                    packet.reducedDebugInfo()
                     //#if MC>=11500
-                    //$$ , packet.showDeathScreen()
+                    , packet.showDeathScreen()
                     //#endif
                     //#if MC>=11600
-                    //$$ , packet.debugWorld()
-                    //$$ , packet.flatWorld()
+                    , packet.debugWorld()
+                    , packet.flatWorld()
                     //#endif
                     //#if MC>=11900
-                    //$$ , java.util.Optional.empty()
+                    , java.util.Optional.empty()
                     //#endif
                     //#if MC>=12000
-                    //$$ , packet.portalCooldown()
+                    , packet.portalCooldown()
                     //#endif
                     //#endif
             );
@@ -798,23 +798,23 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             //#if MC>=11400
             p = new PlayerRespawnS2CPacket(
                     //#if MC>=12002
-                    withSpectatorMode(respawn.commonPlayerSpawnInfo()),
-                    (byte) 0
+                    //$$ withSpectatorMode(respawn.commonPlayerSpawnInfo()),
+                    //$$ (byte) 0
                     //#else
                     //#if MC>=11600
-                    //$$ respawn.getDimensionType(),
+                    respawn.getDimensionType(),
                     //#endif
-                    //$$ respawn.getDimension(),
+                    respawn.getDimension(),
                     //#if MC>=11500
-                    //$$ respawn.getSha256Seed(),
+                    respawn.getSha256Seed(),
                     //#endif
                     //#if MC>=11600
-                    //$$ GameMode.SPECTATOR,
-                    //$$ GameMode.SPECTATOR,
-                    //$$ respawn.isDebugWorld(),
-                    //$$ respawn.isFlatWorld(),
+                    GameMode.SPECTATOR,
+                    GameMode.SPECTATOR,
+                    respawn.isDebugWorld(),
+                    respawn.isFlatWorld(),
                     //#if MC>=11903
-                    //$$ (byte) 0
+                    (byte) 0
                     //#else
                     //$$ false
                     //#endif
@@ -823,10 +823,10 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                     //$$ GameMode.SPECTATOR
                     //#endif
                     //#if MC>=11900
-                    //$$ , java.util.Optional.empty()
+                    , java.util.Optional.empty()
                     //#endif
                     //#if MC>=12000
-                    //$$ , respawn.getPortalCooldown()
+                    , respawn.getPortalCooldown()
                     //#endif
                     //#endif
             );
@@ -961,19 +961,19 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
     }
 
     //#if MC>=12002
-    private CommonPlayerSpawnInfo withSpectatorMode(CommonPlayerSpawnInfo org) {
-        return new CommonPlayerSpawnInfo(
-                org.dimensionType(),
-                org.dimension(),
-                org.seed(),
-                GameMode.SPECTATOR,
-                GameMode.SPECTATOR,
-                org.isDebug(),
-                org.isFlat(),
-                org.lastDeathLocation(),
-                org.portalCooldown()
-        );
-    }
+    //$$ private CommonPlayerSpawnInfo withSpectatorMode(CommonPlayerSpawnInfo org) {
+    //$$     return new CommonPlayerSpawnInfo(
+    //$$             org.dimensionType(),
+    //$$             org.dimension(),
+    //$$            org.seed(),
+    //$$             GameMode.SPECTATOR,
+    //$$             GameMode.SPECTATOR,
+    //$$             org.isDebug(),
+    //$$             org.isFlat(),
+    //$$             org.lastDeathLocation(),
+    //$$             org.portalCooldown()
+    //$$     );
+    //$$ }
     //#endif
 
     @Override
@@ -1126,9 +1126,9 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                                 // Might be safe to do the same on older versions too, but I'd rather not poke the
                                 // monster that is Forge networking.
                                 //#if MC>=12002
-                                while (!ctx.channel().config().isAutoRead()) {
-                                    Thread.sleep(0, 100_000);
-                                }
+                                //$$ while (!ctx.channel().config().isAutoRead()) {
+                                //$$     Thread.sleep(0, 100_000);
+                                //$$ }
                                 //#endif
 
                                 // In case we finished jumping
@@ -1341,9 +1341,9 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                         // Might be safe to do the same on older versions too, but I'd rather not poke the
                         // monster that is Forge networking.
                         //#if MC>=12002
-                        while (!ctx.channel().config().isAutoRead()) {
-                            Thread.sleep(0, 100_000);
-                        }
+                        //$$ while (!ctx.channel().config().isAutoRead()) {
+                        //$$     Thread.sleep(0, 100_000);
+                        //$$ }
                         //#endif
                     } catch (EOFException eof) {
                         // Shit! We hit the end before finishing our job! What shall we do now?
@@ -1407,8 +1407,8 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
         //#if MC>=10904
         if (p instanceof UnloadChunkS2CPacket) {
             UnloadChunkS2CPacket packet = (UnloadChunkS2CPacket) p;
-            int x = packet.pos().x;
-            int z = packet.pos().z;
+            int x = packet.getX();
+            int z = packet.getZ();
         //#else
         //$$ if (p instanceof S21PacketChunkData && ((S21PacketChunkData) p).getExtractedSize() == 0) {
         //$$     S21PacketChunkData packet = (S21PacketChunkData) p;
