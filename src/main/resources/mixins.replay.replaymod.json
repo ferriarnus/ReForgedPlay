@@ -56,7 +56,9 @@
     "MixinRenderLivingBase",
     "MixinTileEntityEndPortalRenderer",
     "MixinWorldClient",
-    "Mixin_ScreenButton"
+    "Mixin_ScreenButton",
+    "Mixin_HandshakeHandler",
+    "Mixin_ConnectionType"
   ],
   "compatibilityLevel": "JAVA_8",
   "minVersion": "0.6.11",

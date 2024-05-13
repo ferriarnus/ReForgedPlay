@@ -8,14 +8,7 @@ import de.johni0702.minecraft.gui.versions.callbacks.PreTickCallback;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
-import net.minecraft.network.packet.s2c.play.BlockBreakingProgressS2CPacket;
-import net.minecraft.network.packet.s2c.play.EntityAnimationS2CPacket;
-import net.minecraft.network.packet.s2c.play.EntityAttachS2CPacket;
-import net.minecraft.network.packet.s2c.play.EntityEquipmentUpdateS2CPacket;
-import net.minecraft.network.packet.s2c.play.EntityPositionS2CPacket;
-import net.minecraft.network.packet.s2c.play.EntityS2CPacket;
-import net.minecraft.network.packet.s2c.play.EntitySetHeadYawS2CPacket;
-import net.minecraft.network.packet.s2c.play.EntityVelocityUpdateS2CPacket;
+import net.minecraft.network.packet.s2c.play.*;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.packet.Packet;
@@ -30,7 +23,6 @@ import net.minecraft.server.integrated.IntegratedServer;
 //#endif
 
 //#if MC>=12002
-import net.minecraft.network.packet.s2c.play.EntitySpawnS2CPacket;
 //#else
 //$$ import net.minecraft.network.packet.s2c.play.PlayerSpawnS2CPacket;
 //#endif
@@ -49,8 +41,6 @@ import net.minecraft.util.collection.DefaultedList;
 //#endif
 
 //#if MC>=10904
-import net.minecraft.network.packet.s2c.play.EntityTrackerUpdateS2CPacket;
-import net.minecraft.network.packet.s2c.play.WorldEventS2CPacket;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.util.Hand;
 //#endif
@@ -109,9 +99,9 @@ public class RecordingEventHandler extends EventRegistrations {
             ClientPlayerEntity player = mc.player;
             assert player != null;
             //#if MC>=12002
-            packetListener.save(new EntitySpawnS2CPacket(player));
+            //$$ packetListener.save(new EntitySpawnS2CPacket(player));
             //#else
-            //$$ packetListener.save(new PlayerSpawnS2CPacket(player));
+            packetListener.save(new PlayerSpawnS2CPacket(player));
             //#endif
             //#if MC>=11903
             packetListener.save(new EntityTrackerUpdateS2CPacket(player.getId(), player.getDataTracker().getChangedEntries()));

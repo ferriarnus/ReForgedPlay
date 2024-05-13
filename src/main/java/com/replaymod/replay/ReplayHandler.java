@@ -94,7 +94,7 @@ import net.minecraft.entity.LivingEntity;
 //#if MC<10800
 //$$ import de.johni0702.minecraft.de.johni0702.minecraft.gui.element.gui.GuiLabel;
 //$$ import de.johni0702.minecraft.de.johni0702.minecraft.gui.popup.gui.GuiInfoPopup;
-//$$ import de.johni0702.minecraft.de.johni0702.minecraft.gui.utils.gui.Colors;
+//$$ import de.johni0702.minecraft.de.johni0702.minecraft.gui.utils.gui.Colors;F
 //#endif
 
 //#if MC>=10800
