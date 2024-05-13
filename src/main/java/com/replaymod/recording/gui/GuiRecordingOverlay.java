@@ -15,9 +15,9 @@ import static com.replaymod.core.ReplayMod.TEXTURE_SIZE;
 import static com.mojang.blaze3d.systems.RenderSystem.*;
 
 //#if MC>=12000
-import net.minecraft.client.gui.DrawContext;
+//$$ import net.minecraft.client.gui.DrawContext;
 //#else
-//$$ import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.client.util.math.MatrixStack;
 //#endif
 
 /**
@@ -39,9 +39,9 @@ public class GuiRecordingOverlay extends EventRegistrations {
      */
     { on(RenderHudCallback.EVENT, (stack, partialTicks) -> renderRecordingIndicator(stack)); }
     //#if MC>=12000
-    private void renderRecordingIndicator(DrawContext stack) {
+    //$$ private void renderRecordingIndicator(DrawContext stack) {
     //#else
-    //$$ private void renderRecordingIndicator(MatrixStack stack) {
+    private void renderRecordingIndicator(MatrixStack stack) {
     //#endif
         if (guiControls.isStopped()) return;
         if (settingsRegistry.get(Setting.INDICATOR)) {

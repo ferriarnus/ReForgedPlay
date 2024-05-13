@@ -89,7 +89,7 @@ public abstract class OpenGlFrameCapturer<F extends Frame, D extends CaptureData
                 //#endif
         );
         //#if MC<11904
-        //$$ RenderSystem.enableTexture();
+        RenderSystem.enableTexture();
         //#endif
 
         worldRenderer.renderWorld(partialTicks, captureData);

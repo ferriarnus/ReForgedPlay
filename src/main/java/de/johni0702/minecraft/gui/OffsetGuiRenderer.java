@@ -29,7 +29,6 @@ import de.johni0702.minecraft.gui.utils.lwjgl.Point;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableColor;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadablePoint;
-import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 
@@ -95,10 +94,10 @@ public class OffsetGuiRenderer implements GuiRenderer {
     }
 
     //#if MC>=12000
-    @Override
-    public DrawContext getContext() {
-        return renderer.getContext();
-    }
+    //$$ @Override
+    //$$ public DrawContext getContext() {
+    //$$     return renderer.getContext();
+    //$$ }
     //#endif
 
     @Override

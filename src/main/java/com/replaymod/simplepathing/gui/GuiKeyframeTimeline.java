@@ -170,7 +170,7 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
                     emitLine(buffer, p3, p4, color);
 
                     //#if MC>=11700
-                    RenderSystem.setShader(GameRenderer::getRenderTypeLinesProgram);
+                    RenderSystem.setShader(GameRenderer::getRenderTypeLinesShader);
                     //#else
                     //$$ GL11.glEnable(GL11.GL_LINE_SMOOTH);
                     //$$ GL11.glDisable(GL11.GL_TEXTURE_2D);

@@ -6,7 +6,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ConfirmScreen;
 import net.minecraft.client.network.ServerInfo;
 import net.minecraft.client.option.ServerList;
-import net.minecraft.client.resource.ServerResourcePackProvider;
+import net.minecraft.client.resource.ClientBuiltinResourcePackProvider;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -218,7 +218,7 @@ public class ResourcePackRecorder {
     //$$ ListenableFuture<?>
     //#endif
     downloadResourcePack(final int requestId, String url, String hash) {
-        ServerResourcePackProvider packFinder = mc.getServerResourcePackProvider();
+        ClientBuiltinResourcePackProvider packFinder = mc.getResourcePackProvider();
         ((IDownloadingPackFinder) packFinder).setRequestCallback(file -> recordResourcePack(file.toPath(), requestId));
         //#if MC>=11900
         try {

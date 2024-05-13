@@ -121,9 +121,9 @@ public class ReplayMod implements Module, Scheduler {
             }
         }
         //#if MC>=11903
-        return new DirectoryResourcePack(JGUI_RESOURCE_PACK_NAME, folder.toPath(), true) {
+        //$$ return new DirectoryResourcePack(JGUI_RESOURCE_PACK_NAME, folder.toPath(), true) {
         //#else
-        //$$ return new DirectoryResourcePack(folder) {
+        return new DirectoryResourcePack(folder) {
         //#endif
             @Override
             //#if MC>=11400
@@ -135,25 +135,25 @@ public class ReplayMod implements Module, Scheduler {
             }
 
             //#if MC>=11903
-            @Override
-            public net.minecraft.resource.InputSupplier<InputStream> openRoot(String... segments) {
-                if (segments.length == 1 && segments[0].equals("pack.mcmeta")) {
-                    return () -> new ByteArrayInputStream(generatePackMeta());
-                }
-                return super.openRoot(segments);
-            }
-            //#else
             //$$ @Override
-            //$$ protected InputStream openFile(String resourceName) throws IOException {
-            //$$     try {
-            //$$         return super.openFile(resourceName);
-            //$$     } catch (IOException e) {
-            //$$         if ("pack.mcmeta".equals(resourceName)) {
-            //$$             return new ByteArrayInputStream(generatePackMeta());
-            //$$         }
-            //$$         throw e;
+            //$$ public net.minecraft.resource.InputSupplier<InputStream> openRoot(String... segments) {
+            //$$     if (segments.length == 1 && segments[0].equals("pack.mcmeta")) {
+            //$$         return () -> new ByteArrayInputStream(generatePackMeta());
             //$$     }
+            //$$     return super.openRoot(segments);
             //$$ }
+            //#else
+            @Override
+            protected InputStream openFile(String resourceName) throws IOException {
+                try {
+                    return super.openFile(resourceName);
+                } catch (IOException e) {
+                    if ("pack.mcmeta".equals(resourceName)) {
+                        return new ByteArrayInputStream(generatePackMeta());
+                    }
+                    throw e;
+                }
+            }
             //#endif
 
             private byte[] generatePackMeta() {

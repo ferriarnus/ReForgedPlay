@@ -34,7 +34,7 @@ import net.minecraft.client.gui.screen.DownloadingTerrainScreen;
 import net.minecraft.client.network.ClientLoginNetworkHandler;
 import net.minecraft.client.util.Window;
 import net.minecraft.network.NetworkState;
-import net.minecraft.network.packet.Packet;
+import net.minecraft.network.Packet;
 import net.minecraft.util.crash.CrashReport;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -55,17 +55,16 @@ import java.util.*;
 //#endif
 
 //#if MC>=12000
-import com.mojang.blaze3d.systems.VertexSorter;
-import net.minecraft.client.gui.DrawContext;
+//$$ import com.mojang.blaze3d.systems.VertexSorter;
+//$$ import net.minecraft.client.gui.DrawContext;
 //#endif
 
 //#if MC>=11904
-import net.minecraft.network.PacketBundler;
+//$$ import net.minecraft.network.PacketBundler;
 //#endif
 
 //#if MC>=11700
 import net.minecraft.client.render.DiffuseLighting;
-import org.joml.Matrix4f;
 //#endif
 
 //#if MC>=11600
@@ -329,7 +328,7 @@ public class ReplayHandler {
         //$$ channel.pipeline().addLast("ReplayModReplay_transition", new DummyNetworkStateTransitionHandler());
         //$$ channel.pipeline().addLast("bundler", new PacketBundler(ClientConnection.CLIENTBOUND_PROTOCOL_KEY));
         //#elseif MC>=11904
-        channel.pipeline().addLast("bundler", new PacketBundler(NetworkSide.CLIENTBOUND));
+        //$$ channel.pipeline().addLast("bundler", new PacketBundler(NetworkSide.CLIENTBOUND));
         //#endif
         channel.pipeline().addLast("packet_handler", networkManager);
         channel.pipeline().fireChannelActive();
@@ -348,9 +347,9 @@ public class ReplayHandler {
                 mc,
                 null
                 //#if MC>=11903
-                , null
-                , false
-                , null
+                //$$ , null
+                //$$ , false
+                //$$ , null
                 //#endif
                 //#if MC>=11400
                 , it -> {}
@@ -668,7 +667,7 @@ public class ReplayHandler {
                         //#endif
                 );
                 //#if MC<11904
-                //$$ RenderSystem.enableTexture();
+                RenderSystem.enableTexture();
                 //#endif
                 mc.getFramebuffer().beginWrite(true);
                 Window window = mc.getWindow();
@@ -677,7 +676,7 @@ public class ReplayHandler {
                 //#if MC>=11700
                 RenderSystem.setProjectionMatrix(com.replaymod.core.versions.MCVer.ortho(0, (float) (window.getFramebufferWidth() / window.getScaleFactor()), 0, (float) (window.getFramebufferHeight() / window.getScaleFactor()), 1000, 3000)
                         //#if MC>=12000
-                        , VertexSorter.BY_Z
+                        //$$ , VertexSorter.BY_Z
                         //#endif
                 );
                 MatrixStack matrixStack = RenderSystem.getModelViewStack();
@@ -703,9 +702,9 @@ public class ReplayHandler {
 
                 guiScreen.toMinecraft().init(mc, window.getScaledWidth(), window.getScaledHeight());
                 //#if MC>=12000
-                guiScreen.toMinecraft().render(new DrawContext(mc, mc.getBufferBuilders().getEntityVertexConsumers()), 0, 0, 0);
+                //$$ guiScreen.toMinecraft().render(new DrawContext(mc, mc.getBufferBuilders().getEntityVertexConsumers()), 0, 0, 0);
                 //#elseif MC>=11600
-                //$$ guiScreen.toMinecraft().render(new MatrixStack(), 0, 0, 0);
+                guiScreen.toMinecraft().render(new MatrixStack(), 0, 0, 0);
                 //#else
                 //#if MC>=11400
                 //$$ guiScreen.toMinecraft().render(0, 0, 0);

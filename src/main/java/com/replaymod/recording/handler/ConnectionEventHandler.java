@@ -94,11 +94,11 @@ public class ConnectionEventHandler {
 
             ServerInfo serverInfo;
             //#if MC>=11903
-            serverInfo = networkManager.getPacketListener() instanceof ClientLoginNetworkHandlerAccessor loginNetworkHandler
-                    ? loginNetworkHandler.getServerInfo()
-                    : null;
+            //$$ serverInfo = networkManager.getPacketListener() instanceof ClientLoginNetworkHandlerAccessor loginNetworkHandler
+            //$$          ? loginNetworkHandler.getServerInfo()
+            //$$         : null;
             //#else
-            //$$ serverInfo = mc.getCurrentServerEntry();
+            serverInfo = mc.getCurrentServerEntry();
             //#endif
 
             String worldName;

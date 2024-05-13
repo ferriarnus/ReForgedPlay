@@ -8,10 +8,11 @@ import de.johni0702.minecraft.gui.versions.callbacks.PreTickCallback;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EquipmentSlot;
+import net.minecraft.network.Packet;
 import net.minecraft.network.packet.s2c.play.*;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.network.packet.Packet;
 import net.minecraft.server.integrated.IntegratedServer;
 // FIXME not (yet?) 1.13 import net.minecraftforge.event.entity.minecart.MinecartInteractEvent;
 
@@ -37,12 +38,13 @@ import com.mojang.datafixers.util.Pair;
 //#endif
 
 //#if MC>=11100
+import net.minecraft.util.Hand;
 import net.minecraft.util.collection.DefaultedList;
 //#endif
 
 //#if MC>=10904
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.util.Hand;
+//$$ import net.minecraft.entity.EquipmentSlot;
+//$$ import net.minecraft.util.Hand;
 //#endif
 
 //#if MC>=10800
@@ -104,9 +106,9 @@ public class RecordingEventHandler extends EventRegistrations {
             packetListener.save(new PlayerSpawnS2CPacket(player));
             //#endif
             //#if MC>=11903
-            packetListener.save(new EntityTrackerUpdateS2CPacket(player.getId(), player.getDataTracker().getChangedEntries()));
+            //$$ packetListener.save(new EntityTrackerUpdateS2CPacket(player.getId(), player.getDataTracker().getChangedEntries()));
             //#elseif MC>=11500
-            //$$ packetListener.save(new EntityTrackerUpdateS2CPacket(player.getId(), player.getDataTracker(), true));
+            packetListener.save(new EntityTrackerUpdateS2CPacket(player.getId(), player.getDataTracker(), true));
             //#endif
             lastX = lastY = lastZ = null;
             //#if MC>=11100

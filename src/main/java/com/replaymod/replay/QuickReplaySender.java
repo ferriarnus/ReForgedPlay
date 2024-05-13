@@ -20,7 +20,7 @@ import io.netty.channel.ChannelHandlerContext;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.network.NetworkState;
 import net.minecraft.network.NetworkSide;
-import net.minecraft.network.packet.Packet;
+import net.minecraft.network.Packet;
 import net.minecraft.network.PacketByteBuf;
 
 import javax.annotation.Nullable;

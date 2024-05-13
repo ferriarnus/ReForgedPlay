@@ -18,16 +18,16 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ClickableWidget;
 
 //#if MC>=12000
-import net.minecraft.client.gui.DrawContext;
+//$$ import net.minecraft.client.gui.DrawContext;
 //#endif
 
 //#if MC>=11904
 //#else
-//$$ import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.MinecraftClient;
 //#endif
 
 //#if MC>=11903
-import net.minecraft.client.gui.tooltip.Tooltip;
+//$$ import net.minecraft.client.gui.tooltip.Tooltip;
 //#endif
 
 //#if MC>=11604
@@ -35,6 +35,7 @@ import de.johni0702.minecraft.gui.MinecraftGuiRenderer;
 //#endif
 
 //#if MC>=11600
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 //#else
 //$$ import net.minecraft.client.resource.language.I18n;
@@ -139,8 +140,8 @@ public class GuiHandler extends EventRegistrations {
                     addButton(guiScreen, new InjectedButton(
                             guiScreen,
                             BUTTON_EXIT_REPLAY,
-                            b.getX(),
-                            b.getY(),
+                            b.x,
+                            b.y,
                             b.getWidth(),
                             b.getHeight(),
                             "replaymod.gui.exit",
@@ -170,14 +171,14 @@ public class GuiHandler extends EventRegistrations {
                 }
                 if (remove) {
                     // Moving the button far off-screen is easier to do cross-version than actually removing it
-                    b.setX(-1000);
-                    b.setY(-1000);
+                    b.x = (-1000);
+                    b.y = (-1000);
                 }
             }
             if (achievements != null && stats != null) {
                 moveAllButtonsInRect(buttonList,
-                        achievements.getX(), stats.getX() + stats.getWidth(),
-                        achievements.getY(), Integer.MAX_VALUE,
+                        achievements.x, stats.x + stats.getWidth(),
+                        achievements.y, Integer.MAX_VALUE,
                         -24);
             }
             // In 1.13+ Forge, the Options button shares one row with the Open to LAN button
@@ -214,10 +215,10 @@ public class GuiHandler extends EventRegistrations {
             int moveBy
     ) {
         buttons.stream()
-                .filter(button -> button.getX() <= xEnd && button.getX() + button.getWidth() >= xStart)
-                .filter(button -> button.getY() <= yEnd && button.getY() + button.getHeight() >= yStart)
+                .filter(button -> button.x <= xEnd && button.x + button.getWidth() >= xStart)
+                .filter(button -> button.y <= yEnd && button.y + button.getHeight() >= yStart)
                 // FIXME remap bug: needs the {} to recognize the setter (it also doesn't understand +=)
-                .forEach(button -> { button.setY(button.getY() + moveBy); });
+                .forEach(button -> { button.y = (button.y + moveBy); });
     }
 
     { on(InitScreenCallback.EVENT, (screen, buttons) -> ensureReplayStopped(screen)); }
@@ -283,7 +284,7 @@ public class GuiHandler extends EventRegistrations {
 
             int y = targetButton
                     // if we found some button, put our button at its position (we'll move it out of the way shortly)
-                    .map(it -> it.getY())
+                    .map(it -> it.y)
                     // and if we can't even find that one, then just guess
                     .orElse(screen.height / 4 + 10 + 4 * 24);
 
@@ -319,20 +320,20 @@ public class GuiHandler extends EventRegistrations {
             ) {
                 @Override
                 //#if MC>=12000
-                public void renderButton(DrawContext context, int mouseX, int mouseY, float delta) {
-                    super.renderButton(context, mouseX, mouseY, delta);
+                //$$ public void renderButton(DrawContext context, int mouseX, int mouseY, float delta) {
+                //$$     super.renderButton(context, mouseX, mouseY, delta);
                 //#elseif MC>=11904
                 //$$ public void renderButton(MatrixStack context, int mouseX, int mouseY, float delta) {
                 //$$     super.renderButton(context, mouseX, mouseY, delta);
                 //#else
-                //$$ protected void renderBackground(MatrixStack context, MinecraftClient client, int mouseX, int mouseY) {
-                //$$     super.renderBackground(context, client, mouseX, mouseY);
+                protected void renderBackground(MatrixStack context, MinecraftClient client, int mouseX, int mouseY) {
+                    super.renderBackground(context, client, mouseX, mouseY);
                 //#endif
 
                     MinecraftGuiRenderer renderer = new MinecraftGuiRenderer(context);
                     renderer.bindTexture(GuiReplayButton.ICON);
                     renderer.drawTexturedRect(
-                            this.getX() + 3, this.getY() + 3,
+                            this.x + 3, this.y + 3,
                             0, 0,
                             this.width - 6, this.height - 6,
                             1, 1,
@@ -395,7 +396,7 @@ public class GuiHandler extends EventRegistrations {
                 // or, if someone removed the realms button, we'll alternatively take the multiplayer one
                 .orElse(findButton(buttonList, "menu.multiplayer", 2))
                 // if we found some button, put our button at its position (we'll move it out of the way shortly)
-                .map(it -> it.getY())
+                .map(it -> it.y)
                 // and if we can't even find that one, then just guess
                 .orElse(guiScreen.height / 4 + 10 + 4 * 24);
 
@@ -445,15 +446,15 @@ public class GuiHandler extends EventRegistrations {
                     .flatMap(it -> it.map(Stream::of).orElseGet(Stream::empty))
                     // skip buttons which already have something next to them
                     .filter(it -> buttonList.stream().noneMatch(button ->
-                            button.getX() <= it.getX() + it.getWidth() + 4 + 20
-                                    && button.getY() <= it.getY() + it.getHeight()
-                                    && button.getX() + button.getWidth() >= it.getX() + it.getWidth() + 4
-                                    && button.getY() + button.getHeight() >= it.getY()
+                            button.x <= it.x + it.getWidth() + 4 + 20
+                                    && button.y <= it.y + it.getHeight()
+                                    && button.x + button.getWidth() >= it.x + it.getWidth() + 4
+                                    && button.y + button.getHeight() >= it.y
                     ))
                     // then take the bottom-most and if there's two, the right-most
-                    .max(Comparator.<ClickableWidget>comparingInt(it -> it.getY()).thenComparingInt(it -> it.getX()))
+                    .max(Comparator.<ClickableWidget>comparingInt(it -> it.y).thenComparingInt(it -> it.x))
                     // and place ourselves next to it
-                    .map(it -> new Point(it.getX() + it.getWidth() + 4, it.getY()))
+                    .map(it -> new Point(it.x + it.getWidth() + 4, it.y))
                     // if all fails, just go with TOP_RIGHT
                     .orElse(topRight);
         } else {
@@ -479,12 +480,12 @@ public class GuiHandler extends EventRegistrations {
                     case LEFT_OF_MULTIPLAYER:
                     case LEFT_OF_REALMS:
                     case LEFT_OF_MODS:
-                        return new Point(button.getX() - 4 - 20, button.getY());
+                        return new Point(button.x - 4 - 20, button.y);
                     case RIGHT_OF_MODS:
                     case RIGHT_OF_SINGLEPLAYER:
                     case RIGHT_OF_MULTIPLAYER:
                     case RIGHT_OF_REALMS:
-                        return new Point(button.getX() + button.getWidth() + 4, button.getY());
+                        return new Point(button.x + button.getWidth() + 4, button.y);
                 }
                 throw new RuntimeException();
             }).orElse(topRight);
@@ -497,12 +498,12 @@ public class GuiHandler extends EventRegistrations {
 
         int index = 0;
         for (ClickableWidget other : buttons) {
-            if (other.getY() > button.getY() || other.getY() == button.getY() && other.getX() > button.getX()) {
+            if (other.y > button.y || other.y == button.y && other.x > button.x) {
                 index++;
                 continue;
             }
 
-            if (best == null || other.getY() > best.getY() || other.getY() == best.getY() && other.getX() > best.getX()) {
+            if (best == null || other.y > best.y || other.y == best.y && other.x > best.x) {
                 best = other;
                 bestIndex = index + 1;
             }
@@ -576,12 +577,12 @@ public class GuiHandler extends EventRegistrations {
                     , self -> onClick.accept((InjectedButton) self)
                     //#endif
                     //#if MC>=11600 && MC<11903
-                    //$$ , tooltip != null
-                    //$$         ? (button, matrices, mouseX, mouseY) -> guiScreen.renderTooltip(matrices, net.minecraft.text.Text.translatable(tooltip), mouseX, mouseY)
-                    //$$         : EMPTY
+                    , tooltip != null
+                             ? (button, matrices, mouseX, mouseY) -> guiScreen.renderTooltip(matrices, net.minecraft.text.Text.translatable(tooltip), mouseX, mouseY)
+                             : EMPTY
                     //#endif
                     //#if MC>=11903
-                    , DEFAULT_NARRATION_SUPPLIER
+                    //$$ , DEFAULT_NARRATION_SUPPLIER
                     //#endif
             );
             this.guiScreen = guiScreen;
@@ -593,9 +594,9 @@ public class GuiHandler extends EventRegistrations {
             //#endif
 
             //#if MC>=11903
-            if (tooltip != null) {
-                setTooltip(Tooltip.of(Text.translatable(tooltip)));
-            }
+            //$$ if (tooltip != null) {
+            //$$     setTooltip(Tooltip.of(Text.translatable(tooltip)));
+            //$$ }
             //#endif
         }
 

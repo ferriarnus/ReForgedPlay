@@ -2,6 +2,7 @@ package com.replaymod.render.mixin;
 
 import com.replaymod.render.capturer.CubicOpenGlFrameCapturer;
 import com.replaymod.render.hooks.EntityRendererHandler;
+import net.minecraft.util.math.Vec3f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -9,7 +10,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 //#if MC>=11500
 import net.minecraft.client.util.math.MatrixStack;
-import org.joml.Vector3f;
 //#else
 //$$ import org.lwjgl.opengl.GL11;
 //#endif
@@ -79,7 +79,7 @@ public abstract class Mixin_Omnidirectional_Rotation {
                     break;
             }
             //#if MC>=11500
-            matrixStack.multiply(new org.joml.Quaternionf().fromAxisAngleDeg(new Vector3f(x, y, 0), angle));
+            matrixStack.multiply(new Vec3f(x, y, 0).getDegreesQuaternion(angle));
             //#else
             //$$ GL11.glRotatef(angle, x, y, 0);
             //#endif

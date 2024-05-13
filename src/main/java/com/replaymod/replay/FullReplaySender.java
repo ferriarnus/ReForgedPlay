@@ -27,7 +27,7 @@ import net.minecraft.client.gui.screen.NoticeScreen;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
 import net.minecraft.network.NetworkState;
-import net.minecraft.network.packet.Packet;
+import net.minecraft.network.Packet;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.s2c.play.GameMessageS2CPacket;
 import net.minecraft.network.packet.s2c.play.CustomPayloadS2CPacket;
@@ -64,15 +64,15 @@ import net.minecraft.network.packet.s2c.play.PlayerSpawnS2CPacket;
 //#endif
 
 //#if MC>=11904
-import net.minecraft.network.packet.s2c.play.PositionFlag;
+//$$ import net.minecraft.network.packet.s2c.play.PositionFlag;
 //#endif
 
 //#if MC>=11903
-import net.minecraft.network.packet.s2c.play.ProfilelessChatMessageS2CPacket;
+//$$ import net.minecraft.network.packet.s2c.play.ProfilelessChatMessageS2CPacket;
 //#endif
 
 //#if MC==11901 || MC==11902
-//$$ import net.minecraft.network.packet.s2c.play.MessageHeaderS2CPacket;
+import net.minecraft.network.packet.s2c.play.MessageHeaderS2CPacket;
 //#endif
 
 //#if MC>=11900
@@ -445,9 +445,9 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                                 LightingProvider provider = world.getChunkManager().getLightingProvider();
                                 while (provider.hasUpdates()) {
                                     //#if MC>=12000
-                                    provider.doLightUpdates();
+                                    //$$ provider.doLightUpdates();
                                     //#else
-                                    //$$ provider.doLightUpdates(Integer.MAX_VALUE, true, true);
+                                    provider.doLightUpdates(Integer.MAX_VALUE, true, true);
                                     //#endif
                                 }
                             }
@@ -755,7 +755,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                     , java.util.Optional.empty()
                     //#endif
                     //#if MC>=12000
-                    , packet.portalCooldown()
+                    //$$ , packet.portalCooldown()
                     //#endif
                     //#endif
             );
@@ -814,9 +814,9 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                     respawn.isDebugWorld(),
                     respawn.isFlatWorld(),
                     //#if MC>=11903
-                    (byte) 0
+                    //$$ (byte) 0
                     //#else
-                    //$$ false
+                    false
                     //#endif
                     //#else
                     //$$ respawn.getGeneratorType(),
@@ -826,7 +826,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                     , java.util.Optional.empty()
                     //#endif
                     //#if MC>=12000
-                    , respawn.getPortalCooldown()
+                    //$$ , respawn.getPortalCooldown()
                     //#endif
                     //#endif
             );
@@ -863,13 +863,13 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
 
             //#if MC>=10800
             //#if MC>=11904
-            for (PositionFlag relative : ppl.getFlags()) {
-                if (relative == PositionFlag.X || relative == PositionFlag.Y || relative == PositionFlag.Z) {
+            //$$ for (PositionFlag relative : ppl.getFlags()) {
+            //$$     if (relative == PositionFlag.X || relative == PositionFlag.Y || relative == PositionFlag.Z) {
             //#elseif MC>=11400
-            //$$ for (PlayerPositionLookS2CPacket.Flag relative : ppl.getFlags()) {
-            //$$     if (relative == PlayerPositionLookS2CPacket.Flag.X
-            //$$             || relative == PlayerPositionLookS2CPacket.Flag.Y
-            //$$             || relative == PlayerPositionLookS2CPacket.Flag.Z) {
+            for (PlayerPositionLookS2CPacket.Flag relative : ppl.getFlags()) {
+                if (relative == PlayerPositionLookS2CPacket.Flag.X
+                        || relative == PlayerPositionLookS2CPacket.Flag.Y
+                        || relative == PlayerPositionLookS2CPacket.Flag.Z) {
             //#else
             //#if MC>=10904
             //$$ for (SPacketPlayerPosLook.EnumFlags relative : ppl.getFlags()) {
@@ -938,9 +938,9 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
         }
 
         //#if MC>=11903
-        if (p instanceof GameMessageS2CPacket || p instanceof ChatMessageS2CPacket || p instanceof ProfilelessChatMessageS2CPacket) {
+        //$$ if (p instanceof GameMessageS2CPacket || p instanceof ChatMessageS2CPacket || p instanceof ProfilelessChatMessageS2CPacket) {
         //#elseif MC==11901 || MC==11902
-        //$$ if (p instanceof GameMessageS2CPacket || p instanceof ChatMessageS2CPacket || p instanceof MessageHeaderS2CPacket) {
+        if (p instanceof GameMessageS2CPacket || p instanceof ChatMessageS2CPacket || p instanceof MessageHeaderS2CPacket) {
         //#elseif MC>=11900
         //$$ if (p instanceof GameMessageS2CPacket || p instanceof ChatMessageS2CPacket) {
         //#else
@@ -1229,7 +1229,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             if(p instanceof EntitySpawnS2CPacket) {
                 EntitySpawnS2CPacket pso = (EntitySpawnS2CPacket)p;
                 //#if MC>=11400
-                if (pso.getEntityType() == EntityType.FIREWORK_ROCKET) return null;
+                if (pso.getEntityTypeId() == EntityType.FIREWORK_ROCKET) return null;
                 //#else
                 //$$ int type = pso.getType();
                 //$$ if(type == 76) { // Firework rocket

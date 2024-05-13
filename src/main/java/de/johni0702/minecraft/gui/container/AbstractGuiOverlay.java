@@ -41,7 +41,7 @@ import de.johni0702.minecraft.gui.versions.ScreenExt;
 import de.johni0702.minecraft.gui.versions.callbacks.PreTickCallback;
 import de.johni0702.minecraft.gui.versions.callbacks.RenderHudCallback;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.util.Window;
 import net.minecraft.util.crash.CrashException;
 import net.minecraft.util.crash.CrashReport;
@@ -202,9 +202,9 @@ public abstract class AbstractGuiOverlay<T extends AbstractGuiOverlay<T>> extend
 
         { on(RenderHudCallback.EVENT, this::renderOverlay); }
         //#if MC>=12000
-        private void renderOverlay(DrawContext stack, float partialTicks) {
+        //$$ private void renderOverlay(DrawContext stack, float partialTicks) {
         //#else
-        //$$ private void renderOverlay(MatrixStack stack, float partialTicks) {
+        private void renderOverlay(MatrixStack stack, float partialTicks) {
         //#endif
             updateUserInputGui();
             updateRenderer();

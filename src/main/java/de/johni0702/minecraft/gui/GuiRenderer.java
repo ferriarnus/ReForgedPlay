@@ -27,7 +27,6 @@ package de.johni0702.minecraft.gui;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableColor;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadablePoint;
-import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 //#endif
@@ -37,7 +36,7 @@ public interface GuiRenderer {
     ReadablePoint getOpenGlOffset();
 
     //#if MC>=12000
-    DrawContext getContext();
+    //$$ DrawContext getContext();
     //#endif
 
     MatrixStack getMatrixStack();

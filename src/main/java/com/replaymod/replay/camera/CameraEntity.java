@@ -48,7 +48,7 @@ import net.minecraft.util.math.Box;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.fluid.Fluid;
 //#if MC>=11802
-import net.minecraft.registry.tag.TagKey;
+import net.minecraft.tag.TagKey;
 //#else
 //$$ import net.minecraft.tag.Tag;
 //#endif
@@ -338,9 +338,10 @@ public class CameraEntity
         if (this.client.world != null) {
             // FIXME cannot use Patters because `setWorld` is `protected` in 1.20
             //#if MC>=12000
-            this.setWorld(this.client.world);
+            //$$ this.setWorld(this.client.world);
             //#else
-            //$$ this.world = this.client.world;
+            this.world = this.client.world;
+            this.world = this.client.world;
             //#endif
         }
         super.init();

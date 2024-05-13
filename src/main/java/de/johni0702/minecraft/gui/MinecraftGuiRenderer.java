@@ -31,11 +31,11 @@ import de.johni0702.minecraft.gui.utils.lwjgl.*;
 import de.johni0702.minecraft.gui.versions.MCVer;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
-import org.joml.Matrix4f;
+import net.minecraft.util.math.Matrix4f;
 
 import static com.mojang.blaze3d.systems.RenderSystem.*;
 import static de.johni0702.minecraft.gui.versions.MCVer.getMinecraft;
@@ -48,9 +48,9 @@ public class MinecraftGuiRenderer implements GuiRenderer {
     private final MinecraftClient mc = getMinecraft();
 
     //#if MC>=12000
-    private final DrawContext context;
+    //$$ private final DrawContext context;
     //#else
-    //$$ private final DrawableHelper gui = new DrawableHelper(){};
+    private final DrawableHelper gui = new DrawableHelper(){};
     //#endif
 
     private final MatrixStack matrixStack;
@@ -67,14 +67,14 @@ public class MinecraftGuiRenderer implements GuiRenderer {
     //#endif
 
     //#if MC>=12000
-    public MinecraftGuiRenderer(DrawContext context) {
-        this.context = context;
-        this.matrixStack = context.getMatrices();
-    }
-    //#else
-    //$$ public MinecraftGuiRenderer(MatrixStack matrixStack) {
-    //$$     this.matrixStack = matrixStack;
+    //$$ public MinecraftGuiRenderer(DrawContext context) {
+    //$$     this.context = context;
+    //$$     this.matrixStack = context.getMatrices();
     //$$ }
+    //#else
+    public MinecraftGuiRenderer(MatrixStack matrixStack) {
+        this.matrixStack = matrixStack;
+    }
     //#endif
 
     @Override
@@ -83,10 +83,10 @@ public class MinecraftGuiRenderer implements GuiRenderer {
     }
 
     //#if MC>=12000
-    @Override
-    public DrawContext getContext() {
-        return context;
-    }
+    //$$ @Override
+    //$$ public DrawContext getContext() {
+    //$$     return context;
+    //$$ }
     //#endif
 
     @Override
@@ -148,9 +148,9 @@ public class MinecraftGuiRenderer implements GuiRenderer {
     public void drawTexturedRect(int x, int y, int u, int v, int width, int height, int uWidth, int vHeight, int textureWidth, int textureHeight) {
         color(1, 1, 1);
         //#if MC>=12000
-        drawTexturedRect(x, x + width, y, y + height, u / (float) textureWidth, (u + uWidth) / (float) textureWidth, v / (float) textureHeight, (v + vHeight) / (float) textureHeight);
+        //$$ drawTexturedRect(x, x + width, y, y + height, u / (float) textureWidth, (u + uWidth) / (float) textureWidth, v / (float) textureHeight, (v + vHeight) / (float) textureHeight);
         //#elseif MC>=11600
-        //$$ DrawableHelper.drawTexture(matrixStack, x, y, width, height, u, v, uWidth, vHeight, textureWidth, textureHeight);
+        DrawableHelper.drawTexture(matrixStack, x, y, width, height, u, v, uWidth, vHeight, textureWidth, textureHeight);
         //#else
         //#if MC>=11400
         //$$ DrawableHelper.blit(x, y, width, height, u, v, uWidth, vHeight, textureWidth, textureHeight);
@@ -161,29 +161,29 @@ public class MinecraftGuiRenderer implements GuiRenderer {
     }
 
     //#if MC>=12000
-    private void drawTexturedRect(int x1, int x2, int y1, int y2, float u1, float u2, float v1, float v2) {
-        RenderSystem.setShader(GameRenderer::getPositionTexProgram);
-        Matrix4f matrix = matrixStack.peek().getPositionMatrix();
-        BufferBuilder bufferBuilder = Tessellator.getInstance().getBuffer();
-        bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);
-        bufferBuilder.vertex(matrix, x1, y1, 0).texture(u1, v1).next();
-        bufferBuilder.vertex(matrix, x1, y2, 0).texture(u1, v2).next();
-        bufferBuilder.vertex(matrix, x2, y2, 0).texture(u2, v2).next();
-        bufferBuilder.vertex(matrix, x2, y1, 0).texture(u2, v1).next();
-        BufferRenderer.drawWithGlobalProgram(bufferBuilder.end());
-    }
+    //$$ private void drawTexturedRect(int x1, int x2, int y1, int y2, float u1, float u2, float v1, float v2) {
+    //$$     RenderSystem.setShader(GameRenderer::getPositionTexProgram);
+    //$$     Matrix4f matrix = matrixStack.peek().getPositionMatrix();
+    //$$     BufferBuilder bufferBuilder = Tessellator.getInstance().getBuffer();
+    //$$     bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);
+    //$$     bufferBuilder.vertex(matrix, x1, y1, 0).texture(u1, v1).next();
+    //$$     bufferBuilder.vertex(matrix, x1, y2, 0).texture(u1, v2).next();
+    //$$     bufferBuilder.vertex(matrix, x2, y2, 0).texture(u2, v2).next();
+    //$$     bufferBuilder.vertex(matrix, x2, y1, 0).texture(u2, v1).next();
+    //$$     BufferRenderer.drawWithGlobalProgram(bufferBuilder.end());
+    //$$ }
     //#endif
 
     @Override
     public void drawRect(int x, int y, int width, int height, int color) {
         //#if MC>=12000
-        context.fill(x, y, x + width, y + height, color);
+        //$$ context.fill(x, y, x + width, y + height, color);
         //#else
-        //$$ DrawableHelper.fill(
+        DrawableHelper.fill(
                 //#if MC>=11600
-                //$$ matrixStack,
+                matrixStack,
                 //#endif
-        //$$         x, y, x + width, y + height, color);
+                x, y, x + width, y + height, color);
         //#endif
         color(1, 1, 1);
         enableBlend();
@@ -202,12 +202,12 @@ public class MinecraftGuiRenderer implements GuiRenderer {
     @Override
     public void drawRect(int x, int y, int width, int height, ReadableColor tl, ReadableColor tr, ReadableColor bl, ReadableColor br) {
         //#if MC<11904
-        //$$ disableTexture();
+        disableTexture();
         //#endif
         enableBlend();
         blendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, 1, 0);
         //#if MC>=11700
-        setShader(GameRenderer::getPositionColorProgram);
+        setShader(GameRenderer::getPositionColorShader);
         //#else
         //$$ disableAlphaTest();
         //$$ shadeModel(GL_SMOOTH);
@@ -219,7 +219,7 @@ public class MinecraftGuiRenderer implements GuiRenderer {
         //$$ enableAlphaTest();
         //#endif
         //#if MC<11904
-        //$$ enableTexture();
+        enableTexture();
         //#endif
     }
 
@@ -248,21 +248,21 @@ public class MinecraftGuiRenderer implements GuiRenderer {
         TextRenderer fontRenderer = MCVer.getFontRenderer();
         try {
             //#if MC>=12000
-            return context.drawText(fontRenderer, text, x, y, color, shadow);
+            //$$ return context.drawText(fontRenderer, text, x, y, color, shadow);
             //#else
-            //$$ if (shadow) {
-            //$$     return fontRenderer.drawWithShadow(
+            if (shadow) {
+                return fontRenderer.drawWithShadow(
                         //#if MC>=11600
-                        //$$ matrixStack,
+                        matrixStack,
                         //#endif
-            //$$             text, x, y, color);
-            //$$ } else {
-            //$$     return fontRenderer.draw(
+                        text, x, y, color);
+            } else {
+                return fontRenderer.draw(
                         //#if MC>=11600
-                        //$$ matrixStack,
+                        matrixStack,
                         //#endif
-            //$$             text, x, y, color);
-            //$$ }
+                        text, x, y, color);
+            }
             //#endif
         } finally {
             color(1, 1, 1);

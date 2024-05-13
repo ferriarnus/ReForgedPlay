@@ -26,6 +26,7 @@ import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.Vec3f;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.lwjgl.opengl.GL11;
@@ -248,7 +249,7 @@ public class PathPreviewRenderer extends EventRegistrations {
         emitLine(buffer, Vector3f.sub(pos1, view, null), Vector3f.sub(pos2, view, null), color);
 
         //#if MC>=11700
-        RenderSystem.setShader(GameRenderer::getRenderTypeLinesProgram);
+        RenderSystem.setShader(GameRenderer::getRenderTypeLinesShader);
         RenderSystem.disableCull();
         //#endif
         com.mojang.blaze3d.systems.RenderSystem.lineWidth(3);
@@ -292,12 +293,12 @@ public class PathPreviewRenderer extends EventRegistrations {
 
         Vector3f t = Vector3f.sub(pos, view, null);
         com.mojang.blaze3d.systems.RenderSystem.getModelViewStack().translate(t.x, t.y, t.z);
-        com.mojang.blaze3d.systems.RenderSystem.getModelViewStack().multiply(com.replaymod.core.versions.MCVer.quaternion(-mc.getEntityRenderDispatcher().camera.getYaw(), new org.joml.Vector3f(0, 1, 0)));
-        com.mojang.blaze3d.systems.RenderSystem.getModelViewStack().multiply(com.replaymod.core.versions.MCVer.quaternion(mc.getEntityRenderDispatcher().camera.getPitch(), new org.joml.Vector3f(1, 0, 0)));
+        com.mojang.blaze3d.systems.RenderSystem.getModelViewStack().multiply(com.replaymod.core.versions.MCVer.quaternion(-mc.getEntityRenderDispatcher().camera.getYaw(), new Vec3f(0, 1, 0)));
+        com.mojang.blaze3d.systems.RenderSystem.getModelViewStack().multiply(com.replaymod.core.versions.MCVer.quaternion(mc.getEntityRenderDispatcher().camera.getPitch(), new Vec3f(1, 0, 0)));
 
         //#if MC>=11700
         RenderSystem.applyModelViewMatrix();
-        RenderSystem.setShader(GameRenderer::getPositionTexProgram);
+        RenderSystem.setShader(GameRenderer::getPositionTexShader);
         //#endif
         tessellator.draw();
 
@@ -312,9 +313,9 @@ public class PathPreviewRenderer extends EventRegistrations {
 
         Vector3f t = Vector3f.sub(pos, view, null);
         com.mojang.blaze3d.systems.RenderSystem.getModelViewStack().translate(t.x, t.y, t.z);
-        com.mojang.blaze3d.systems.RenderSystem.getModelViewStack().multiply(com.replaymod.core.versions.MCVer.quaternion(-rot.x, new org.joml.Vector3f(0, 1, 0)));
-        com.mojang.blaze3d.systems.RenderSystem.getModelViewStack().multiply(com.replaymod.core.versions.MCVer.quaternion(rot.y, new org.joml.Vector3f(1, 0, 0)));
-        com.mojang.blaze3d.systems.RenderSystem.getModelViewStack().multiply(com.replaymod.core.versions.MCVer.quaternion(rot.z, new org.joml.Vector3f(0, 0, 1)));
+        com.mojang.blaze3d.systems.RenderSystem.getModelViewStack().multiply(com.replaymod.core.versions.MCVer.quaternion(-rot.x, new Vec3f(0, 1, 0)));
+        com.mojang.blaze3d.systems.RenderSystem.getModelViewStack().multiply(com.replaymod.core.versions.MCVer.quaternion(rot.y, new Vec3f(1, 0, 0)));
+        com.mojang.blaze3d.systems.RenderSystem.getModelViewStack().multiply(com.replaymod.core.versions.MCVer.quaternion(rot.z, new Vec3f(0, 0, 1)));
 
         //draw the position line
         Tessellator tessellator = Tessellator.getInstance();
@@ -325,7 +326,7 @@ public class PathPreviewRenderer extends EventRegistrations {
 
         //#if MC>=11700
         RenderSystem.applyModelViewMatrix();
-        RenderSystem.setShader(GameRenderer::getRenderTypeLinesProgram);
+        RenderSystem.setShader(GameRenderer::getRenderTypeLinesShader);
         //#else
         //$$ GL11.glDisable(GL11.GL_TEXTURE_2D);
         //#endif
@@ -382,7 +383,7 @@ public class PathPreviewRenderer extends EventRegistrations {
 
         //#if MC>=11700
         RenderSystem.applyModelViewMatrix();
-        RenderSystem.setShader(GameRenderer::getPositionTexColorProgram);
+        RenderSystem.setShader(GameRenderer::getPositionColorTexShader);
         //#endif
         tessellator.draw();
 

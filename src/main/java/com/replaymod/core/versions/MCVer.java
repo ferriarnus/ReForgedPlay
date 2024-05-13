@@ -13,10 +13,12 @@ import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.network.NetworkState;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
+import net.minecraft.util.math.Matrix4f;
+import net.minecraft.util.math.Quaternion;
 import net.minecraft.util.math.Vec3d;
 
 //#if MC>=11700
-import org.joml.Matrix4f;
+//$$ import org.joml.Matrix4f;
 //#endif
 
 //#if MC>=11604
@@ -55,6 +57,7 @@ import net.minecraft.text.TranslatableTextContent;
 
 //#if MC>=11400
 import net.minecraft.client.util.InputUtil;
+import net.minecraft.util.math.Vec3f;
 import org.lwjgl.glfw.GLFW;
 //#else
 //$$ import net.minecraft.client.resources.ResourcePackRepository;
@@ -177,10 +180,10 @@ public class MCVer {
     //#endif
     setServerResourcePack(File file) {
         //#if MC>=11400
-        return getMinecraft().getServerResourcePackProvider().loadServerPack(
+        return getMinecraft().getResourcePackProvider().loadServerPack(
                 file
                 //#if MC>=11600
-                , ResourcePackSource.SERVER
+                , ResourcePackSource.PACK_SOURCE_SERVER
                 //#endif
         );
         //#else
@@ -414,19 +417,19 @@ public class MCVer {
     }
 
     //#if MC>=11700
-    public static org.joml.Quaternionf quaternion(float angle, org.joml.Vector3f axis) {
+    public static Quaternion quaternion(float angle, Vec3f axis) {
         //#if MC>=11903
-        return new org.joml.Quaternionf().fromAxisAngleDeg(axis.x, axis.y, axis.z, angle);
+        //$$ return new org.joml.Quaternionf().fromAxisAngleDeg(axis.x, axis.y, axis.z, angle);
         //#else
-        //$$ return new net.minecraft.util.math.Quaternion(axis, angle, true);
+        return new net.minecraft.util.math.Quaternion(axis, angle, true);
         //#endif
     }
 
     public static Matrix4f ortho(float left, float right, float top, float bottom, float zNear, float zFar) {
         //#if MC>=11903
-        return new Matrix4f().ortho(left, right, bottom, top, zNear, zFar);
+        //$$ return new Matrix4f().ortho(left, right, bottom, top, zNear, zFar);
         //#else
-        //$$ return Matrix4f.projectionMatrix(left, right, top, bottom, zNear, zFar);
+        return Matrix4f.projectionMatrix(left, right, top, bottom, zNear, zFar);
         //#endif
     }
     //#endif

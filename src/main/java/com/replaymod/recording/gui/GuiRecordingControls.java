@@ -94,7 +94,7 @@ public class GuiRecordingControls extends EventRegistrations {
                 MCVer.findButton(buttonList, "menu.returnToMenu", 1)
                         .map(Optional::of)
                         .orElse(MCVer.findButton(buttonList, "menu.disconnect", 1))
-                        .<Function<Integer, Integer>>map(it -> (height) -> it.getY())
+                        .<Function<Integer, Integer>>map(it -> (height) -> it.y)
                         .orElse((height) -> height / 4 + 120 - 16);
         VanillaGuiScreen vanillaGui = VanillaGuiScreen.wrap(guiScreen);
         vanillaGui.setLayout(new CustomLayout<de.johni0702.minecraft.gui.container.GuiScreen>(vanillaGui.getLayout()) {

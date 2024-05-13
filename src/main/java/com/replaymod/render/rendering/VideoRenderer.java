@@ -43,13 +43,12 @@ import net.minecraftforge.fml.loading.LoadingModList;
 import org.lwjgl.glfw.GLFW;
 
 //#if MC>=12000
-import com.mojang.blaze3d.systems.VertexSorter;
-import net.minecraft.client.gui.DrawContext;
+//$$ import com.mojang.blaze3d.systems.VertexSorter;
+//$$ import net.minecraft.client.gui.DrawContext;
 //#endif
 
 //#if MC>=11700
 import net.minecraft.client.render.DiffuseLighting;
-import org.joml.Matrix4f;
 //#endif
 
 //#if MC>=11600
@@ -345,7 +344,7 @@ public class VideoRenderer implements RenderInfo {
         for (SoundCategory category : SoundCategory.values()) {
             if (category != SoundCategory.MASTER) {
                 originalSoundLevels.put(category, mc.options.getSoundVolume(category));
-                mc.options.getSoundVolumeOption(category).setValue((double) 0);
+                mc.options.setSoundVolume(category, 0);
             }
         }
 
@@ -405,7 +404,7 @@ public class VideoRenderer implements RenderInfo {
             //#endif
         }
         for (Map.Entry<SoundCategory, Float> entry : originalSoundLevels.entrySet()) {
-            mc.options.getSoundVolumeOption(entry.getKey()).setValue((double) entry.getValue());
+            mc.options.setSoundVolume(entry.getKey(), entry.getValue());
         }
         mc.setScreen(null);
         forceChunkLoadingHook.uninstall();
@@ -418,7 +417,7 @@ public class VideoRenderer implements RenderInfo {
             }
         }
 
-        mc.getSoundManager().play(PositionedSoundInstance.master(SoundEvent.of(SOUND_RENDER_SUCCESS), 1));
+        mc.getSoundManager().play(PositionedSoundInstance.master(new SoundEvent(SOUND_RENDER_SUCCESS), 1));
 
         try {
             if (!hasFailed() && ffmpegWriter != null) {
@@ -494,7 +493,7 @@ public class VideoRenderer implements RenderInfo {
                     //#endif
             );
             //#if MC<11904
-            //$$ RenderSystem.enableTexture();
+            RenderSystem.enableTexture();
             //#endif
             guiWindow.beginWrite();
 
@@ -503,7 +502,7 @@ public class VideoRenderer implements RenderInfo {
             //#if MC>=11700
             RenderSystem.setProjectionMatrix(com.replaymod.core.versions.MCVer.ortho(0, (float) (window.getFramebufferWidth() / window.getScaleFactor()), 0, (float) (window.getFramebufferHeight() / window.getScaleFactor()), 1000, 3000)
                     //#if MC>=12000
-                    , VertexSorter.BY_Z
+                    //$$ , VertexSorter.BY_Z
                     //#endif
             );
             MatrixStack matrixStack = RenderSystem.getModelViewStack();
@@ -558,9 +557,9 @@ public class VideoRenderer implements RenderInfo {
                     mc.currentScreen = gui.toMinecraft();
                     mc.getOverlay().render(
                             //#if MC>=12000
-                            new DrawContext(mc, mc.getBufferBuilders().getEntityVertexConsumers()),
+                            //$$ new DrawContext(mc, mc.getBufferBuilders().getEntityVertexConsumers()),
                             //#elseif MC>=11600
-                            //$$ new MatrixStack(),
+                            new MatrixStack(),
                             //#endif
                             mouseX, mouseY, 0);
                 } finally {
@@ -570,9 +569,9 @@ public class VideoRenderer implements RenderInfo {
                 gui.toMinecraft().tick();
                 gui.toMinecraft().render(
                         //#if MC>=12000
-                        new DrawContext(mc, mc.getBufferBuilders().getEntityVertexConsumers()),
+                        //$$ new DrawContext(mc, mc.getBufferBuilders().getEntityVertexConsumers()),
                         //#elseif MC>=11600
-                        //$$ new MatrixStack(),
+                        new MatrixStack(),
                         //#endif
                         mouseX, mouseY, 0);
             }

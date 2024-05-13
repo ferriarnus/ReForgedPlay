@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 @Mixin(ClientLoginNetworkHandler.class)
 public interface ClientLoginNetworkHandlerAccessor {
     //#if MC>=11903
-    @Accessor
-    ServerInfo getServerInfo();
+    //$$ @Accessor
+    //$$ ServerInfo getServerInfo();
     //#endif
 }

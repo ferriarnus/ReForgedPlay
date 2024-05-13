@@ -38,7 +38,7 @@ import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadablePoint;
 import de.johni0702.minecraft.gui.versions.MCVer;
 import de.johni0702.minecraft.gui.versions.MCVer.Keyboard;
-import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.crash.CrashException;
 import net.minecraft.util.crash.CrashReport;
@@ -105,9 +105,9 @@ public abstract class AbstractGuiScreen<T extends AbstractGuiScreen<T>> extends 
                     //#if MC>=12002
                     //$$ wrapped.renderBackground(renderer.getContext(), renderInfo.mouseX, renderInfo.mouseY, renderInfo.partialTick);
                     //#elseif MC>=12000
-                    wrapped.renderBackground(renderer.getContext());
+                    //$$ wrapped.renderBackground(renderer.getContext());
                     //#elseif MC>=11600
-                    //$$ wrapped.renderBackground(renderer.getMatrixStack());
+                    wrapped.renderBackground(renderer.getMatrixStack());
                     //#else
                     //$$ wrapped.renderBackground();
                     //#endif
@@ -118,11 +118,11 @@ public abstract class AbstractGuiScreen<T extends AbstractGuiScreen<T>> extends 
                     break;
                 case DIRT:
                     //#if MC>=12000
-                    wrapped.renderBackgroundTexture(renderer.getContext());
+                    //$$ wrapped.renderBackgroundTexture(renderer.getContext());
                     //#elseif MC>=11904
                     //$$ wrapped.renderBackgroundTexture(renderer.getMatrixStack());
                     //#elseif MC>=11600
-                    //$$ wrapped.renderBackgroundTexture(0);
+                    wrapped.renderBackgroundTexture(0);
                     //#else
                     //$$ wrapped.renderDirtBackground(0);
                     //#endif
@@ -230,9 +230,9 @@ public abstract class AbstractGuiScreen<T extends AbstractGuiScreen<T>> extends 
 
         @Override
         //#if MC>=12000
-        public void render(DrawContext stack, int mouseX, int mouseY, float partialTicks) {
+        //$$ public void render(DrawContext stack, int mouseX, int mouseY, float partialTicks) {
         //#elseif MC>=11600
-        //$$ public void render(MatrixStack stack, int mouseX, int mouseY, float partialTicks) {
+        public void render(MatrixStack stack, int mouseX, int mouseY, float partialTicks) {
         //#else
         //#if MC>=11400
         //$$ public void render(int mouseX, int mouseY, float partialTicks) {

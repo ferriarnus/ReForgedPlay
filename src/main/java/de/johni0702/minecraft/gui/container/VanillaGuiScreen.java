@@ -10,7 +10,7 @@ import de.johni0702.minecraft.gui.utils.lwjgl.Point;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadablePoint;
 import de.johni0702.minecraft.gui.versions.MCVer;
 import de.johni0702.minecraft.gui.versions.callbacks.*;
-import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.util.math.MatrixStack;
 
 import java.util.Collections;
 import java.util.Map;
@@ -171,10 +171,10 @@ public class VanillaGuiScreen extends GuiScreen implements Draggable, Typeable, 
 
         { on(PostRenderScreenCallback.EVENT, this::onGuiRender); }
         //#if MC>=12000
-        private void onGuiRender(DrawContext stack, float partialTicks) {
-            stack.draw(); // flush any buffered changes before we draw using legacy primitives
+        //$$ private void onGuiRender(DrawContext stack, float partialTicks) {
+        //$$     stack.draw(); // flush any buffered changes before we draw using legacy primitives
         //#else
-        //$$ private void onGuiRender(MatrixStack stack, float partialTicks) {
+        private void onGuiRender(MatrixStack stack, float partialTicks) {
         //#endif
             Point mousePos = MouseUtils.getMousePos();
             getSuperMcGui().render(

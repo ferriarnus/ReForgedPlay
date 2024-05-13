@@ -1,7 +1,8 @@
 package de.johni0702.minecraft.gui.versions.callbacks;
 
 import de.johni0702.minecraft.gui.utils.Event;
-import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.client.util.math.MatrixStack;
 //#else
 //$$ import net.minecraft.client.util.math.MatrixStack;
 //#endif
@@ -16,8 +17,8 @@ public interface RenderHudCallback {
     );
 
     //#if MC>=12000
-    void renderHud(DrawContext context, float partialTicks);
+    //$$ void renderHud(DrawContext context, float partialTicks);
     //#else
-    //$$ void renderHud(MatrixStack stack, float partialTicks);
+    void renderHud(MatrixStack stack, float partialTicks);
     //#endif
 }

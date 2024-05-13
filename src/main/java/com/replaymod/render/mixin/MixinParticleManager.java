@@ -6,6 +6,7 @@ import com.replaymod.render.blend.BlendState;
 import com.replaymod.render.hooks.EntityRendererHandler;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleManager;
+import net.minecraft.util.math.Quaternion;
 import net.minecraft.util.math.Vec3d;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -18,7 +19,6 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 
 //#if MC>=11500
 import net.minecraft.client.render.VertexConsumer;
-import org.joml.Quaternionf;
 //#else
 //$$ import com.replaymod.render.blend.mixin.ParticleAccessor;
 //$$ import net.minecraft.client.render.BufferBuilder;
@@ -33,14 +33,14 @@ import net.minecraft.client.render.Camera;
 @Mixin(ParticleManager.class)
 public abstract class MixinParticleManager {
     //#if MC>=11500
-    @Redirect(method = "renderParticles", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/particle/Particle;buildGeometry(Lnet/minecraft/client/render/VertexConsumer;Lnet/minecraft/client/render/Camera;F)V"))
+    @Redirect(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/particle/Particle;buildGeometry(Lnet/minecraft/client/render/VertexConsumer;Lnet/minecraft/client/render/Camera;F)V"))
     private void buildOrientedGeometry(Particle particle, VertexConsumer vertexConsumer, Camera camera, float partialTicks) {
         EntityRendererHandler handler = ((EntityRendererHandler.IEntityRenderer) MCVer.getMinecraft().gameRenderer).replayModRender_getHandler();
         if (handler == null || !handler.omnidirectional) {
             buildGeometry(particle, vertexConsumer, camera, partialTicks);
         } else {
-            Quaternionf rotation = camera.getRotation();
-            Quaternionf org = new org.joml.Quaternionf(rotation);
+            Quaternion rotation = camera.getRotation();
+            Quaternion org = new Quaternion(rotation);
             try {
                 Vec3d from = new Vec3d(0, 0, 1);
                 Vec3d to = MCVer.getPosition(particle, partialTicks).subtract(camera.getPos()).normalize();
@@ -50,7 +50,7 @@ public abstract class MixinParticleManager {
 
                 buildGeometry(particle, vertexConsumer, camera, partialTicks);
             } finally {
-                rotation.set(org.w, org.x, org.y, org.z);
+                rotation.set(org.getW(), org.getX(), org.getY(), org.getZ());
             }
         }
     }

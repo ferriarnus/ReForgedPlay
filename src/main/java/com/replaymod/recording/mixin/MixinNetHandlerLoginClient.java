@@ -5,7 +5,7 @@ import com.replaymod.recording.ReplayModRecording;
 import com.replaymod.recording.handler.RecordingEventHandler.RecordingEventSender;
 import net.minecraft.client.network.ClientLoginNetworkHandler;
 import net.minecraft.network.ClientConnection;
-import net.minecraft.network.packet.Packet;
+import net.minecraft.network.Packet;
 import net.minecraft.network.packet.s2c.login.LoginQueryRequestS2CPacket;
 import net.minecraft.network.packet.s2c.login.LoginSuccessS2CPacket;
 import org.spongepowered.asm.mixin.Final;

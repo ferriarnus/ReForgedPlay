@@ -17,7 +17,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(Keyboard.class)
 public class MixinKeyboardListener {
     @Inject(
-            method = "lambda$keyPress$5", remap = false,
+            method = "lambda$keyPress$4", remap = false,
             //#if MC>=11700
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screen/Screen;keyPressed(III)Z"),
             //#else
@@ -27,7 +27,7 @@ public class MixinKeyboardListener {
     )
     //#if MC>=11700
     //#if MC>=11903
-    static
+    //$$ static
     //#endif
     private void keyPressed(int i, boolean[] bls, Screen screen, int keyCode, int scanCode, int modifiers, CallbackInfo ci) {
     //#else
@@ -40,7 +40,7 @@ public class MixinKeyboardListener {
     }
 
     @Inject(
-            method = "lambda$keyPress$5", remap = false,
+            method = "lambda$keyPress$4", remap = false,
             //#if MC>=11700
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screen/Screen;keyReleased(III)Z"),
             //#else
@@ -50,7 +50,7 @@ public class MixinKeyboardListener {
     )
     //#if MC>=11700
     //#if MC>=11903
-    static
+    //$$ static
     //#endif
     private void keyReleased(int i, boolean[] bls, Screen screen, int keyCode, int scanCode, int modifiers, CallbackInfo ci) {
     //#else
@@ -64,13 +64,13 @@ public class MixinKeyboardListener {
 
     @Inject(method = "method_1458", at = @At("HEAD"), cancellable = true)
     @Group(min = 1, max = 1, name = "replaymod-jgui-charTyped-int")
-    private static void charTyped(Element element, int keyChar, int modifiers, CallbackInfo ci) {
+    private void charTyped(Element element, int keyChar, int modifiers, CallbackInfo ci) {
         if (KeyboardCallback.EVENT.invoker().charTyped((char) keyChar, modifiers)) {
             ci.cancel();
         }
     }
 
-    @Inject(method = "lambda$charTyped$6", at = @At("HEAD"), cancellable = true, remap = false)
+    @Inject(method = "lambda$charTyped$5", at = @At("HEAD"), cancellable = true, remap = false)
     @Group(min = 1, max = 1, name = "replaymod-jgui-charTyped-int")
     private static void charTypedOptifine(Screen guieventlistener, int keyChar, int modifiers, CallbackInfo ci) {
         if (KeyboardCallback.EVENT.invoker().charTyped((char) keyChar, modifiers)) {
@@ -80,13 +80,13 @@ public class MixinKeyboardListener {
 
    @Inject(method = "method_1473", at = @At("HEAD"), cancellable = true)
    @Group(min = 1, max = 1, name = "replaymod-jgui-charTyped-char")
-   private static void charTyped(Element element, char keyChar, int modifiers, CallbackInfo ci) {
+   private void charTyped(Element element, char keyChar, int modifiers, CallbackInfo ci) {
        if (KeyboardCallback.EVENT.invoker().charTyped(keyChar, modifiers)) {
            ci.cancel();
        }
    }
 
-    @Inject(method = "lambda$charTyped$7", at = @At("HEAD"), cancellable = true, remap = false)
+    @Inject(method = "lambda$charTyped$6", at = @At("HEAD"), cancellable = true, remap = false)
     @Group(min = 1, max = 1, name = "replaymod-jgui-charTyped-char")
     private static void charTypedOptifine(Screen guieventlistener, char keyChar, int modifiers, CallbackInfo ci) {
         if (KeyboardCallback.EVENT.invoker().charTyped(keyChar, modifiers)) {

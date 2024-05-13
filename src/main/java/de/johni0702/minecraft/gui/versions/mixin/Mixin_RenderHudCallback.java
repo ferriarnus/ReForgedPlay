@@ -2,7 +2,6 @@
 package de.johni0702.minecraft.gui.versions.mixin;
 
 import de.johni0702.minecraft.gui.versions.callbacks.RenderHudCallback;
-import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.hud.InGameHud;
 import net.minecraftforge.client.gui.overlay.ForgeGui;
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
@@ -12,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 //#else
-//$$ import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.client.util.math.MatrixStack;
 //#endif
 
 @Mixin(VanillaGuiOverlay.class)
@@ -26,7 +25,7 @@ public class Mixin_RenderHudCallback {
             //#endif
     )
     //#if MC>=12000
-    private static void renderOverlay(ForgeGui gui, DrawContext stack, float partialTicks, int screenWidth, int screenHeight, CallbackInfo ci) {
+    private static void renderOverlay(ForgeGui gui, MatrixStack stack, float partialTicks, int screenWidth, int screenHeight, CallbackInfo ci) {
     //#elseif MC>=11600
     //$$ private void renderOverlay(MatrixStack stack, float partialTicks, CallbackInfo ci) {
     //#else

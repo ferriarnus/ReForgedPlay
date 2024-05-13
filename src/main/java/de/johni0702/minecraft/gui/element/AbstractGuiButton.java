@@ -58,9 +58,9 @@ public abstract class AbstractGuiButton<T extends AbstractGuiButton<T>> extends 
     //#endif
 
     //#if MC>=11903
-    private SoundEvent sound = SoundEvents.UI_BUTTON_CLICK.value();
+    //$$ private SoundEvent sound = SoundEvents.UI_BUTTON_CLICK.value();
     //#elseif MC>=10904
-    //$$ private SoundEvent sound = SoundEvents.UI_BUTTON_CLICK;
+    private SoundEvent sound = SoundEvents.UI_BUTTON_CLICK;
     //#endif
 
     private int labelColor = 0xe0e0e0;
@@ -153,9 +153,9 @@ public abstract class AbstractGuiButton<T extends AbstractGuiButton<T>> extends 
     public static void playClickSound(MinecraftClient mc) {
     //#if MC>=10904
         //#if MC>=11903
-        playClickSound(mc, SoundEvents.UI_BUTTON_CLICK.value());
+        //$$ playClickSound(mc, SoundEvents.UI_BUTTON_CLICK.value());
         //#else
-        //$$ playClickSound(mc, SoundEvents.UI_BUTTON_CLICK);
+        playClickSound(mc, SoundEvents.UI_BUTTON_CLICK);
         //#endif
     }
     public static void playClickSound(MinecraftClient mc, SoundEvent sound) {

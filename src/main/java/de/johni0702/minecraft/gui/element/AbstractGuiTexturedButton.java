@@ -41,9 +41,9 @@ public abstract class AbstractGuiTexturedButton<T extends AbstractGuiTexturedBut
     private Identifier texture;
 
     //#if MC>=11903
-    private SoundEvent sound = SoundEvents.UI_BUTTON_CLICK.value();
+    //$$ private SoundEvent sound = SoundEvents.UI_BUTTON_CLICK.value();
     //#elseif MC>=10904
-    //$$ private SoundEvent sound = SoundEvents.UI_BUTTON_CLICK;
+    private SoundEvent sound = SoundEvents.UI_BUTTON_CLICK;
     //#endif
 
     private ReadableDimension textureSize = new ReadableDimension() {
