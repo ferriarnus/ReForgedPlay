@@ -13,7 +13,7 @@ import java.util.function.Supplier;
 
 @Mixin(HandshakeHandler.class)
 public abstract class Mixin_HandshakeHandler {
-    @Shadow
+    @Shadow(remap = false)
     private static HandshakeHandler getHandshake(Supplier<NetworkEvent.Context> contextSupplier) {
         return null;
     }
