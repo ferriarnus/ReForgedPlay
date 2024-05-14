@@ -20,7 +20,7 @@ import net.minecraft.network.ClientConnection;
 import org.apache.logging.log4j.Logger;
 
 //#if MC>=11900
-import com.replaymod.recording.mixin.ClientLoginNetworkHandlerAccessor;
+//$$ import com.replaymod.recording.mixin.ClientLoginNetworkHandlerAccessor;
 //#endif
 
 //#if MC>=11600

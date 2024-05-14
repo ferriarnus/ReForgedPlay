@@ -15,12 +15,12 @@ import org.apache.logging.log4j.Logger;
 //#endif
 
 //#if MC>=11900
-import java.net.MalformedURLException;
-import java.net.URL;
+//$$ import java.net.MalformedURLException;
+//$$ import java.net.URL;
 //#endif
 
 //#if MC>=11400
-import net.minecraft.text.TranslatableTextContent;
+import net.minecraft.text.TranslatableText;
 //#else
 //$$ import net.minecraft.client.gui.GuiYesNoCallback;
 //$$ import net.minecraft.client.resources.I18n;
@@ -190,7 +190,7 @@ public class ResourcePackRecorder {
                         mc.setScreen(null);
                     }
                 //#if MC>=11400
-                , net.minecraft.text.Text.translatable("multiplayer.texturePrompt.line1"), net.minecraft.text.Text.translatable("multiplayer.texturePrompt.line2"))));
+                , new TranslatableText("multiplayer.texturePrompt.line1"), new TranslatableText("multiplayer.texturePrompt.line2"))));
                 //#else
                 //$$ }, I18n.format("multiplayer.texturePrompt.line1"), I18n.format("multiplayer.texturePrompt.line2"), 0)));
                 //#endif
@@ -221,18 +221,18 @@ public class ResourcePackRecorder {
         ClientBuiltinResourcePackProvider packFinder = mc.getResourcePackProvider();
         ((IDownloadingPackFinder) packFinder).setRequestCallback(file -> recordResourcePack(file.toPath(), requestId));
         //#if MC>=11900
-        try {
-            URL theUrl = new URL(url);
-            String protocol = theUrl.getProtocol();
-            if (!"http".equals(protocol) && !"https".equals(protocol)) {
-                throw new MalformedURLException("Unsupported protocol.");
-            }
-            return packFinder.download(theUrl, hash, true);
-        } catch (MalformedURLException e) {
-            return CompletableFuture.failedFuture(e);
-        }
+        //$$ try {
+        //$$     URL theUrl = new URL(url);
+        //$$     String protocol = theUrl.getProtocol();
+        //$$     if (!"http".equals(protocol) && !"https".equals(protocol)) {
+        //$$         throw new MalformedURLException("Unsupported protocol.");
+        //$$     }
+        //$$     return packFinder.download(theUrl, hash, true);
+        //$$ } catch (MalformedURLException e) {
+        //$$     return CompletableFuture.failedFuture(e);
+        //$$ }
         //#elseif MC>=11700
-        //$$ return packFinder.download(url, hash, true);
+        return packFinder.download(url, hash, true);
         //#else
         //$$ return packFinder.download(url, hash);
         //#endif

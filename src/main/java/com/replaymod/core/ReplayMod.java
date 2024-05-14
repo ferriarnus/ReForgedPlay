@@ -19,10 +19,10 @@ import com.replaymod.replaystudio.util.I18n;
 import com.replaymod.simplepathing.ReplayModSimplePathing;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.resource.DirectoryResourcePack;
-import net.minecraft.text.LiteralTextContent;
+import net.minecraft.text.LiteralText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableTextContent;
+import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 
@@ -38,7 +38,7 @@ import java.util.concurrent.TimeoutException;
 
 //#if MC>=11900
 //#else
-//$$ import net.minecraft.client.option.Option;
+import net.minecraft.client.option.Option;
 //#endif
 
 public class ReplayMod implements Module, Scheduler {
@@ -189,9 +189,9 @@ public class ReplayMod implements Module, Scheduler {
         // 1.7.10 crashes when render distance > 16
         // Post 1.19 this has become non-trivial to do, install Sodium+Bobby or OptiFine if you need it
         //#if MC>=10800 && MC<11900
-        //$$ if (!MCVer.hasOptifine()) {
-        //$$     Option.RENDER_DISTANCE.setMax(64f);
-        //$$ }
+        if (!MCVer.hasOptifine()) {
+            Option.RENDER_DISTANCE.setMax(64f);
+        }
         //#endif
 
         runPostStartup(() -> files.initialScan(this));
@@ -259,10 +259,10 @@ public class ReplayMod implements Module, Scheduler {
             //$$ Style coloredGold = new Style().setColor(Formatting.GOLD);
             //$$ Style alert = new Style().setColor(warning ? Formatting.RED : Formatting.DARK_GREEN);
             //#endif
-            Text text = net.minecraft.text.Text.literal("[").setStyle(coloredDarkGray)
-                    .append(net.minecraft.text.Text.translatable("replaymod.title").setStyle(coloredGold))
-                    .append(net.minecraft.text.Text.literal("] "))
-                    .append(net.minecraft.text.Text.translatable(message, args).setStyle(alert));
+            Text text = new LiteralText("[").setStyle(coloredDarkGray)
+                    .append(new TranslatableText("replaymod.title").setStyle(coloredGold))
+                    .append(new LiteralText("] "))
+                    .append(new TranslatableText(message, args).setStyle(alert));
             //#else
             //$$ ChatStyle coloredDarkGray = new ChatStyle().setColor(EnumChatFormatting.DARK_GRAY);
             //$$ ChatStyle coloredGold = new ChatStyle().setColor(EnumChatFormatting.GOLD);

@@ -128,7 +128,7 @@ public class FFmpegWriter implements FrameConsumer<BitmapFrame> {
             CrashReportSection exportDetails = report.addElement("Export details");
             exportDetails.add("Export command", settings::getExportCommand);
             exportDetails.add("Export args", commandArgs::toString);
-            MCVer.getMinecraft().setCrashReportSupplier(report);
+            MCVer.getMinecraft().setCrashReportSupplier(() -> report);
         } finally {
             channels.values().forEach(it -> ByteBufferPool.release(it.getByteBuffer()));
         }

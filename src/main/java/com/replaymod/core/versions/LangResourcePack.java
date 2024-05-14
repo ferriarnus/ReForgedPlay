@@ -214,14 +214,14 @@ public class LangResourcePack extends AbstractFileResourcePack {
             //#endif
             String path,
             //#if MC>=11900
-            Predicate<Identifier> filter
+            //$$ Predicate<Identifier> filter
             //#else
-            //$$ int maxDepth,
-            //$$ Predicate<String> pathFilter
+            int maxDepth,
+            Predicate<String> pathFilter
             //#endif
     ) {
         //#if MC<11900
-        //$$ Predicate<Identifier> filter = id -> pathFilter.test(id.getPath());
+        Predicate<Identifier> filter = id -> pathFilter.test(id.getPath());
         //#endif
 
         List<Identifier> result = new ArrayList<>();

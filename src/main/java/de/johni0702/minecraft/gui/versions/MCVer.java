@@ -9,6 +9,7 @@ import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.util.Window;
+import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.crash.CrashReportSection;
@@ -249,9 +250,9 @@ public class MCVer {
 
     public static Text literalText(String str) {
         //#if MC>=11900
-        return Text.literal(str);
+        //$$ return Text.literal(str);
         //#else
-        //$$ return new LiteralText(str);
+        return new LiteralText(str);
         //#endif
     }
 

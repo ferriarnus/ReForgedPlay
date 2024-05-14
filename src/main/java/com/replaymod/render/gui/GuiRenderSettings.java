@@ -49,7 +49,7 @@ import static com.replaymod.core.utils.Utils.error;
 import static com.replaymod.render.ReplayModRender.LOGGER;
 
 //#if MC>=11400
-import net.minecraft.text.TranslatableTextContent;
+import net.minecraft.text.TranslatableText;
 //#endif
 
 public class GuiRenderSettings extends AbstractGuiPopup<GuiRenderSettings> {

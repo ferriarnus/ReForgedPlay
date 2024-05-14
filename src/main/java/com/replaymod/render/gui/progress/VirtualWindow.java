@@ -128,7 +128,7 @@ public class VirtualWindow implements Closeable {
 
     private void applyScaleFactor() {
         //#if MC>=11400
-        window.setScaleFactor(window.calculateScaleFactor(mc.options.getGuiScale().getValue(), mc.forcesUnicodeFont()));
+        window.setScaleFactor(window.calculateScaleFactor(mc.options.guiScale, mc.forcesUnicodeFont()));
         //#else
         //$$ // Nothing to do, ScaledResolution re-computes the scale factor every time it is created
         //#endif

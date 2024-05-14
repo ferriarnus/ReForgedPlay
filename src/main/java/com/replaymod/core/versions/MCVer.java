@@ -43,7 +43,7 @@ import java.util.concurrent.CompletableFuture;
 
 //#if MC>=11600
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableTextContent;
+import net.minecraft.text.TranslatableText;
 //#else
 //$$ import net.minecraft.client.resource.language.I18n;
 //#endif
@@ -266,7 +266,7 @@ public class MCVer {
     //#if MC>=11400
     public static Optional<ClickableWidget> findButton(Iterable<? extends Element> buttonList, @SuppressWarnings("unused") String text, @SuppressWarnings("unused") int id) {
         //#if MC>=11600
-        final Text message = net.minecraft.text.Text.translatable(text);
+        final Text message = new TranslatableText(text);
         //#else
         //$$ final String message = I18n.translate(text);
         //#endif
@@ -286,7 +286,7 @@ public class MCVer {
             }
             //#if MC>=11600
             // Fuzzy match (copy does not include children)
-            if (b.getMessage() != null && b.getMessage().copyContentOnly().equals(message)) {
+            if (b.getMessage() != null && b.getMessage().shallowCopy().equals(message)) {
                 return Optional.of(b);
             }
             //#endif

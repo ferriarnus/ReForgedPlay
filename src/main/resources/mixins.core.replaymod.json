@@ -22,7 +22,7 @@
     "KeyBindingAccessor",
     "MinecraftAccessor",
     //#if MC>=11900
-    "SimpleOptionAccessor",
+    //"SimpleOptionAccessor",
     //#endif
     "TimerAccessor"
   ],

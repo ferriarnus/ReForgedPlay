@@ -11,7 +11,7 @@
     "world_border.Mixin_UseReplayTime_ForTexture",
     "Mixin_FixNPCSkinCaching",
     //#if MC>=11900
-    "Mixin_AllowExpiredPlayerKeys",
+    //"Mixin_AllowExpiredPlayerKeys",
     //#endif
     //#if MC>=11800
     "Mixin_FixEntityNotTracking",

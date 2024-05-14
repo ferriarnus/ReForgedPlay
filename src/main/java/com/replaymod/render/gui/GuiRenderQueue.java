@@ -54,7 +54,7 @@ import java.util.stream.Collectors;
 import static com.replaymod.render.ReplayModRender.LOGGER;
 
 //#if MC>=11400
-import net.minecraft.text.TranslatableTextContent;
+import net.minecraft.text.TranslatableText;
 //#else
 //$$ import com.replaymod.replaystudio.util.I18n;
 //#endif

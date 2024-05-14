@@ -66,17 +66,17 @@ public class Mixin_FixPartialUpdates {
 
     @Redirect(method = "onEntity", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;getX()D"))
     private double getTrackedX(Entity instance) {
-        return instance.hasVehicle() ? instance.getX() : instance.getTrackedPosition().withDelta(0,0,0).getX();
+        return instance.hasVehicle() ? instance.getX() : instance.getTrackedPosition().add(0,0,0).getX();
     }
 
     @Redirect(method = "onEntity", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;getY()D"))
     private double getTrackedY(Entity instance) {
-        return instance.hasVehicle() ? instance.getY() : instance.getTrackedPosition().withDelta(0,0,0).getY();
+        return instance.hasVehicle() ? instance.getY() : instance.getTrackedPosition().add(0,0,0).getY();
     }
 
     @Redirect(method = "onEntity", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;getZ()D"))
     private double getTrackedZ(Entity instance) {
-        return instance.hasVehicle() ? instance.getZ() : instance.getTrackedPosition().withDelta(0,0,0).getZ();
+        return instance.hasVehicle() ? instance.getZ() : instance.getTrackedPosition().add(0,0,0).getZ();
     }
     //#endif
 

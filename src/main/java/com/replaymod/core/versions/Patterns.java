@@ -25,7 +25,9 @@ import net.minecraft.network.packet.s2c.play.CustomPayloadS2CPacket;
 import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.sound.SoundCategory;
+import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
 import net.minecraft.util.crash.CrashException;
 import net.minecraft.util.crash.CrashReport;
 import net.minecraft.util.crash.CrashReportSection;
@@ -605,9 +607,9 @@ class Patterns {
     @Pattern
     private static void setCrashReport(MinecraftClient mc, CrashReport report) {
         //#if MC>=11900
-        mc.setCrashReportSupplier(report);
+        //$$ mc.setCrashReportSupplier(report);
         //#elseif MC>=11800
-        //$$ mc.setCrashReportSupplier(() -> report);
+        mc.setCrashReportSupplier(() -> report);
         //#else
         //$$ mc.setCrashReport(report);
         //#endif
@@ -625,7 +627,7 @@ class Patterns {
     @Pattern
     private static Vec3d getTrackedPosition(Entity entity) {
         //#if MC>=11604
-        return entity.getTrackedPosition().withDelta(0, 0, 0);
+        return entity.getTrackedPosition().add(0, 0, 0);
         //#else
         //$$ return com.replaymod.core.versions.MCVer.getTrackedPosition(entity);
         //#endif
@@ -634,18 +636,18 @@ class Patterns {
     @Pattern
     private static Text newTextLiteral(String str) {
         //#if MC>=11900
-        return net.minecraft.text.Text.literal(str);
+        //$$ return net.minecraft.text.Text.literal(str);
         //#else
-        //$$ return new LiteralText(str);
+        return new LiteralText(str);
         //#endif
     }
 
     @Pattern
     private static Text newTextTranslatable(String key, Object...args) {
         //#if MC>=11900
-        return net.minecraft.text.Text.translatable(key, args);
+        //$$ return net.minecraft.text.Text.translatable(key, args);
         //#else
-        //$$ return new TranslatableText(key, args);
+        return new TranslatableText(key, args);
         //#endif
     }
 
@@ -653,9 +655,9 @@ class Patterns {
     @Pattern
     private static Vec3d getTrackedPos(Entity entity) {
         //#if MC>=11900
-        return entity.getTrackedPosition().withDelta(0, 0, 0);
+        //$$ return entity.getTrackedPosition().withDelta(0, 0, 0);
         //#else
-        //$$ return entity.getTrackedPosition();
+        return entity.getTrackedPosition();
         //#endif
     }
     //#else
@@ -665,9 +667,9 @@ class Patterns {
     @Pattern
     private static void setGamma(GameOptions options, double value) {
         //#if MC>=11900
-        ((com.replaymod.core.mixin.SimpleOptionAccessor<Double>) (Object) options.getGamma()).setRawValue(value);
+        //$$ ((com.replaymod.core.mixin.SimpleOptionAccessor<Double>) (Object) options.getGamma()).setRawValue(value);
         //#elseif MC>=11400
-        //$$ options.gamma = value;
+        options.gamma = value;
         //#else
         //$$ options.gammaSetting = (float) value;
         //#endif
@@ -676,45 +678,45 @@ class Patterns {
     @Pattern
     private static double getGamma(GameOptions options) {
         //#if MC>=11900
-        return options.getGamma().getValue();
+        //$$ return options.getGamma().getValue();
         //#else
-        //$$ return options.gamma;
+        return options.gamma;
         //#endif
     }
 
     @Pattern
     private static int getViewDistance(GameOptions options) {
         //#if MC>=11900
-        return options.getViewDistance().getValue();
+        //$$ return options.getViewDistance().getValue();
         //#else
-        //$$ return options.viewDistance;
+        return options.viewDistance;
         //#endif
     }
 
     @Pattern
     private static double getFov(GameOptions options) {
         //#if MC>=11900
-        return options.getFov().getValue();
+        //$$ return options.getFov().getValue();
         //#else
-        //$$ return options.fov;
+        return options.fov;
         //#endif
     }
 
     @Pattern
     private static int getGuiScale(GameOptions options) {
         //#if MC>=11900
-        return options.getGuiScale().getValue();
+        //$$ return options.getGuiScale().getValue();
         //#else
-        //$$ return options.guiScale;
+        return options.guiScale;
         //#endif
     }
 
     @Pattern
     private static Resource getResource(ResourceManager manager, Identifier id) throws IOException {
         //#if MC>=11900
-        return manager.getResourceOrThrow(id);
+        //$$ return manager.getResourceOrThrow(id);
         //#else
-        //$$ return manager.getResource(id);
+        return manager.getResource(id);
         //#endif
     }
 

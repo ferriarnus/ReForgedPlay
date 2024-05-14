@@ -51,6 +51,7 @@ import net.minecraft.network.packet.s2c.play.PlayerRespawnS2CPacket;
 import net.minecraft.network.packet.s2c.play.SignEditorOpenS2CPacket;
 import net.minecraft.network.packet.s2c.play.StatisticsS2CPacket;
 import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
 import net.minecraft.util.math.Vec3d;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -72,14 +73,14 @@ import net.minecraft.network.packet.s2c.play.PlayerSpawnS2CPacket;
 //#endif
 
 //#if MC==11901 || MC==11902
-import net.minecraft.network.packet.s2c.play.MessageHeaderS2CPacket;
+//$$ import net.minecraft.network.packet.s2c.play.MessageHeaderS2CPacket;
 //#endif
 
 //#if MC>=11900
-import net.minecraft.network.packet.s2c.play.ChatMessageS2CPacket;
+//$$ import net.minecraft.network.packet.s2c.play.ChatMessageS2CPacket;
 //#else
-//$$ import net.minecraft.network.packet.s2c.play.MobSpawnS2CPacket;
-//$$ import net.minecraft.network.packet.s2c.play.PaintingSpawnS2CPacket;
+import net.minecraft.network.packet.s2c.play.MobSpawnS2CPacket;
+import net.minecraft.network.packet.s2c.play.PaintingSpawnS2CPacket;
 //#endif
 
 //#if MC>=11600
@@ -504,8 +505,8 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                 || packet instanceof PlayerSpawnS2CPacket
                 //#endif
                 //#if MC<11900
-                //$$ || packet instanceof MobSpawnS2CPacket
-                //$$ || packet instanceof PaintingSpawnS2CPacket
+                || packet instanceof MobSpawnS2CPacket
+                || packet instanceof PaintingSpawnS2CPacket
                 //#endif
                 //#if MC<11600
                 //$$ || packet instanceof EntitySpawnGlobalS2CPacket
@@ -599,8 +600,8 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                         mc.setScreen(new NoticeScreen(
                                 //#if MC>=11400
                                 () -> mc.setScreen(null),
-                                net.minecraft.text.Text.translatable("replaymod.error.unknownrestriction1"),
-                                net.minecraft.text.Text.translatable("replaymod.error.unknownrestriction2", unknown)
+                                new TranslatableText("replaymod.error.unknownrestriction1"),
+                                new TranslatableText("replaymod.error.unknownrestriction2", unknown)
                                 //#else
                                 //$$ I18n.format("replaymod.error.unknownrestriction1"),
                                 //$$ I18n.format("replaymod.error.unknownrestriction2", unknown)
@@ -752,7 +753,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                     , packet.flatWorld()
                     //#endif
                     //#if MC>=11900
-                    , java.util.Optional.empty()
+                    //$$ , java.util.Optional.empty()
                     //#endif
                     //#if MC>=12000
                     //$$ , packet.portalCooldown()
@@ -823,7 +824,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                     //$$ GameMode.SPECTATOR
                     //#endif
                     //#if MC>=11900
-                    , java.util.Optional.empty()
+                    //$$ , java.util.Optional.empty()
                     //#endif
                     //#if MC>=12000
                     //$$ , respawn.getPortalCooldown()
@@ -940,11 +941,11 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
         //#if MC>=11903
         //$$ if (p instanceof GameMessageS2CPacket || p instanceof ChatMessageS2CPacket || p instanceof ProfilelessChatMessageS2CPacket) {
         //#elseif MC==11901 || MC==11902
-        if (p instanceof GameMessageS2CPacket || p instanceof ChatMessageS2CPacket || p instanceof MessageHeaderS2CPacket) {
+        //$$ if (p instanceof GameMessageS2CPacket || p instanceof ChatMessageS2CPacket || p instanceof MessageHeaderS2CPacket) {
         //#elseif MC>=11900
         //$$ if (p instanceof GameMessageS2CPacket || p instanceof ChatMessageS2CPacket) {
         //#else
-        //$$ if (p instanceof GameMessageS2CPacket) {
+        if (p instanceof GameMessageS2CPacket) {
         //#endif
             if (!ReplayModReplay.instance.getCore().getSettingsRegistry().get(Setting.SHOW_CHAT)) {
                 return null;

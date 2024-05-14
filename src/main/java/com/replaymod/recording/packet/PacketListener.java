@@ -34,7 +34,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.network.NetworkState;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.s2c.play.EntitySpawnS2CPacket;
-import net.minecraft.text.LiteralTextContent;
+import net.minecraft.text.LiteralText;
 import net.minecraft.util.crash.CrashReport;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -540,7 +540,7 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
             if (msg instanceof CustomPayloadS2CPacket) {
                 CustomPayloadS2CPacket packet = (CustomPayloadS2CPacket) msg;
                 if (Restrictions.PLUGIN_CHANNEL.equals(packet.getChannel())) {
-                    save(new DisconnectS2CPacket(net.minecraft.text.Text.literal("Please update to view this replay.")));
+                    save(new DisconnectS2CPacket(new LiteralText("Please update to view this replay.")));
                 }
             }
 

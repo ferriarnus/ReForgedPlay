@@ -49,7 +49,7 @@ public class ScreenshotWriter implements FrameConsumer<BitmapFrame> {
         } catch (OutOfMemoryError e) {
             e.printStackTrace();
             CrashReport report = CrashReport.create(e, "Exporting frame");
-            MCVer.getMinecraft().setCrashReportSupplier(report);
+            MCVer.getMinecraft().setCrashReportSupplier(() -> report);
         } catch (Throwable t) {
             CrashReport report = CrashReport.create(t, "Exporting frame");
 

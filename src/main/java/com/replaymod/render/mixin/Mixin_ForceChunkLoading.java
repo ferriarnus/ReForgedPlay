@@ -49,13 +49,13 @@ public abstract class Mixin_ForceChunkLoading implements IForceChunkLoading {
 
     @Shadow @Final private ObjectArrayList<ChunkInfoAccessor> chunkInfos;
 
-    @Shadow private boolean shouldUpdate;
+    @Shadow private boolean field_34810;
 
     @Shadow @Final private BlockingQueue<ChunkBuilder.BuiltChunk> builtChunks;
 
-    @Shadow private Future<?> fullUpdateFuture;
+    @Shadow private Future<?> field_34808;
 
-    @Shadow @Final private AtomicBoolean updateFinished;
+    @Shadow @Final private AtomicBoolean field_34809;
 
     @Shadow protected abstract void applyFrustum(Frustum par1);
 
@@ -77,9 +77,9 @@ public abstract class Mixin_ForceChunkLoading implements IForceChunkLoading {
             setupTerrain(camera, this.frustum, this.capturedFrustum != null, this.client.player.isSpectator());
 
             // Wait for async processing to be complete
-            if (this.fullUpdateFuture != null) {
+            if (this.field_34808 != null) {
                 try {
-                    this.fullUpdateFuture.get(5, TimeUnit.SECONDS);
+                    this.field_34808.get(5, TimeUnit.SECONDS);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                     return;
@@ -92,7 +92,7 @@ public abstract class Mixin_ForceChunkLoading implements IForceChunkLoading {
 
             // If that async processing did change the chunk graph, we need to re-apply the frustum (otherwise this is
             // only done in the next setupTerrain call, which not happen this frame)
-            if (this.updateFinished.compareAndSet(true, false)) {
+            if (this.field_34809.compareAndSet(true, false)) {
                 this.applyFrustum((new Frustum(frustum)).method_38557(8)); // call based on the one in setupTerrain
             }
 
@@ -111,9 +111,9 @@ public abstract class Mixin_ForceChunkLoading implements IForceChunkLoading {
             }
 
             // Upload all chunks
-            this.shouldUpdate |= ((ForceChunkLoadingHook.IBlockOnChunkRebuilds) this.chunkBuilder).uploadEverythingBlocking();
+            this.field_34810 |= ((ForceChunkLoadingHook.IBlockOnChunkRebuilds) this.chunkBuilder).uploadEverythingBlocking();
 
             // Repeat until no more updates are needed
-        } while (this.shouldUpdate || !this.builtChunks.isEmpty());
+        } while (this.field_34810 || !this.builtChunks.isEmpty());
     }
 }

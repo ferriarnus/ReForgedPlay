@@ -52,7 +52,7 @@ public class Program {
             if(shader == 0)
                 throw new Exception("glCreateShaderObjectARB failed");
 
-            Resource resource = MCVer.getMinecraft().getResourceManager().getResourceOrThrow(resourceLocation);
+            Resource resource = MCVer.getMinecraft().getResourceManager().getResource(resourceLocation);
             try (InputStream is = resource.getInputStream()) {
                 glShaderSourceARB(shader, IOUtils.toString(is));
             }

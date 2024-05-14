@@ -48,6 +48,7 @@ import net.minecraft.text.Text;
 
 //#if MC>=11400
 import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.text.TranslatableText;
 import net.minecraftforge.fml.loading.FMLLoader;
 import net.minecraftforge.fml.loading.moddiscovery.ModFileInfo;
 //#endif
@@ -85,11 +86,11 @@ public class GuiHandler extends EventRegistrations {
             mod.getReplayHandler().getReplaySender().setReplaySpeed(0);
 
             //#if MC>=11600
-            final Text BUTTON_OPTIONS = net.minecraft.text.Text.translatable("menu.options");
-            final Text BUTTON_EXIT_SERVER = net.minecraft.text.Text.translatable("menu.disconnect");
-            final Text BUTTON_ADVANCEMENTS = net.minecraft.text.Text.translatable("gui.advancements");
-            final Text BUTTON_STATS = net.minecraft.text.Text.translatable("gui.stats");
-            final Text BUTTON_OPEN_TO_LAN = net.minecraft.text.Text.translatable("menu.shareToLan");
+            final Text BUTTON_OPTIONS = new TranslatableText("menu.options");
+            final Text BUTTON_EXIT_SERVER = new TranslatableText("menu.disconnect");
+            final Text BUTTON_ADVANCEMENTS = new TranslatableText("gui.advancements");
+            final Text BUTTON_STATS = new TranslatableText("gui.stats");
+            final Text BUTTON_OPEN_TO_LAN = new TranslatableText("menu.shareToLan");
             //#else
             //#if MC>=11400
             //$$ final String BUTTON_OPTIONS = I18n.translate("menu.options");
@@ -569,7 +570,7 @@ public class GuiHandler extends EventRegistrations {
                     width,
                     height,
                     //#if MC>=11600
-                    net.minecraft.text.Text.translatable(buttonText)
+                    new TranslatableText(buttonText)
                     //#else
                     //$$ I18n.translate(buttonText)
                     //#endif
@@ -578,7 +579,7 @@ public class GuiHandler extends EventRegistrations {
                     //#endif
                     //#if MC>=11600 && MC<11903
                     , tooltip != null
-                             ? (button, matrices, mouseX, mouseY) -> guiScreen.renderTooltip(matrices, net.minecraft.text.Text.translatable(tooltip), mouseX, mouseY)
+                             ? (button, matrices, mouseX, mouseY) -> guiScreen.renderTooltip(matrices, new TranslatableText(tooltip), mouseX, mouseY)
                              : EMPTY
                     //#endif
                     //#if MC>=11903

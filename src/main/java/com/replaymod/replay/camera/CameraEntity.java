@@ -428,7 +428,7 @@ public class CameraEntity
     //#endif
 
     @Override
-    public boolean canHit() {
+    public boolean canHit(Entity entity, double padding) {
         return false; // We are a camera, we cannot collide
     }
 
@@ -583,9 +583,9 @@ public class CameraEntity
     //#if MC>=11400
     @Override
     //#if MC>=11900
-    public void onEquipStack(EquipmentSlot slot, ItemStack stack, ItemStack itemStack) {
+    //$$ public void onEquipStack(EquipmentSlot slot, ItemStack stack, ItemStack itemStack) {
     //#else
-    //$$ protected void onEquipStack(ItemStack itemStack_1) {
+    protected void onEquipStack(ItemStack itemStack_1) {
     //#endif
         // Suppress equip sounds
     }

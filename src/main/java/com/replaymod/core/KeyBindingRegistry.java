@@ -22,9 +22,11 @@ import com.replaymod.core.versions.LangResourcePack;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.util.Identifier;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.ClientRegistry;
+import net.minecraftforge.client.settings.KeyBindingMap;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 
 import static com.replaymod.core.ReplayMod.MOD_ID;
 //#else
@@ -42,7 +44,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-@Mod.EventBusSubscriber(modid = MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
 public class KeyBindingRegistry extends EventRegistrations {
     private static final String CATEGORY = "replaymod.title";
     //#if FABRIC>=1 && MC<11600
@@ -223,9 +225,9 @@ public class KeyBindingRegistry extends EventRegistrations {
     }
 
     @SubscribeEvent
-    public static void registerKeybinds(RegisterKeyMappingsEvent event) {
+    public static void registerKeybinds(FMLClientSetupEvent event) {
         for (KeyBinding binding: keybinds) {
-            event.register(binding);
+            ClientRegistry.registerKeyBinding(binding);
         }
     }
 }

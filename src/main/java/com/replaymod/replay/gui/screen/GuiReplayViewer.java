@@ -69,7 +69,7 @@ import static com.replaymod.replay.ReplayModReplay.LOGGER;
 import static de.johni0702.minecraft.gui.versions.MCVer.getFontRenderer;
 
 //#if MC>=11400
-import net.minecraft.text.TranslatableTextContent;
+import net.minecraft.text.TranslatableText;
 //#else
 //$$ import net.minecraft.client.resources.I18n;
 //#endif
@@ -167,8 +167,8 @@ public class GuiReplayViewer extends GuiScreen {
                     getMinecraft().setScreen(new NoticeScreen(
                             //#if MC>=11400
                             GuiReplayViewer.this::display,
-                            net.minecraft.text.Text.translatable("replaymod.gui.viewer.delete.failed1"),
-                            net.minecraft.text.Text.translatable("replaymod.gui.viewer.delete.failed2")
+                            new TranslatableText("replaymod.gui.viewer.delete.failed1"),
+                            new TranslatableText("replaymod.gui.viewer.delete.failed2")
                             //#else
                             //$$ I18n.format("replaymod.gui.viewer.delete.failed1"),
                             //$$ I18n.format("replaymod.gui.viewer.delete.failed2")
