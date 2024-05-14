@@ -30,7 +30,7 @@ configurations {
 
 processResources {
     inputs.property "version", project.version
-    archivesBaseName = "reforgedplaymod"
+    archivesBaseName = "reforgedplaymod-${project.minecraft_version}"
     filesMatching("META-INF/mods.toml") {
         expand "version": project.version
     }
