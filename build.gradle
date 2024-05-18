@@ -1,5 +1,5 @@
 plugins {
-    id 'dev.architectury.loom' version '1.4-SNAPSHOT'
+    id 'dev.architectury.loom' version '1.6-SNAPSHOT'
     id 'maven-publish'
     id "com.github.johnrengelman.shadow" version "8.1.1"
 }
@@ -25,6 +25,11 @@ loom {
                 "mixins.render.replaymod.json",
                 "mixins.replay.replaymod.json"
         ]
+    }
+    loom {
+        mixin {
+            useLegacyMixinAp = false
+        }
     }
     runs {
         it.configureEach {
