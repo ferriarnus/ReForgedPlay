@@ -25,6 +25,9 @@ loom {
                 "mixins.replay.replaymod.json"
         ]
     }
+    mixin {
+        useLegacyMixinAp = false
+    }
     runs {
         it.configureEach {
             vmArgs("-Xmx8G", "-XX:+UseZGC")
