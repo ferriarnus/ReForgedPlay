@@ -19,7 +19,6 @@ loom {
                 "mixins.core.replaymod.json",
                 "mixins.extras.playeroverview.replaymod.json",
                 "mixins.jgui.json",
-                "mixins.nonmmlauncher.replaymod.json",
                 "mixins.recording.replaymod.json",
                 "mixins.render.blend.replaymod.json",
                 "mixins.render.replaymod.json",
