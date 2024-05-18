@@ -61,6 +61,5 @@
     "Mixin_ConnectionType"
   ],
   "compatibilityLevel": "JAVA_8",
-  "minVersion": "0.6.11",
-  "refmap": "mixins.replaymod.refmap.json"
+  "minVersion": "0.6.11"
 }
