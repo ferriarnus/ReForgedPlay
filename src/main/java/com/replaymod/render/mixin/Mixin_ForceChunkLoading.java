@@ -93,7 +93,7 @@ public abstract class Mixin_ForceChunkLoading implements IForceChunkLoading {
             // If that async processing did change the chunk graph, we need to re-apply the frustum (otherwise this is
             // only done in the next setupTerrain call, which not happen this frame)
             if (this.updateFinished.compareAndSet(true, false)) {
-                this.applyFrustum((new Frustum(frustum)).method_38557(8)); // call based on the one in setupTerrain
+                this.applyFrustum((new Frustum(frustum)).coverBoxAroundSetPosition(8)); // call based on the one in setupTerrain
             }
 
             // Schedule all chunks which need rebuilding (we schedule even important rebuilds because we wait for
