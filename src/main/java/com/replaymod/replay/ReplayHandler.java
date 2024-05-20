@@ -65,6 +65,7 @@ import net.minecraft.network.PacketBundler;
 
 //#if MC>=11700
 import net.minecraft.client.render.DiffuseLighting;
+import net.minecraftforge.network.NetworkHooks;
 import org.joml.Matrix4f;
 //#endif
 
@@ -333,6 +334,8 @@ public class ReplayHandler {
         //#endif
         channel.pipeline().addLast("packet_handler", networkManager);
         channel.pipeline().fireChannelActive();
+
+        NetworkHooks.registerClientLoginChannel(networkManager);
 
         // MC usually transitions from handshake to login via the packets it sends.
         // We don't send any packets (there is no server to receive them), so we need to switch manually.
