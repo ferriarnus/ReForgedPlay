@@ -78,14 +78,6 @@ public class MixinKeyboardListener {
         }
    }
 
-   @Inject(method = "method_1473", at = @At("HEAD"), cancellable = true)
-   @Group(min = 1, max = 1, name = "replaymod-jgui-charTyped-char")
-   private void charTyped(Element element, char keyChar, int modifiers, CallbackInfo ci) {
-       if (KeyboardCallback.EVENT.invoker().charTyped(keyChar, modifiers)) {
-           ci.cancel();
-       }
-   }
-
     @Inject(method = "lambda$charTyped$6", at = @At("HEAD"), cancellable = true, remap = false)
     @Group(min = 1, max = 1, name = "replaymod-jgui-charTyped-char")
     private static void charTypedOptifine(Screen guieventlistener, char keyChar, int modifiers, CallbackInfo ci) {
