@@ -1,5 +1,5 @@
 plugins {
-    id 'dev.architectury.loom' version '1.4-SNAPSHOT'
+    id 'dev.architectury.loom' version '1.6-SNAPSHOT'
     id 'maven-publish'
     id "com.github.johnrengelman.shadow" version "8.1.1"
 }
@@ -7,14 +7,17 @@ plugins {
 version = project.mod_version
 group = project.maven_group
 
-sourceCompatibility = JavaVersion.VERSION_17
-targetCompatibility = JavaVersion.VERSION_17
+sourceCompatibility = JavaVersion.VERSION_21
+targetCompatibility = JavaVersion.VERSION_21
 
 loom {
     runs {
         it.configureEach {
             vmArgs("-Xmx8G", "-XX:+UseZGC")
         }
+    }
+    mixin {
+        useLegacyMixinAp = false
     }
 
     silentMojangMappingsLicense()
@@ -31,7 +34,7 @@ configurations {
 processResources {
     inputs.property "version", project.version
     archivesBaseName = "reforgedplaymod-${project.minecraft_version}"
-    filesMatching("META-INF/mods.toml") {
+    filesMatching("META-INF/neoforge.mods.toml") {
         expand "version": project.version
     }
 }
@@ -68,7 +71,7 @@ dependencies {
 
     mappings loom.layered() {
         it.mappings("net.fabricmc:yarn:${project.yarn_mappings}:v2")
-        it.mappings file("mappings/yarnpatch.tiny")
+        it.mappings("dev.architectury:yarn-mappings-patch-neoforge:1.20.5+build.3")
     }
     // To change the versions see the gradle.properties file
     minecraft "com.mojang:minecraft:${project.minecraft_version}"

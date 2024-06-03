@@ -28,7 +28,7 @@ public class Restrictions {
     public String handle(CustomPayloadS2CPacket packet) {
         //#if MC>=12002
         PacketByteBuf buffer = new PacketByteBuf(Unpooled.buffer());
-        packet.write(buffer);
+        CustomPayloadS2CPacket.CONFIGURATION_CODEC.encode(buffer, packet);
         //#elseif MC>=10800
         //$$ PacketByteBuf buffer = packet.getData();
         //#else

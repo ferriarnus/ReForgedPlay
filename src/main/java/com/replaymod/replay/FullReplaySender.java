@@ -472,11 +472,11 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
         ByteBuf bb = Unpooled.wrappedBuffer(bytes);
         PacketByteBuf pb = new PacketByteBuf(bb);
 
-        int i = pb.readVarInt();
+        //int i = pb.readVarInt(); //TODO add integer infront?
 
         NetworkState state = asMc(registry.getState());
         //#if MC>=12002
-        Packet p = state.getHandler(NetworkSide.CLIENTBOUND).createPacket(i, pb, ctx);
+        Packet p = (Packet) state.codec().decode(pb);
         //#elseif MC>=11700
         //$$ Packet p = state.getPacketHandler(NetworkSide.CLIENTBOUND, i, pb);
         //#else
@@ -582,7 +582,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
 
         if (p instanceof CustomPayloadS2CPacket) {
             CustomPayloadS2CPacket packet = (CustomPayloadS2CPacket) p;
-            if (Restrictions.PLUGIN_CHANNEL.equals(packet.payload().id())) {
+            if (Restrictions.PLUGIN_CHANNEL.equals(packet.payload().getId().id())) {
                 final String unknown = replayHandler.getRestrictions().handle(packet);
                 if (unknown == null) {
                     return null;
@@ -611,7 +611,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             }
         }
         if (p instanceof DisconnectS2CPacket) {
-            Text reason = ((DisconnectS2CPacket) p).getReason();
+            Text reason = ((DisconnectS2CPacket) p).reason();
             String message = reason.getString();
             if ("Please update to view this replay.".equals(message)) {
                 // This version of the mod supports replay restrictions so we are allowed
@@ -625,7 +625,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
         if (p instanceof CustomPayloadS2CPacket) {
             CustomPayloadS2CPacket packet = (CustomPayloadS2CPacket) p;
             //#if MC>=11400
-            Identifier channelName = packet.payload().id();
+            Identifier channelName = packet.payload().getId().id();
             //#else
             //$$ String channelName = packet.getChannelName();
             //#endif
@@ -699,7 +699,8 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                     packet.reducedDebugInfo(),
                     packet.showDeathScreen(),
                     packet.doLimitedCrafting(),
-                    withSpectatorMode(packet.commonPlayerSpawnInfo())
+                    withSpectatorMode(packet.commonPlayerSpawnInfo()),
+                    false
                     //#else
                     //#if MC>=11800
                     //$$ packet.hardcore(),

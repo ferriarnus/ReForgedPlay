@@ -184,7 +184,7 @@ public class Util {
 
     public static String getTileEntityId(BlockEntity tileEntity) {
         //#if MC>=11800
-        NbtCompound nbt = tileEntity.createNbt();
+        NbtCompound nbt = tileEntity.createNbt(null); //TODO fix if needed
         //#else
         //$$ NbtCompound nbt = new NbtCompound();
         //#if MC>=11400

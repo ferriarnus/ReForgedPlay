@@ -35,9 +35,9 @@ public abstract class Mixin_ForceChunkLoading implements IForceChunkLoading {
         this.replayModRender_hook = hook;
     }
 
-    @Shadow private ChunkBuilder field_45614;
+    @Shadow private ChunkBuilder chunkBuilder;
 
-    @Shadow @Final private ChunkRenderingDataPreparer field_45615;
+    @Shadow @Final private ChunkRenderingDataPreparer chunkRenderingDataPreparer;
 
     @Shadow protected abstract void setupTerrain(Camera par1, Frustum par2, boolean par3, boolean par4);
 
@@ -50,7 +50,7 @@ public abstract class Mixin_ForceChunkLoading implements IForceChunkLoading {
     @Shadow protected abstract void applyFrustum(Frustum par1);
 
     @Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/WorldRenderer;setupTerrain(Lnet/minecraft/client/render/Camera;Lnet/minecraft/client/render/Frustum;ZZ)V"))
-    private void forceAllChunks(MatrixStack matrices, float tickDelta, long limitTime, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager, Matrix4f matrix4f, CallbackInfo ci) {
+    private void forceAllChunks(float tickDelta, long limitTime, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager, Matrix4f matrix4f, Matrix4f matrix4f2, CallbackInfo ci) {
         if (replayModRender_hook == null) {
             return;
         }
@@ -60,7 +60,7 @@ public abstract class Mixin_ForceChunkLoading implements IForceChunkLoading {
 
         assert this.client.player != null;
 
-        ChunkRenderingDataPreparer renderingData = this.field_45615;
+        ChunkRenderingDataPreparer renderingData = this.chunkRenderingDataPreparer;
         ChunkRenderingDataPreparerAccessor renderingDataAcc = (ChunkRenderingDataPreparerAccessor) renderingData;
         ChunkRendererRegionBuilder chunkRendererRegionBuilder = new ChunkRendererRegionBuilder();
 
@@ -99,14 +99,14 @@ public abstract class Mixin_ForceChunkLoading implements IForceChunkLoading {
                 }
                 // MC sometimes schedules invalid chunks when you're outside of loaded chunks (e.g. y > 256)
                 if (builtChunk.shouldBuild()) {
-                    builtChunk.scheduleRebuild(this.field_45614, chunkRendererRegionBuilder);
+                    builtChunk.scheduleRebuild(this.chunkBuilder, chunkRendererRegionBuilder);
                     areWeDoneYet = false;
                 }
                 builtChunk.cancelRebuild();
             }
 
             // Upload all chunks
-            if (((ForceChunkLoadingHook.IBlockOnChunkRebuilds) this.field_45614).uploadEverythingBlocking()) {
+            if (((ForceChunkLoadingHook.IBlockOnChunkRebuilds) this.chunkBuilder).uploadEverythingBlocking()) {
                 areWeDoneYet = false;
             }
 

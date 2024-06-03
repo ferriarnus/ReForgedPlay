@@ -19,6 +19,8 @@ import com.replaymod.replaystudio.util.I18n;
 import com.replaymod.simplepathing.ReplayModSimplePathing;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.resource.DirectoryResourcePack;
+import net.minecraft.resource.ResourcePackInfo;
+import net.minecraft.resource.ResourcePackSource;
 import net.minecraft.text.PlainTextContent;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
@@ -33,6 +35,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
@@ -85,7 +88,7 @@ public class ReplayMod implements Module, Scheduler {
 
         // Check Minecraft protocol version for compatibility
         if (!ProtocolVersion.isRegistered(MCVer.getProtocolVersion()) && !Boolean.parseBoolean(System.getProperty("replaymod.skipversioncheck", "false"))) {
-            minimalMode = true;
+            //minimalMode = true;
         }
 
         // Register all RM modules
@@ -121,13 +124,13 @@ public class ReplayMod implements Module, Scheduler {
             }
         }
         //#if MC>=11903
-        return new DirectoryResourcePack(JGUI_RESOURCE_PACK_NAME, folder.toPath(), true) {
+        return new DirectoryResourcePack(new ResourcePackInfo(JGUI_RESOURCE_PACK_NAME, Text.literal(JGUI_RESOURCE_PACK_NAME), ResourcePackSource.BUILTIN, Optional.empty()), folder.toPath()) {
         //#else
         //$$ return new DirectoryResourcePack(folder) {
         //#endif
             @Override
             //#if MC>=11400
-            public String getName() {
+            public String getId() {
             //#else
             //$$ public String getPackName() {
             //#endif

@@ -23,10 +23,10 @@ public class MixinCamera {
                     target = "Lnet/minecraft/client/render/Camera;getPitch()F"
             )
     )
-    private void applyRoll(float float_1, long long_1, MatrixStack matrixStack, CallbackInfo ci) {
+    private void applyRoll(float float_1, long long_1, CallbackInfo ci) {
         Entity entity = this.client.getCameraEntity() == null ? this.client.player : this.client.getCameraEntity();
         if (entity instanceof CameraEntity) {
-            matrixStack.multiply(new org.joml.Quaternionf().fromAxisAngleDeg(new org.joml.Vector3f(0, 0, 1), ((CameraEntity) entity).roll));
+            //matrixStack.multiply(new org.joml.Quaternionf().fromAxisAngleDeg(new org.joml.Vector3f(0, 0, 1), ((CameraEntity) entity).roll)); TODO
         }
     }
 }

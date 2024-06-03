@@ -108,7 +108,7 @@ public class PathPreviewRenderer extends EventRegistrations {
             //#endif
 
             //#if MC>=11700
-            RenderSystem.getModelViewStack().multiplyPositionMatrix(matrixStack.peek().getPositionMatrix());
+            RenderSystem.getModelViewStack().mul(matrixStack.peek().getPositionMatrix());
             RenderSystem.applyModelViewMatrix();
             //#elseif MC>=11500
             //$$ RenderSystem.multMatrix(matrixStack.peek().getModel());
@@ -292,8 +292,8 @@ public class PathPreviewRenderer extends EventRegistrations {
 
         Vector3f t = Vector3f.sub(pos, view, null);
         com.mojang.blaze3d.systems.RenderSystem.getModelViewStack().translate(t.x, t.y, t.z);
-        com.mojang.blaze3d.systems.RenderSystem.getModelViewStack().multiply(com.replaymod.core.versions.MCVer.quaternion(-mc.getEntityRenderDispatcher().camera.getYaw(), new org.joml.Vector3f(0, 1, 0)));
-        com.mojang.blaze3d.systems.RenderSystem.getModelViewStack().multiply(com.replaymod.core.versions.MCVer.quaternion(mc.getEntityRenderDispatcher().camera.getPitch(), new org.joml.Vector3f(1, 0, 0)));
+        com.mojang.blaze3d.systems.RenderSystem.getModelViewStack().rotate(com.replaymod.core.versions.MCVer.quaternion(-mc.getEntityRenderDispatcher().camera.getYaw(), new org.joml.Vector3f(0, 1, 0)));
+        com.mojang.blaze3d.systems.RenderSystem.getModelViewStack().rotate(com.replaymod.core.versions.MCVer.quaternion(mc.getEntityRenderDispatcher().camera.getPitch(), new org.joml.Vector3f(1, 0, 0)));
 
         //#if MC>=11700
         RenderSystem.applyModelViewMatrix();
@@ -312,9 +312,9 @@ public class PathPreviewRenderer extends EventRegistrations {
 
         Vector3f t = Vector3f.sub(pos, view, null);
         com.mojang.blaze3d.systems.RenderSystem.getModelViewStack().translate(t.x, t.y, t.z);
-        com.mojang.blaze3d.systems.RenderSystem.getModelViewStack().multiply(com.replaymod.core.versions.MCVer.quaternion(-rot.x, new org.joml.Vector3f(0, 1, 0)));
-        com.mojang.blaze3d.systems.RenderSystem.getModelViewStack().multiply(com.replaymod.core.versions.MCVer.quaternion(rot.y, new org.joml.Vector3f(1, 0, 0)));
-        com.mojang.blaze3d.systems.RenderSystem.getModelViewStack().multiply(com.replaymod.core.versions.MCVer.quaternion(rot.z, new org.joml.Vector3f(0, 0, 1)));
+        com.mojang.blaze3d.systems.RenderSystem.getModelViewStack().rotate(com.replaymod.core.versions.MCVer.quaternion(-rot.x, new org.joml.Vector3f(0, 1, 0)));
+        com.mojang.blaze3d.systems.RenderSystem.getModelViewStack().rotate(com.replaymod.core.versions.MCVer.quaternion(rot.y, new org.joml.Vector3f(1, 0, 0)));
+        com.mojang.blaze3d.systems.RenderSystem.getModelViewStack().rotate(com.replaymod.core.versions.MCVer.quaternion(rot.z, new org.joml.Vector3f(0, 0, 1)));
 
         //draw the position line
         Tessellator tessellator = Tessellator.getInstance();

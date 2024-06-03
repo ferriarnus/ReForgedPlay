@@ -11,7 +11,7 @@
     "Mixin_PassEventsExt",
     //#if MC>=11400
     //#if MC>=11400
-    "Mixin_RenderHudCallback",
+    //"Mixin_RenderHudCallback",
     "MixinGameRenderer",
     "MixinScreen",
     "MixinMouseListener",

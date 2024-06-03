@@ -219,7 +219,8 @@ public abstract class AbstractGuiTextArea<T extends AbstractGuiTextArea<T>>
     @Override
     public void writeChar(char c) {
         //#if MC>=11400
-        if (!SharedConstants.isValidChar(c)) {
+        //if (!SharedConstants.isValidChar(c)) {
+        if (true) {
         //#else
         //$$ if (!ChatAllowedCharacters.isAllowedCharacter(c)) {
         //#endif

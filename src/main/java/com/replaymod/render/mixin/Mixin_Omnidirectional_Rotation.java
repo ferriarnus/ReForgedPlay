@@ -43,7 +43,6 @@ public abstract class Mixin_Omnidirectional_Rotation {
             //#if MC>=11500
             float partialTicks,
             long frameStartNano,
-            MatrixStack matrixStack,
             //#endif
             CallbackInfo ci
     ) {
@@ -79,7 +78,7 @@ public abstract class Mixin_Omnidirectional_Rotation {
                     break;
             }
             //#if MC>=11500
-            matrixStack.multiply(new org.joml.Quaternionf().fromAxisAngleDeg(new Vector3f(x, y, 0), angle));
+            //matrixStack.multiply(new org.joml.Quaternionf().fromAxisAngleDeg(new Vector3f(x, y, 0), angle)); TODO
             //#else
             //$$ GL11.glRotatef(angle, x, y, 0);
             //#endif

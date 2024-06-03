@@ -30,12 +30,12 @@ public abstract class Mixin_Stereoscopic_Camera implements EntityRendererHandler
     }
 
     @Inject(method = "renderWorld", at = @At("HEAD"))
-    private void replayModRender_setupStereoscopicProjection(float partialTicks, long frameStartNano, MatrixStack matrixStack, CallbackInfo ci) {
+    private void replayModRender_setupStereoscopicProjection(float partialTicks, long frameStartNano, CallbackInfo ci) {
         if (replayModRender_getHandler() != null) {
             if (replayModRender_getHandler().data == StereoscopicOpenGlFrameCapturer.Data.LEFT_EYE) {
-                matrixStack.translate(0.1, 0, 0);
+                //matrixStack.translate(0.1, 0, 0); TODO
             } else if (replayModRender_getHandler().data == StereoscopicOpenGlFrameCapturer.Data.RIGHT_EYE) {
-                matrixStack.translate(-0.1, 0, 0);
+                //matrixStack.translate(-0.1, 0, 0);
             }
         }
     }

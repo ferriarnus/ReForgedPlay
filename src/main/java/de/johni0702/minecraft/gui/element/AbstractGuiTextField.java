@@ -168,7 +168,8 @@ public abstract class AbstractGuiTextField<T extends AbstractGuiTextField<T>>
     @Override
     public T writeChar(char c) {
         //#if MC>=11400
-        if (!SharedConstants.isValidChar(c)) {
+        //if (!SharedConstants.isValidChar(c)) { //TODO
+        if (true) {
         //#else
         //$$ if (!ChatAllowedCharacters.isAllowedCharacter(c)) {
         //#endif

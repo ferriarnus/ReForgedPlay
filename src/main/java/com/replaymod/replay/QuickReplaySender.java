@@ -87,7 +87,8 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
                 //$$ Packet mcPacket;
                 //#endif
                 //#if MC>=12002
-                mcPacket = state.getHandler(NetworkSide.CLIENTBOUND).createPacket(packet.getId(), packetByteBuf);
+                //TODO add id back?
+                mcPacket = (Packet<?>) state.codec().decode(packetByteBuf);
                 //#elseif MC>=11700
                 //$$ mcPacket = state.getPacketHandler(NetworkSide.CLIENTBOUND, packet.getId(), packetByteBuf);
                 //#elseif MC>=11500

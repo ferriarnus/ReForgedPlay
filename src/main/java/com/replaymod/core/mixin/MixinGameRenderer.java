@@ -6,6 +6,7 @@ import com.replaymod.core.events.PreRenderHandCallback;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.util.math.MatrixStack;
+import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -24,22 +25,21 @@ public class MixinGameRenderer {
             float partialTicks,
             long nanoTime,
             //#if MC>=11500
-            MatrixStack matrixStack,
             //#endif
             CallbackInfo ci) {
         //#if MC<11500
         //$$ MatrixStack matrixStack = new MatrixStack();
         //#endif
-        PostRenderWorldCallback.EVENT.invoker().postRenderWorld(matrixStack);
+        PostRenderWorldCallback.EVENT.invoker().postRenderWorld(new MatrixStack());
     }
 
     @Inject(method = "renderHand", at = @At("HEAD"), cancellable = true)
     private void preRenderHand(
-            //#if MC>=11500
-            MatrixStack matrixStack,
-            //#endif
             Camera camera,
+            //#if MC>=11500
             float partialTicks,
+            Matrix4f matrixStack,
+            //#endif
             CallbackInfo ci) {
         if (PreRenderHandCallback.EVENT.invoker().preRenderHand()) {
             ci.cancel();

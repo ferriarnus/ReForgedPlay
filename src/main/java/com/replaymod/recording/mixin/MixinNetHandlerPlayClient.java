@@ -5,7 +5,10 @@ import com.replaymod.recording.handler.RecordingEventHandler;
 import com.replaymod.replaystudio.lib.viaversion.api.protocol.packet.State;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
+import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.packet.s2c.play.PlayerRespawnS2CPacket;
+import net.minecraft.registry.DynamicRegistryManager;
+import net.minecraft.registry.Registries;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -72,8 +75,7 @@ public abstract class MixinNetHandlerPlayClient {
             // to parse it instead.
             ByteBuf byteBuf = Unpooled.buffer();
             try {
-                packet.write(new PacketByteBuf(byteBuf));
-
+                PlayerListS2CPacket.CODEC.encode(new RegistryByteBuf(byteBuf, DynamicRegistryManager.of(Registries.REGISTRIES)), packet);
                 byteBuf.readerIndex(0);
                 byte[] array = new byte[byteBuf.readableBytes()];
                 byteBuf.readBytes(array);

@@ -11,6 +11,14 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.network.NetworkState;
+import net.minecraft.network.RegistryByteBuf;
+import net.minecraft.network.state.ConfigurationStates;
+import net.minecraft.network.state.HandshakeStates;
+import net.minecraft.network.state.LoginStates;
+import net.minecraft.network.state.PlayStateFactories;
+import net.minecraft.network.state.QueryStates;
+import net.minecraft.registry.DynamicRegistryManager;
+import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.Vec3d;
@@ -86,6 +94,7 @@ import net.minecraft.client.render.VertexFormatElement;
 //$$ import static org.lwjgl.opengl.GL11.*;
 //#endif
 
+import javax.net.ssl.SSLEngineResult;
 import java.io.File;
 import java.net.URI;
 import java.util.List;
@@ -106,19 +115,19 @@ public class MCVer {
 
     public static NetworkState asMc(State state) {
         switch (state) {
-            case HANDSHAKE: return NetworkState.HANDSHAKING;
-            case STATUS: return NetworkState.STATUS;
-            case LOGIN: return NetworkState.LOGIN;
+            case HANDSHAKE: return HandshakeStates.C2S;
+            case STATUS: return QueryStates.S2C;
+            case LOGIN: return LoginStates.S2C;
             //#if MC>=12002
-            case CONFIGURATION: return NetworkState.CONFIGURATION;
+            case CONFIGURATION: return ConfigurationStates.S2C;
             //#endif
-            case PLAY: return NetworkState.PLAY;
+            case PLAY: return PlayStateFactories.S2C.bind(RegistryByteBuf.makeFactory(DynamicRegistryManager.of(Registries.REGISTRIES)));
         }
         throw new IllegalArgumentException("Unexpected value: " + state);
     }
 
     public static State fromMc(NetworkState mcState) {
-        switch (mcState) {
+        switch (mcState.id()) {
             case HANDSHAKING: return State.HANDSHAKE;
             case STATUS: return State.STATUS;
             case LOGIN: return State.LOGIN;
@@ -398,7 +407,7 @@ public class MCVer {
 
     public static void pushMatrix() {
         //#if MC>=11700
-        RenderSystem.getModelViewStack().push();
+        RenderSystem.getModelViewStack().pushMatrix();
         //#else
         //$$ GlStateManager.pushMatrix();
         //#endif
@@ -406,7 +415,7 @@ public class MCVer {
 
     public static void popMatrix() {
         //#if MC>=11700
-        RenderSystem.getModelViewStack().pop();
+        RenderSystem.getModelViewStack().popMatrix();
         RenderSystem.applyModelViewMatrix();
         //#else
         //$$ GlStateManager.popMatrix();

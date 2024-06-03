@@ -75,7 +75,7 @@ public class NoGuiScreenshot {
 
                     float tickDelta = mc.getTickDelta();
                     //#if MC>=11500
-                    mc.gameRenderer.renderWorld(tickDelta, System.nanoTime(), new MatrixStack());
+                    mc.gameRenderer.renderWorld(tickDelta, System.nanoTime());
                     //#else
                     //#if MC>=11400
                     //$$ mc.gameRenderer.renderWorld(tickDelta, System.nanoTime());

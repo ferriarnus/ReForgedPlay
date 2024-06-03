@@ -40,6 +40,7 @@ import net.minecraft.util.crash.CrashException;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.client.render.RenderTickCounter;
 import net.neoforged.fml.loading.LoadingModList;
+import org.joml.Matrix4fStack;
 import org.lwjgl.glfw.GLFW;
 
 //#if MC>=12000
@@ -506,8 +507,8 @@ public class VideoRenderer implements RenderInfo {
                     , VertexSorter.BY_Z
                     //#endif
             );
-            MatrixStack matrixStack = RenderSystem.getModelViewStack();
-            matrixStack.loadIdentity();
+            Matrix4fStack matrixStack = RenderSystem.getModelViewStack();
+            matrixStack.identity();
             matrixStack.translate(0, 0, -2000);
             RenderSystem.applyModelViewMatrix();
             DiffuseLighting.enableGuiDepthLighting();

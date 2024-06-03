@@ -19,6 +19,7 @@ import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.NetworkSide;
 import net.minecraft.network.NetworkState;
+import net.minecraft.network.handler.PacketCodecDispatcher;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.common.CustomPayloadS2CPacket;
 import net.minecraft.resource.Resource;
@@ -575,7 +576,7 @@ class Patterns {
     @Pattern
     private static void GL11_glRotatef(float angle, float x, float y, float z) {
         //#if MC>=11700
-        com.mojang.blaze3d.systems.RenderSystem.getModelViewStack().multiply(com.replaymod.core.versions.MCVer.quaternion(angle, new org.joml.Vector3f(x, y, z)));
+        com.mojang.blaze3d.systems.RenderSystem.getModelViewStack().rotate(com.replaymod.core.versions.MCVer.quaternion(angle, new org.joml.Vector3f(x, y, z)));
         //#else
         //$$ GL11.glRotatef(angle, x, y, z);
         //#endif
@@ -916,7 +917,7 @@ class Patterns {
     @Pattern
     public Object channel(CustomPayloadS2CPacket packet) {
         //#if MC>=12002
-        return packet.payload().id();
+        return packet.payload().getId().id();
         //#else
         //$$ return packet.getChannel();
         //#endif
@@ -926,7 +927,7 @@ class Patterns {
     @Pattern
     public Integer getPacketId(NetworkState state, NetworkSide side, Packet<?> packet) throws Exception {
         //#if MC>=12002
-        return state.getHandler(side).getId(packet);
+        return ((PacketCodecDispatcher) state.codec()).typeToIndex.get(packet);
         //#else
         //$$ return state.getPacketId(side, packet);
         //#endif

@@ -4,7 +4,10 @@ package com.replaymod.core.versions;
 import com.google.gson.Gson;
 import com.replaymod.core.ReplayMod;
 import net.minecraft.resource.AbstractFileResourcePack;
+import net.minecraft.resource.ResourcePackInfo;
+import net.minecraft.resource.ResourcePackSource;
 import net.minecraft.resource.ResourceType;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.neoforged.fml.loading.LoadingModList;
 import net.neoforged.fml.loading.moddiscovery.ModFileInfo;
@@ -23,6 +26,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -65,7 +69,7 @@ public class LangResourcePack extends AbstractFileResourcePack {
     private final Path basePath;
     public LangResourcePack() {
         //#if MC>=11903
-        super(NAME, true);
+        super(new ResourcePackInfo(NAME, Text.literal("NAME"), ResourcePackSource.BUILTIN, Optional.empty()));
         //#else
         //$$ super(new File(NAME));
         //#endif

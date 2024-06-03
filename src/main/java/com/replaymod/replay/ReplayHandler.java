@@ -34,6 +34,8 @@ import net.minecraft.client.gui.screen.DownloadingTerrainScreen;
 import net.minecraft.client.network.ClientLoginNetworkHandler;
 import net.minecraft.client.util.Window;
 import net.minecraft.network.NetworkState;
+import net.minecraft.network.listener.ClientLoginPacketListener;
+import net.minecraft.network.state.LoginStates;
 import net.minecraft.util.crash.CrashReport;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -64,6 +66,7 @@ import net.minecraft.network.handler.PacketBundler;
 
 //#if MC>=11700
 import net.minecraft.client.render.DiffuseLighting;
+import net.neoforged.neoforge.network.registration.NetworkRegistry;
 import org.joml.Matrix4f;
 //#endif
 
@@ -73,6 +76,7 @@ import net.minecraft.client.util.math.MatrixStack;
 
 //#if MC>=11500
 import com.mojang.blaze3d.systems.RenderSystem;
+import org.joml.Matrix4fStack;
 import org.lwjgl.opengl.GL11;
 //#endif
 
@@ -326,7 +330,8 @@ public class ReplayHandler {
         channel.pipeline().addLast("ReplayModReplay_replaySender", fullReplaySender);
         //#if MC>=12002
         channel.pipeline().addLast("ReplayModReplay_transition", new DummyNetworkStateTransitionHandler());
-        channel.pipeline().addLast("bundler", new PacketBundler(ClientConnection.CLIENTBOUND_PROTOCOL_KEY));
+        //channel.pipeline().addLast("bundler", new PacketBundler(ClientConnection.CLIENTBOUND_PROTOCOL_KEY));
+
         //#elseif MC>=11904
         //$$ channel.pipeline().addLast("bundler", new PacketBundler(NetworkSide.CLIENTBOUND));
         //#endif
@@ -336,13 +341,7 @@ public class ReplayHandler {
         // MC usually transitions from handshake to login via the packets it sends.
         // We don't send any packets (there is no server to receive them), so we need to switch manually.
         //#if MC>=12002
-        channel.attr(ClientConnection.CLIENTBOUND_PROTOCOL_KEY).set(NetworkState.LOGIN.getHandler(NetworkSide.CLIENTBOUND));
-        channel.attr(ClientConnection.SERVERBOUND_PROTOCOL_KEY).set(NetworkState.LOGIN.getHandler(NetworkSide.SERVERBOUND));
-        //#else
-        //$$ networkManager.setState(NetworkState.LOGIN);
-        //#endif
-
-        networkManager.setPacketListener(new ClientLoginNetworkHandler(
+        networkManager.transitionInbound(LoginStates.S2C, new ClientLoginNetworkHandler(
                 networkManager,
                 mc,
                 null
@@ -353,6 +352,29 @@ public class ReplayHandler {
                 //#endif
                 //#if MC>=11400
                 , it -> {}
+                , null
+                //#endif
+        ));
+
+        networkManager.transitionOutbound(LoginStates.C2S);
+        //channel.attr(ClientConnection.CLIENTBOUND_PROTOCOL_KEY).set(LoginStates.S2C);
+        //channel.attr(ClientConnection.SERVERBOUND_PROTOCOL_KEY).set(LoginStates.C2S);
+        //#else
+        //$$ networkManager.setState(NetworkState.LOGIN);
+        //#endif
+
+        networkManager.setPacketListener(LoginStates.S2C, new ClientLoginNetworkHandler(
+                networkManager,
+                mc,
+                null
+                //#if MC>=11903
+                , null
+                , false
+                , null
+                //#endif
+                //#if MC>=11400
+                , it -> {}
+                , null
                 //#endif
         ));
 
@@ -679,8 +701,8 @@ public class ReplayHandler {
                         , VertexSorter.BY_Z
                         //#endif
                 );
-                MatrixStack matrixStack = RenderSystem.getModelViewStack();
-                matrixStack.loadIdentity();
+                Matrix4fStack matrixStack = RenderSystem.getModelViewStack();
+                matrixStack.identity();
                 matrixStack.translate(0, 0, -2000);
                 RenderSystem.applyModelViewMatrix();
                 DiffuseLighting.enableGuiDepthLighting();
@@ -809,7 +831,7 @@ public class ReplayHandler {
         @Override
         public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
             if (msg instanceof Packet<?> packet) {
-                NetworkStateTransitionHandler.handle(ctx.channel().attr(ClientConnection.CLIENTBOUND_PROTOCOL_KEY), packet);
+                NetworkStateTransitionHandler.onDecoded(ctx, packet);
             }
             super.channelRead(ctx, msg);
         }
@@ -817,7 +839,7 @@ public class ReplayHandler {
         @Override
         public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
             if (msg instanceof Packet<?> packet) {
-                NetworkStateTransitionHandler.handle(ctx.channel().attr(ClientConnection.SERVERBOUND_PROTOCOL_KEY), packet);
+                NetworkStateTransitionHandler.onEncoded(ctx, packet);
             }
             super.write(ctx, msg, promise);
         }

@@ -1,5 +1,5 @@
 modLoader="javafml"
-loaderVersion="[1,)"
+loaderVersion="[2,)"
 license="GPL-3.0-or-later"
 [[mods]]
 modId="reforgedplaymod"
@@ -14,14 +14,14 @@ A Mod which allows you to record, replay and share your Minecraft experience.
 [[dependencies.reforgedplaymod]]
 modId = "neoforge"
 type="required"
-versionRange = "[20.4.40-beta,)"
+versionRange = "[20.6.1-beta,)"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.reforgedplaymod]]
 modId = "minecraft"
 type="required"
-versionRange = "[1.20.4,1.20.5)"
+versionRange = "[1.20.5,1.20.7)"
 ordering = "NONE"
 side = "BOTH"
 
@@ -54,6 +54,9 @@ config = "mixins.render.replaymod.json"
 
 [[mixins]]
 config = "mixins.replay.replaymod.json"
+
+[[accessTransformers]]
+file="META-INF/accesstransformer.cfg"
 
 [[mods]]
 modId="replaymod"
