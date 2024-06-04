@@ -363,20 +363,20 @@ public class ReplayHandler {
         //$$ networkManager.setState(NetworkState.LOGIN);
         //#endif
 
-        networkManager.setPacketListener(LoginStates.S2C, new ClientLoginNetworkHandler(
-                networkManager,
-                mc,
-                null
-                //#if MC>=11903
-                , null
-                , false
-                , null
-                //#endif
-                //#if MC>=11400
-                , it -> {}
-                , null
-                //#endif
-        ));
+//        networkManager.setPacketListener(LoginStates.S2C, new ClientLoginNetworkHandler(
+//                networkManager,
+//                mc,
+//                null
+//                //#if MC>=11903
+//                , null
+//                , false
+//                , null
+//                //#endif
+//                //#if MC>=11400
+//                , it -> {}
+//                , null
+//                //#endif
+//        ));
 
         //#if MC>=11400
         ((MinecraftAccessor) mc).setConnection(networkManager);

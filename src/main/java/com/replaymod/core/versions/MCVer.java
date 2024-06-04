@@ -7,6 +7,7 @@ import com.replaymod.replaystudio.lib.viaversion.api.protocol.version.ProtocolVe
 import com.replaymod.replaystudio.protocol.PacketTypeRegistry;
 import de.johni0702.minecraft.gui.utils.lwjgl.vector.Vector2f;
 import de.johni0702.minecraft.gui.utils.lwjgl.vector.Vector3f;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.render.BufferBuilder;
@@ -24,6 +25,8 @@ import net.minecraft.util.Util;
 import net.minecraft.util.math.Vec3d;
 
 //#if MC>=11700
+import net.neoforged.neoforge.server.ServerLifecycleHooks;
+import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix4f;
 //#endif
 
@@ -100,11 +103,14 @@ import java.net.URI;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.Optional;
+import java.util.function.Function;
 
 /**
  * Abstraction over things that have changed between different MC versions.
  */
 public class MCVer {
+
+    public static NetworkState play = PlayStateFactories.S2C.bind(RegistryByteBuf.makeFactory(DynamicRegistryManager.of(Registries.REGISTRIES)));
     public static int getProtocolVersion() {
         //#if MC>=11400
         return SharedConstants.getGameVersion().getProtocolVersion();
@@ -121,7 +127,7 @@ public class MCVer {
             //#if MC>=12002
             case CONFIGURATION: return ConfigurationStates.S2C;
             //#endif
-            case PLAY: return PlayStateFactories.S2C.bind(RegistryByteBuf.makeFactory(DynamicRegistryManager.of(Registries.REGISTRIES)));
+            case PLAY: return play;
         }
         throw new IllegalArgumentException("Unexpected value: " + state);
     }

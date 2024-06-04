@@ -27,29 +27,13 @@ import net.minecraft.client.gui.screen.NoticeScreen;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
 import net.minecraft.network.NetworkState;
+import net.minecraft.network.handler.DecoderHandler;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.packet.s2c.play.GameMessageS2CPacket;
+import net.minecraft.network.packet.s2c.play.*;
 import net.minecraft.network.packet.s2c.common.CustomPayloadS2CPacket;
 import net.minecraft.network.packet.s2c.common.DisconnectS2CPacket;
-import net.minecraft.network.packet.s2c.play.EntitiesDestroyS2CPacket;
-import net.minecraft.network.packet.s2c.play.EntitySpawnS2CPacket;
-import net.minecraft.network.packet.s2c.play.ExperienceBarUpdateS2CPacket;
-import net.minecraft.network.packet.s2c.play.ExperienceOrbSpawnS2CPacket;
-import net.minecraft.network.packet.s2c.play.GameJoinS2CPacket;
-import net.minecraft.network.packet.s2c.play.GameStateChangeS2CPacket;
-import net.minecraft.network.packet.s2c.play.CloseScreenS2CPacket;
-import net.minecraft.network.packet.s2c.play.OpenHorseScreenS2CPacket;
-import net.minecraft.network.packet.s2c.play.ScreenHandlerSlotUpdateS2CPacket;
-import net.minecraft.network.packet.s2c.play.ScreenHandlerPropertyUpdateS2CPacket;
-import net.minecraft.network.packet.s2c.play.HealthUpdateS2CPacket;
 import net.minecraft.network.packet.s2c.login.LoginSuccessS2CPacket;
-import net.minecraft.network.packet.s2c.play.ParticleS2CPacket;
-import net.minecraft.network.packet.s2c.play.PlayerAbilitiesS2CPacket;
-import net.minecraft.network.packet.s2c.play.PlayerPositionLookS2CPacket;
-import net.minecraft.network.packet.s2c.play.PlayerRespawnS2CPacket;
-import net.minecraft.network.packet.s2c.play.SignEditorOpenS2CPacket;
-import net.minecraft.network.packet.s2c.play.StatisticsS2CPacket;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.Vec3d;
 import org.apache.commons.io.FileUtils;
@@ -57,18 +41,14 @@ import org.apache.commons.io.IOUtils;
 
 //#if MC>=12002
 import net.minecraft.network.packet.s2c.config.ReadyS2CPacket;
-import net.minecraft.network.packet.s2c.play.CommonPlayerSpawnInfo;
-import net.minecraft.network.packet.s2c.play.EnterReconfigurationS2CPacket;
 //#else
 //$$ import net.minecraft.network.packet.s2c.play.PlayerSpawnS2CPacket;
 //#endif
 
 //#if MC>=11904
-import net.minecraft.network.packet.s2c.play.PositionFlag;
 //#endif
 
 //#if MC>=11903
-import net.minecraft.network.packet.s2c.play.ProfilelessChatMessageS2CPacket;
 //#endif
 
 //#if MC==11901 || MC==11902
@@ -76,7 +56,6 @@ import net.minecraft.network.packet.s2c.play.ProfilelessChatMessageS2CPacket;
 //#endif
 
 //#if MC>=11900
-import net.minecraft.network.packet.s2c.play.ChatMessageS2CPacket;
 //#else
 //$$ import net.minecraft.network.packet.s2c.play.MobSpawnS2CPacket;
 //$$ import net.minecraft.network.packet.s2c.play.PaintingSpawnS2CPacket;
@@ -89,10 +68,6 @@ import net.minecraft.network.packet.s2c.play.ChatMessageS2CPacket;
 
 //#if MC>=11400
 import com.replaymod.core.versions.MCVer;
-import net.minecraft.network.packet.s2c.play.ChunkDataS2CPacket;
-import net.minecraft.network.packet.s2c.play.PlayerActionResponseS2CPacket;
-import net.minecraft.network.packet.s2c.play.OpenScreenS2CPacket;
-import net.minecraft.network.packet.s2c.play.OpenWrittenBookS2CPacket;
 import net.minecraft.entity.EntityType;
 import net.minecraft.world.chunk.ChunkManager;
 import net.minecraft.world.chunk.WorldChunk;
@@ -116,9 +91,6 @@ import net.minecraft.util.Identifier;
 
 //#if MC>=11200
 import com.replaymod.core.utils.WrappedTimer;
-import net.minecraft.network.packet.s2c.play.AdvancementUpdateS2CPacket;
-import net.minecraft.network.packet.s2c.play.SelectAdvancementTabS2CPacket;
-import net.minecraft.network.packet.s2c.play.SynchronizeRecipesS2CPacket;
 //#endif
 //#if MC>=11002
 import net.minecraft.world.GameMode;
@@ -127,15 +99,12 @@ import net.minecraft.world.GameMode;
 //#endif
 
 //#if MC>=10904
-import net.minecraft.network.packet.s2c.play.UnloadChunkS2CPacket;
 //#else
 //$$ import net.minecraft.network.play.server.S21PacketChunkData;
 //#endif
 
 //#if MC>=10800
 import net.minecraft.network.packet.s2c.common.ResourcePackSendS2CPacket;
-import net.minecraft.network.packet.s2c.play.SetCameraEntityS2CPacket;
-import net.minecraft.network.packet.s2c.play.TitleS2CPacket;
 import net.minecraft.network.NetworkSide;
 //#else
 //$$ import org.apache.commons.io.Charsets;
@@ -188,7 +157,9 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             SignEditorOpenS2CPacket.class,
             StatisticsS2CPacket.class,
             ExperienceBarUpdateS2CPacket.class,
-            PlayerAbilitiesS2CPacket.class
+            PlayerAbilitiesS2CPacket.class,
+
+            DifficultyS2CPacket.class  //TODO
     );
 
     private static int TP_DISTANCE_LIMIT = 128;

@@ -25,7 +25,6 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.util.AttributeKey;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.network.NetworkPhase;
@@ -39,13 +38,10 @@ import net.minecraft.entity.Entity;
 import net.minecraft.network.NetworkState;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.state.ConfigurationStates;
-import net.minecraft.network.state.HandshakeStates;
 import net.minecraft.network.state.LoginStates;
 import net.minecraft.network.state.PlayStateFactories;
-import net.minecraft.network.state.QueryStates;
 import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.registry.Registries;
-import net.minecraft.text.PlainTextContent;
 import net.minecraft.util.crash.CrashReport;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -113,7 +109,7 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
             //$$ new ResourcePackSendS2CPacket()
             //#endif
             ;
-    private static final int PACKET_ID_RESOURCE_PACK_SEND = getPacketId(PlayStateFactories.S2C.bind(RegistryByteBuf.makeFactory(DynamicRegistryManager.of(Registries.REGISTRIES))), RESOURCE_PACK_SEND_PACKET);
+    private static final int PACKET_ID_RESOURCE_PACK_SEND = getPacketId(play, RESOURCE_PACK_SEND_PACKET);
     //#if MC>=12002
     private static final int PACKET_ID_CONFIG_RESOURCE_PACK_SEND = getPacketId(ConfigurationStates.S2C, RESOURCE_PACK_SEND_PACKET);
     //#endif
@@ -447,6 +443,9 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
         ByteBuf byteBuf = Unpooled.buffer();
         try {
             connectionState.codec().encode(new PacketByteBuf(byteBuf), packet);
+            VarInts.read(byteBuf); //TODO stupid...
+            byteBuf.discardReadBytes();
+            byteBuf = Unpooled.wrappedBuffer(byteBuf.nioBuffer());
             return new Packet(
                     MCVer.getPacketTypeRegistry(connectionState),
                     packetId,
@@ -463,9 +462,11 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
 
     private static net.minecraft.network.packet.Packet decodeMcPacket(Packet packet) throws IOException, IllegalAccessException, InstantiationException {
         NetworkState connectionState = asMc(packet.getRegistry().getState());
-        //int packetId = packet.getId();//TODO need to add int?
-
-        PacketByteBuf packetBuf = new PacketByteBuf(Unpooled.wrappedBuffer(packet.getBuf().nioBuffer()));
+        int packetId = packet.getId();//TODO need to add int?
+        ByteBuf buf = Unpooled.buffer();
+        VarInts.write(buf, packetId);
+        buf.writeBytes(packet.getBuf().nioBuffer());
+        PacketByteBuf packetBuf = new PacketByteBuf(buf);
 
         //#if MC>=12002
         return (net.minecraft.network.packet.Packet) connectionState.codec().decode(packetBuf);

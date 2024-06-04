@@ -88,7 +88,7 @@ public class ReplayMod implements Module, Scheduler {
 
         // Check Minecraft protocol version for compatibility
         if (!ProtocolVersion.isRegistered(MCVer.getProtocolVersion()) && !Boolean.parseBoolean(System.getProperty("replaymod.skipversioncheck", "false"))) {
-            //minimalMode = true;
+            minimalMode = true;
         }
 
         // Register all RM modules
