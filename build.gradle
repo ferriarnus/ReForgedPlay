@@ -11,7 +11,6 @@ sourceCompatibility = JavaVersion.VERSION_17
 targetCompatibility = JavaVersion.VERSION_17
 
 loom {
-    mixin.defaultRefmapName = "mixins.replaymod.refmap.json"
     forge {
         mixinConfigs = [
                 "mixins.compat.mapwriter.replaymod.json",
@@ -24,9 +23,6 @@ loom {
                 "mixins.render.replaymod.json",
                 "mixins.replay.replaymod.json"
         ]
-    }
-    mixin {
-        useLegacyMixinAp = false
     }
     runs {
         it.configureEach {
@@ -121,6 +117,6 @@ dependencies {
 
     testImplementation 'junit:junit:4.11'
 
-    compileOnly(annotationProcessor("io.github.llamalad7:mixinextras-common:0.3.5"))
-    implementation(include("io.github.llamalad7:mixinextras-forge:0.3.5"))
+    compileOnly(annotationProcessor("io.github.llamalad7:mixinextras-common:0.3.6"))
+    implementation(include("io.github.llamalad7:mixinextras-forge:0.3.6"))
 }
