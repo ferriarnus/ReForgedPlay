@@ -82,8 +82,8 @@ dependencies {
     //mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
     neoForge "net.neoforged:neoforge:${project.neoforge_version}"
 
-    bundle("com.github.ReplayMod:ReplayStudio:master-SNAPSHOT")
-    minecraftRuntimeLibraries(implementation("com.github.ReplayMod:ReplayStudio:master-SNAPSHOT"))
+    bundle("com.github.ReplayMod:ReplayStudio:master-SNAPSHOT-slim")
+    minecraftRuntimeLibraries(implementation("com.github.ReplayMod:ReplayStudio:master-SNAPSHOT-slim"))
     include(implementation("com.github.viaversion:opennbt:0a02214"))
     include(implementation("com.github.ReplayMod:lwjgl-utils:27dcd66"))
     minecraftRuntimeLibraries("com.github.ReplayMod:lwjgl-utils:27dcd66")
