@@ -23,7 +23,7 @@ public abstract class MixinMouseListener {
 
     @Inject(method = "method_1611", at = @At("HEAD"), cancellable = true)
     //#if MC>=11700
-    private void mouseDown(boolean[] result, Screen screen, double x, double y, int button, CallbackInfo ci) {
+    private static void mouseDown(boolean[] result, Screen screen, double x, double y, int button, CallbackInfo ci) {
     //#else
     //$$ private void mouseDown(boolean[] result, double x, double y, int button, CallbackInfo ci) {
     //#endif
@@ -35,7 +35,7 @@ public abstract class MixinMouseListener {
 
     @Inject(method = "method_1605", at = @At("HEAD"), cancellable = true)
     //#if MC>=11700
-    private void mouseUp(boolean[] result, Screen screen, double x, double y, int button, CallbackInfo ci) {
+    private static  void mouseUp(boolean[] result, Screen screen, double x, double y, int button, CallbackInfo ci) {
     //#else
     //$$ private void mouseUp(boolean[] result, double x, double y, int button, CallbackInfo ci) {
     //#endif

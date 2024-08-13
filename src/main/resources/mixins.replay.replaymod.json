@@ -15,7 +15,7 @@
     "Mixin_AllowExpiredPlayerKeys",
     //#endif
     //#if MC>=11800
-    //$$ "Mixin_FixEntityNotTracking",
+    "Mixin_FixEntityNotTracking",
     //#endif
     //#if MC>=11600
     "Mixin_MoveRealmsButton",
@@ -56,7 +56,8 @@
     "MixinRenderItem",
     "MixinRenderLivingBase",
     "MixinTileEntityEndPortalRenderer",
-    "MixinWorldClient"
+    "MixinWorldClient",
+    "Mixin_ScreenButton"
   ],
   "compatibilityLevel": "JAVA_8",
   "minVersion": "0.6.11"

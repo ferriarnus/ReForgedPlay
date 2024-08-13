@@ -50,14 +50,14 @@ public abstract class MixinMinecraft
 
     @Inject(method = "render",
             at = @At(value = "INVOKE",
-                    target = "Lnet/minecraft/client/render/GameRenderer;render(FJZ)V"))
+                    target = "Lnet/minecraft/client/render/GameRenderer;render(Lnet/minecraft/client/render/RenderTickCounter;Z)V"))
     private void preRender(boolean unused, CallbackInfo ci) {
         PreRenderCallback.EVENT.invoker().preRender();
     }
 
     @Inject(method = "render",
             at = @At(value = "INVOKE",
-                    target = "Lnet/minecraft/client/render/GameRenderer;render(FJZ)V",
+                    target = "Lnet/minecraft/client/render/GameRenderer;render(Lnet/minecraft/client/render/RenderTickCounter;Z)V",
                     shift = At.Shift.AFTER))
     private void postRender(boolean unused, CallbackInfo ci) {
         PostRenderCallback.EVENT.invoker().postRender();

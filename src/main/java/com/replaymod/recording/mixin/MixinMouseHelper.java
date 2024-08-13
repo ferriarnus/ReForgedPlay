@@ -33,18 +33,18 @@ public abstract class MixinMouseHelper {
             long _p0, double _p1, double _p2,
             CallbackInfo ci,
             //#if MC>=12002
-            //$$ boolean discreteScroll,
-            //$$ double sensitivity,
-            //$$ double xOffsetAccumulated,
-            //$$ double yOffsetAccumulated
+            boolean discreteScroll,
+            double sensitivity,
+            double xOffsetAccumulated,
+            double yOffsetAccumulated
             //#else
-            double _l1,
+            //$$ double _l1,
             //#if MC>=11802
             //$$ int yOffsetAccumulated
             //#elseif MC>=11400
             //$$ float yOffsetAccumulated
             //#else
-            double yOffsetAccumulated
+            //$$ double yOffsetAccumulated
             //#endif
             //#endif
     ) {
