@@ -6,6 +6,10 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+//#if MC>=12005
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import org.joml.Matrix4f;
+//#endif
 
 //#if MC>=11500
 import net.minecraft.client.util.math.MatrixStack;
@@ -30,8 +34,16 @@ public abstract class Mixin_Omnidirectional_Rotation {
         return ((EntityRendererHandler.IEntityRenderer) getMinecraft().gameRenderer).replayModRender_getHandler();
     }
 
+    //#if MC>=12005
+    //#if MC>=12100
+    @ModifyExpressionValue(method = "renderWorld", at = @At(value = "INVOKE", target = "Lorg/joml/Matrix4f;rotation(Lorg/joml/Quaternionfc;)Lorg/joml/Matrix4f;"))
+    //#else
+    //$$ @ModifyExpressionValue(method = "renderWorld", at = @At(value = "INVOKE", target = "Lorg/joml/Matrix4f;rotationXYZ(FFF)Lorg/joml/Matrix4f;"))
+    //#endif
+    private Matrix4f replayModRender_setupCubicFrameRotation(Matrix4f matrix) {
+    //#else
     //#if MC>=11500
-    @Inject(method = "renderWorld", at = @At("HEAD"))
+    //$$ @Inject(method = "renderWorld", at = @At("HEAD"))
     //#else
     //#if MC>=11400
     //$$ @Inject(method = "update", at = @At("HEAD"))
@@ -39,14 +51,15 @@ public abstract class Mixin_Omnidirectional_Rotation {
     //$$ @Inject(method = "orientCamera", at = @At("HEAD"))
     //#endif
     //#endif
-    private void replayModRender_setupCubicFrameRotation(
-            //#if MC>=11500
-            float partialTicks,
-            long frameStartNano,
-            MatrixStack matrixStack,
-            //#endif
-            CallbackInfo ci
-    ) {
+    //$$ private void replayModRender_setupCubicFrameRotation(
+    //$$         //#if MC>=11500
+    //$$         float partialTicks,
+    //$$         long frameStartNano,
+    //$$         MatrixStack matrixStack,
+    //$$        //#endif
+    //$$         CallbackInfo ci
+    //$$) {
+    //#endif
         if (getHandler() != null && getHandler().data instanceof CubicOpenGlFrameCapturer.Data) {
             CubicOpenGlFrameCapturer.Data data = (CubicOpenGlFrameCapturer.Data) getHandler().data;
             float angle = 0;
@@ -78,8 +91,10 @@ public abstract class Mixin_Omnidirectional_Rotation {
                     x = 1;
                     break;
             }
-            //#if MC>=11500
-            matrixStack.multiply(new org.joml.Quaternionf().fromAxisAngleDeg(new Vector3f(x, y, 0), angle));
+            //#if MC>=12005
+            matrix.rotateLocal(angle * (float) Math.PI / 180f, x, y, 0);
+            //#elseif MC>=11500
+            //$$ matrixStack.multiply(new org.joml.Quaternionf().fromAxisAngleDeg(new Vector3f(x, y, 0), angle));
             //#else
             //$$ GL11.glRotatef(angle, x, y, 0);
             //#endif
@@ -95,6 +110,9 @@ public abstract class Mixin_Omnidirectional_Rotation {
             //$$ GL11.glTranslatef(0.0F, 0.0F, 0.1F);
             //#endif
         //$$ }
+        //#endif
+        //#if MC>=12005
+        return matrix;
         //#endif
     }
 }

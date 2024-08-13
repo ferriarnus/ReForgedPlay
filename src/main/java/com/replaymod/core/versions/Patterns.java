@@ -9,6 +9,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.option.GameOptions;
 import net.minecraft.client.option.KeyBinding;
+import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.texture.TextureManager;
 import net.minecraft.client.world.ClientWorld;
@@ -20,11 +21,12 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.network.NetworkSide;
 import net.minecraft.network.NetworkState;
 import net.minecraft.network.packet.Packet;
-import net.minecraft.network.packet.s2c.play.CustomPayloadS2CPacket;
+import net.minecraft.network.packet.s2c.common.CustomPayloadS2CPacket;
+import net.minecraft.network.packet.s2c.common.DisconnectS2CPacket;
+import net.minecraft.network.packet.s2c.play.PlayerListS2CPacket;
 import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.sound.SoundCategory;
-import net.minecraft.text.LiteralTextContent;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableTextContent;
 import net.minecraft.util.crash.CrashException;
@@ -85,6 +87,7 @@ import net.minecraft.client.render.BufferBuilder;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 
 class Patterns {
     //#if MC>=10904
@@ -364,14 +367,31 @@ class Patterns {
         //#endif
     }
 
+    //#if MC>=12100
+    @Pattern private static void Tessellator_getBuffer() {}
+    //#else
+    //$$ @Pattern
+    //$$ private static BufferBuilder Tessellator_getBuffer(Tessellator tessellator) {
+    //$$     //#if MC>=10800
+    //$$     return tessellator.getBuffer();
+    //$$     //#else
+    //$$     //$$ return new BufferBuilder(tessellator);
+    //$$     //#endif
+    //$$ }
+    //#endif
+
+    //#if MC>=11600
     @Pattern
-    private static BufferBuilder Tessellator_getBuffer(Tessellator tessellator) {
-        //#if MC>=10800
-        return tessellator.getBuffer();
+    private static void VertexConsumer_next(VertexConsumer buffer) {
+        //#if MC>=12100
+        buffer./*next()*/getClass();
         //#else
-        //$$ return new BufferBuilder(tessellator);
+        //$$ buffer.next();
         //#endif
     }
+    //#else
+    //$$ private static void VertexConsumer_next() {}
+    //#endif
 
     //#if MC<11700
     //$$ @Pattern
@@ -475,7 +495,10 @@ class Patterns {
     @Pattern
     private static float getRenderPartialTicks(MinecraftClient mc) {
         //#if MC>=10900
-        return mc.getTickDelta();
+        //#if MC>=12100
+        return mc.getRenderTickCounter().getTickDelta(true);
+        //#elseif MC>=10900
+        //$$ return mc.getTickDelta();
         //#else
         //$$ return ((com.replaymod.core.mixin.MinecraftAccessor) mc).getTimer().renderPartialTicks;
         //#endif
@@ -521,11 +544,11 @@ class Patterns {
         //#endif
     }
 
-    //#if MC>=11600
+    //#if MC>=11600 && MC<12100
     @Pattern
     private static void BufferBuilder_beginLineStrip(BufferBuilder buffer, VertexFormat vertexFormat) {
         //#if MC>=11700
-        buffer.begin(net.minecraft.client.render.VertexFormat.DrawMode.LINE_STRIP, VertexFormats.LINES);
+        //$$ buffer.begin(net.minecraft.client.render.VertexFormat.DrawMode.LINE_STRIP, VertexFormats.LINES);
         //#else
         //$$ buffer.begin(GL11.GL_LINE_STRIP, VertexFormats.POSITION_COLOR);
         //#endif
@@ -534,7 +557,7 @@ class Patterns {
     @Pattern
     private static void BufferBuilder_beginLines(BufferBuilder buffer) {
         //#if MC>=11700
-        buffer.begin(net.minecraft.client.render.VertexFormat.DrawMode.LINES, VertexFormats.LINES);
+        //$$ buffer.begin(net.minecraft.client.render.VertexFormat.DrawMode.LINES, VertexFormats.LINES);
         //#else
         //$$ buffer.begin(GL11.GL_LINES, VertexFormats.POSITION_COLOR);
         //#endif
@@ -543,15 +566,15 @@ class Patterns {
     @Pattern
     private static void BufferBuilder_beginQuads(BufferBuilder buffer, VertexFormat vertexFormat) {
         //#if MC>=11700
-        buffer.begin(net.minecraft.client.render.VertexFormat.DrawMode.QUADS, vertexFormat);
+        //$$ buffer.begin(net.minecraft.client.render.VertexFormat.DrawMode.QUADS, vertexFormat);
         //#else
         //$$ buffer.begin(GL11.GL_QUADS, vertexFormat);
         //#endif
     }
     //#else
-    //$$ @Pattern private static void BufferBuilder_beginLineStrip() {}
-    //$$ @Pattern private static void BufferBuilder_beginLines() {}
-    //$$ @Pattern private static void BufferBuilder_beginQuads() {}
+    @Pattern private static void BufferBuilder_beginLineStrip() {}
+    @Pattern private static void BufferBuilder_beginLines() {}
+    @Pattern private static void BufferBuilder_beginQuads() {}
     //#endif
 
     @Pattern
@@ -574,8 +597,10 @@ class Patterns {
 
     @Pattern
     private static void GL11_glRotatef(float angle, float x, float y, float z) {
-        //#if MC>=11700
-        com.mojang.blaze3d.systems.RenderSystem.getModelViewStack().multiply(com.replaymod.core.versions.MCVer.quaternion(angle, new org.joml.Vector3f(x, y, z)));
+        //#if MC>=12006
+        com.mojang.blaze3d.systems.RenderSystem.getModelViewStack().rotate(com.replaymod.core.versions.MCVer.quaternion(angle, new org.joml.Vector3f(x, y, z)));
+        //#elseif MC>=11700
+        //$$ com.mojang.blaze3d.systems.RenderSystem.getModelViewStack().multiply(com.replaymod.core.versions.MCVer.quaternion(angle, new org.joml.Vector3f(x, y, z)));
         //#else
         //$$ GL11.glRotatef(angle, x, y, z);
         //#endif
@@ -915,38 +940,44 @@ class Patterns {
 
     @Pattern
     public Object channel(CustomPayloadS2CPacket packet) {
-        //#if MC>=12002
+        //#if MC>=12006
+        return packet.payload().getId().id();
+        //#elseif MC>=12002
         //$$ return packet.payload().id();
         //#else
-        return packet.getChannel();
+        //$$ return packet.getChannel();
         //#endif
     }
 
     //#if MC>=10904
-    @Pattern
-    public Integer getPacketId(NetworkState state, NetworkSide side, Packet<?> packet) throws Exception {
+    //#if MC>=12006
+    @Pattern public void getPacketId() {}
+    //#else
+    //$$ @Pattern
+    //$$ public Integer getPacketId(NetworkState state, NetworkSide side, Packet<?> packet) throws Exception {
         //#if MC>=12002
         //$$ return state.getHandler(side).getId(packet);
         //#else
-        return state.getPacketId(side, packet);
+    //$$ return state.getPacketId(side, packet);
         //#endif
-    }
+    //$$ }
+    //#endif
 
     @Pattern
     public int UnloadChunkPacket_getX(UnloadChunkS2CPacket packet) {
         //#if MC>=12002
-        //$$ return packet.pos().x;
+        return packet.pos().x;
         //#else
-        return packet.getX();
+        //$$ return packet.getX();
         //#endif
     }
 
     @Pattern
     public int UnloadChunkPacket_getZ(UnloadChunkS2CPacket packet) {
         //#if MC>=12002
-        //$$ return packet.pos().z;
+        return packet.pos().z;
         //#else
-        return packet.getZ();
+        //$$ return packet.getZ();
         //#endif
     }
     //#else
@@ -956,20 +987,38 @@ class Patterns {
     //#endif
 
     @Pattern
+    public UUID getId(PlayerListS2CPacket.Entry entry) {
+        //#if MC>=11903
+        return entry.profileId();
+        //#else
+        //$$ return entry.getProfile().getId();
+        //#endif
+    }
+
+    @Pattern
     public Identifier getSkinTexture(AbstractClientPlayerEntity player) {
         //#if MC>=12002
-        //$$ return player.getSkinTextures().texture();
+        return player.getSkinTextures().texture();
         //#else
-        return player.getSkinTexture();
+        //$$ return player.getSkinTexture();
         //#endif
     }
 
     @Pattern
     public boolean isDebugHudEnabled(MinecraftClient mc) {
         //#if MC>=12002
-        //$$ return mc.getDebugHud().shouldShowDebugHud();
+        return mc.getDebugHud().shouldShowDebugHud();
         //#else
-        return mc.options.debugEnabled;
+        //$$ return mc.options.debugEnabled;
+        //#endif
+    }
+
+    @Pattern
+    public Text getMessage(DisconnectS2CPacket packet) {
+        //#if MC>=12006
+        return packet.reason();
+        //#else
+        //$$ return packet.getReason();
         //#endif
     }
 }

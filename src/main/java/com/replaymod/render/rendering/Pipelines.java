@@ -24,7 +24,7 @@ import com.replaymod.render.processor.ODSToBitmapProcessor;
 import com.replaymod.render.processor.OpenGlToBitmapProcessor;
 import com.replaymod.render.processor.StereoscopicToBitmapProcessor;
 import com.replaymod.render.utils.PixelBufferObject;
-import net.minecraftforge.fml.loading.LoadingModList;
+import net.neoforged.fml.loading.LoadingModList;
 
 import java.util.Map;
 

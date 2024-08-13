@@ -6,14 +6,17 @@
   "client": [
     //#if MC>=11800
     //#if MC>=12002
-    //$$ "ChunkRenderingDataPreparerAccessor",
+    "ChunkRenderingDataPreparerAccessor",
     //#else
-    "ChunkInfoAccessor",
+    //$$ "ChunkInfoAccessor",
     //#endif
     //#endif
     "Mixin_ChromaKeyColorSky",
     "Mixin_ChromaKeyDisableFog",
     "Mixin_ChromaKeyForceSky",
+    //#if MC>=12100
+    "Mixin_FakeSystemTimeUniforms_Iris",
+    //#endif
     "Mixin_ForceChunkLoading",
     "Mixin_HideNameTags",
     "Mixin_HideNameTags_LivingEntity",

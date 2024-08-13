@@ -113,9 +113,9 @@ public class ConnectionEventHandler {
                 serverName = worldName;
             //#if MC>=11100
             //#if MC>=12002
-            //$$ } else if (serverInfo != null && serverInfo.isRealm()) {
+            } else if (serverInfo != null && serverInfo.isRealm()) {
             //#else
-            } else if (mc.isConnectedToRealms()) {
+            //$$ } else if (mc.isConnectedToRealms()) {
             //#endif
                 // we can't access the server name without tapping too deep in the Realms Library
                 worldName = "A Realms Server";
@@ -153,15 +153,24 @@ public class ConnectionEventHandler {
             metaData.setGenerator("ReplayMod v" + ReplayMod.instance.getVersion());
             metaData.setDate(System.currentTimeMillis());
             metaData.setMcVersion(ReplayMod.instance.getMinecraftVersion());
-            packetListener = new PacketListener(core, outputPath, replayFile, metaData);
             Channel channel = ((NetworkManagerAccessor) networkManager).getChannel();
-            if (channel.pipeline().get(PacketListener.DECODER_KEY) != null) {
-                // Regular channel, we'll inject our recorder directly before the decoder
-                channel.pipeline().addBefore(PacketListener.DECODER_KEY, PacketListener.RAW_RECORDER_KEY, packetListener);
-            } else {
-                // Integrated server passes packets directly, there's no splitting, decompression or decoding
-                channel.pipeline().addFirst(PacketListener.RAW_RECORDER_KEY, packetListener);
-            }
+            packetListener = new PacketListener(core, channel, outputPath, replayFile, metaData);
+
+            //#if MC>=12005
+            String target = channel.pipeline().get("inbound_config") != null ? "inbound_config" : PacketListener.DECODER_KEY;
+            channel.pipeline().addBefore(target, PacketListener.RAW_RECORDER_KEY, packetListener);
+            channel.pipeline().addAfter(target, PacketListener.DECODED_RECORDER_KEY, packetListener.new DecodedPacketListener());
+            //#else
+            //$$ if (channel.pipeline().get(PacketListener.DECODER_KEY) != null) {
+            //$$     // Regular channel, we'll inject our recorder directly before the decoder
+            //$$     channel.pipeline().addBefore(PacketListener.DECODER_KEY, PacketListener.RAW_RECORDER_KEY, packetListener);
+            //$$     channel.pipeline().addAfter(PacketListener.DECODER_KEY, PacketListener.DECODED_RECORDER_KEY, packetListener.new DecodedPacketListener());
+            //$$ } else {
+            //$$     // Integrated server passes packets directly, there's no splitting, decompression or decoding
+            //$$     channel.pipeline().addFirst(PacketListener.RAW_RECORDER_KEY, packetListener);
+            //$$     channel.pipeline().addAfter(PacketListener.RAW_RECORDER_KEY, PacketListener.DECODED_RECORDER_KEY, packetListener.new DecodedPacketListener());
+            //$$ }
+            //#endif
 
             recordingEventHandler = new RecordingEventHandler(packetListener);
             recordingEventHandler.register();

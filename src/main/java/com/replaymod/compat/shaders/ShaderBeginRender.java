@@ -34,7 +34,7 @@ public class ShaderBeginRender extends EventRegistrations {
                     //#if MC>=11400
                     mc.gameRenderer.getCamera(),
                     //#endif
-                    mc.getTickDelta(), 0);
+                    mc.getRenderTickCounter().getTickDelta(true), 0);
         } catch (IllegalAccessException | InvocationTargetException e) {
             e.printStackTrace();
         }

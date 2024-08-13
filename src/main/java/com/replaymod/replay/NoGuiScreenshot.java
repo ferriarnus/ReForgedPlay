@@ -6,6 +6,7 @@ import com.replaymod.core.ReplayMod;
 import de.johni0702.minecraft.gui.versions.Image;
 import net.minecraft.client.MinecraftClient;
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.render.RenderTickCounter;
 import net.minecraft.client.util.ScreenshotRecorder;
 
 import static com.replaymod.core.versions.MCVer.popMatrix;
@@ -73,9 +74,14 @@ public class NoGuiScreenshot {
                     //$$ RenderSystem.enableTexture();
                     //#endif
 
-                    float tickDelta = mc.getTickDelta();
-                    //#if MC>=11500
-                    mc.gameRenderer.renderWorld(tickDelta, System.nanoTime(), new MatrixStack());
+                    //#if MC>=12100
+                    mc.gameRenderer.renderWorld(RenderTickCounter.ONE);
+                    //#else
+                    //$$ float tickDelta = mc.getTickDelta();
+                    //#if MC>=12006
+                    //$$ mc.gameRenderer.renderWorld(tickDelta, System.nanoTime());
+                    //#elseif MC>=11500
+                    //$$ mc.gameRenderer.renderWorld(tickDelta, System.nanoTime(), new MatrixStack());
                     //#else
                     //#if MC>=11400
                     //$$ mc.gameRenderer.renderWorld(tickDelta, System.nanoTime());
@@ -84,6 +90,7 @@ public class NoGuiScreenshot {
                     //$$ mc.entityRenderer.updateCameraAndRender(tickDelta, System.nanoTime());
                     //#else
                     //$$ mc.entityRenderer.updateCameraAndRender(tickDelta);
+                    //#endif
                     //#endif
                     //#endif
                     //#endif

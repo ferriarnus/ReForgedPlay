@@ -38,7 +38,7 @@ import net.minecraft.util.Identifier;
 
 public abstract class AbstractGuiCheckbox<T extends AbstractGuiCheckbox<T>>
         extends AbstractGuiClickable<T> implements IGuiCheckbox<T> {
-    protected static final Identifier BUTTON_SOUND = new Identifier("gui.button.press");
+    protected static final Identifier BUTTON_SOUND = Identifier.of("gui.button.press");
     protected static final ReadableColor BOX_BACKGROUND_COLOR = new Color(46, 46, 46);
 
     private String label;

@@ -9,10 +9,11 @@ import com.replaymod.recording.handler.ConnectionEventHandler;
 import com.replaymod.recording.handler.GuiHandler;
 import com.replaymod.recording.mixin.NetworkManagerAccessor;
 import com.replaymod.recording.packet.PacketListener;
+import com.replaymod.replay.ReplayHandler;
 import io.netty.channel.Channel;
 import io.netty.util.AttributeKey;
 import net.minecraft.network.ClientConnection;
-import net.minecraftforge.network.NetworkRegistry;
+import net.neoforged.neoforge.network.registration.NetworkRegistry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -78,7 +79,7 @@ public class ReplayModRecording implements Module {
         //#endif
         //#else
         //#if MC>=11400
-        NetworkRegistry.newEventChannel(Restrictions.PLUGIN_CHANNEL, () -> "0", s -> true, s -> true);
+        //NetworkRegistry.newEventChannel(Restrictions.PLUGIN_CHANNEL, () -> "0", s -> true, s -> true);
         //#else
         //$$ NetworkRegistry.INSTANCE.newChannel(Restrictions.PLUGIN_CHANNEL, new RestrictionsChannelHandler());
         //#endif
@@ -92,7 +93,7 @@ public class ReplayModRecording implements Module {
 
     public void initiateRecording(ClientConnection networkManager) {
         Channel channel = ((NetworkManagerAccessor) networkManager).getChannel();
-        if (channel.pipeline().get("ReplayModReplay_replaySender") != null) return;
+        if (channel.pipeline().get(ReplayHandler.PACKET_HANDLER_NAME) != null) return;
         //#if MC>=11400
         if (channel.hasAttr(ATTR_CHECKED)) return;
         channel.attr(ATTR_CHECKED).set(null);

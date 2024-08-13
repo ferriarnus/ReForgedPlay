@@ -21,6 +21,7 @@ import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerModelPart;
 import net.minecraft.util.Identifier;
 
 //#if MC>=10904
@@ -30,7 +31,6 @@ import net.minecraft.entity.effect.StatusEffects;
 //#endif
 
 //#if MC>=10800
-import net.minecraft.client.render.entity.PlayerModelPart;
 //#endif
 
 import java.util.Collections;
@@ -95,7 +95,7 @@ public class PlayerOverviewGui extends GuiScreen implements Closeable {
         Collections.sort(players, new PlayerComparator()); // Sort by name, spectators last
         for (final PlayerEntity p : players) {
             if (!(p instanceof AbstractClientPlayerEntity)) continue;
-            final Identifier texture = ((AbstractClientPlayerEntity) p).getSkinTexture();
+            final Identifier texture = ((AbstractClientPlayerEntity) p).getSkinTextures().texture();
             final GuiClickable panel = new GuiClickable().setLayout(new HorizontalLayout().setSpacing(2)).addElements(
                     new HorizontalLayout.Data(0.5), new GuiImage() {
                         @Override

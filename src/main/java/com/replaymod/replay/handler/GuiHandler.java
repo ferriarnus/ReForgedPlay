@@ -47,8 +47,8 @@ import net.minecraft.text.Text;
 
 //#if MC>=11400
 import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraftforge.fml.loading.FMLLoader;
-import net.minecraftforge.fml.loading.moddiscovery.ModFileInfo;
+import net.neoforged.fml.loading.FMLLoader;
+import net.neoforged.fml.loading.moddiscovery.ModFileInfo;
 //#endif
 
 import java.io.IOException;
@@ -319,8 +319,8 @@ public class GuiHandler extends EventRegistrations {
             ) {
                 @Override
                 //#if MC>=12000
-                public void renderButton(DrawContext context, int mouseX, int mouseY, float delta) {
-                    super.renderButton(context, mouseX, mouseY, delta);
+                public void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
+                    super.renderWidget(context, mouseX, mouseY, delta);
                 //#elseif MC>=11904
                 //$$ public void renderButton(MatrixStack context, int mouseX, int mouseY, float delta) {
                 //$$     super.renderButton(context, mouseX, mouseY, delta);

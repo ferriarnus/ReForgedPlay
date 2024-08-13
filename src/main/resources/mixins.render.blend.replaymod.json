@@ -19,7 +19,7 @@
     //#if MC>=10904
     "ItemRendererAccessor",
     //#endif
-    "ParticleAccessor",
+    "ParticleAccessor"
     //#if MC<11900
     //$$ "MixinRenderGlobal",
     //$$ "MixinRenderItem",

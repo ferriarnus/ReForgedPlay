@@ -152,9 +152,6 @@ public class ReplayModReplay implements Module {
             }
         });
 
-        MinecraftAccessor mc = (MinecraftAccessor) core.getMinecraft();
-        mc.setTimer(new InputReplayTimer(mc.getTimer(), this));
-
         new GuiHandler(this).register();
     }
 

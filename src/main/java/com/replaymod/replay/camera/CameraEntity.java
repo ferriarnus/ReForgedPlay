@@ -21,11 +21,13 @@ import com.replaymod.replaystudio.util.Location;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
+import net.minecraft.client.util.SkinTextures;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.decoration.ItemFrameEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.entity.player.PlayerModelPart;
 import net.minecraft.item.ItemStack;
 import net.minecraft.stat.StatHandler;
 import net.minecraft.util.Identifier;
@@ -83,7 +85,6 @@ import net.minecraft.util.Hand;
 
 //#if MC>=10800
 import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.client.render.entity.PlayerModelPart;
 //#else
 //$$ import net.minecraft.client.entity.EntityClientPlayerMP;
 //$$ import net.minecraft.util.Session;
@@ -480,23 +481,23 @@ public class CameraEntity
     }
 
     //#if MC>=12002
-    //$$ @Override
-    //$$ public SkinTextures getSkinTextures() {
-    //$$     Entity view = this.client.getCameraEntity();
-    //$$     if (view != this && view instanceof AbstractClientPlayerEntity) {
-    //$$         return ((AbstractClientPlayerEntity) view).getSkinTextures();
-    //$$     }
-    //$$     return super.getSkinTextures();
-    //$$ }
-    //#else
     @Override
-    public Identifier getSkinTexture() {
+    public SkinTextures getSkinTextures() {
         Entity view = this.client.getCameraEntity();
         if (view != this && view instanceof AbstractClientPlayerEntity) {
-            return ((AbstractClientPlayerEntity) view).getSkinTexture();
+            return ((AbstractClientPlayerEntity) view).getSkinTextures();
         }
-     return super.getSkinTexture();
+        return super.getSkinTextures();
     }
+    //#else
+    //$$ @Override
+    //$$ public Identifier getSkinTexture() {
+    //$$     Entity view = this.client.getCameraEntity();
+    //$$     if (view != this && view instanceof AbstractClientPlayerEntity) {
+    //$$         return ((AbstractClientPlayerEntity) view).getSkinTexture();
+    //$$     }
+    //$$  return super.getSkinTexture();
+    //$$  }
 
     //#if MC>=10800
     //$$ @Override

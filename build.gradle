@@ -1,29 +1,16 @@
 plugins {
-    id 'dev.architectury.loom' version '1.6-SNAPSHOT'
+    id 'dev.architectury.loom' version '1.7-SNAPSHOT'
     id 'maven-publish'
     id "com.github.johnrengelman.shadow" version "8.1.1"
 }
-
+//https://github.com/ReplayMod/ReplayMod/compare/1bf1e0d7be382b8a48208ef90ba9c8a6d3faec8a..9f5a8c3d0ff0ed80fe632496e929224e420a927d GuiKeyframeTimeline
 version = project.mod_version
 group = project.maven_group
 
-sourceCompatibility = JavaVersion.VERSION_17
-targetCompatibility = JavaVersion.VERSION_17
+sourceCompatibility = JavaVersion.VERSION_21
+targetCompatibility = JavaVersion.VERSION_21
 
 loom {
-    forge {
-        mixinConfigs = [
-                "mixins.compat.mapwriter.replaymod.json",
-                "mixins.compat.shaders.replaymod.json",
-                "mixins.core.replaymod.json",
-                "mixins.extras.playeroverview.replaymod.json",
-                "mixins.jgui.json",
-                "mixins.recording.replaymod.json",
-                "mixins.render.blend.replaymod.json",
-                "mixins.render.replaymod.json",
-                "mixins.replay.replaymod.json"
-        ]
-    }
     runs {
         it.configureEach {
             vmArgs("-Xmx8G", "-XX:+UseZGC")
@@ -44,7 +31,7 @@ configurations {
 processResources {
     inputs.property "version", project.version
     archivesBaseName = "reforgedplaymod-${project.minecraft_version}"
-    filesMatching("META-INF/mods.toml") {
+    filesMatching("META-INF/neoforge.mods.toml") {
         expand "version": project.version
     }
 }
@@ -63,6 +50,13 @@ repositories {
     maven { url "https://maven.neoforged.net" }
     maven { url "https://jitpack.io" }
 
+    maven {
+        name = "Modrinth"
+        url = "https://api.modrinth.com/maven"
+        content {
+            includeGroup "maven.modrinth"
+        }
+    }
 }
 
 shadowJar {
@@ -81,15 +75,15 @@ dependencies {
 
     mappings loom.layered() {
         it.mappings("net.fabricmc:yarn:${project.yarn_mappings}:v2")
-        it.mappings file("mappings/yarnpatch.tiny")
+        it.mappings("dev.architectury:yarn-mappings-patch-neoforge:1.21+build.4")
     }
     // To change the versions see the gradle.properties file
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
     //mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
-    forge "net.minecraftforge:forge:${project.minecraft_version}-${project.forge_version}"
+    neoForge "net.neoforged:neoforge:${project.neoforge_version}"
 
-    bundle("com.github.ReplayMod:ReplayStudio:d9f7c11-slim")
-    minecraftRuntimeLibraries(implementation("com.github.ReplayMod:ReplayStudio:d9f7c11"))
+    bundle("com.github.ReplayMod:ReplayStudio:master-SNAPSHOT")
+    minecraftRuntimeLibraries(implementation("com.github.ReplayMod:ReplayStudio:master-SNAPSHOT"))
     include(implementation("com.github.viaversion:opennbt:0a02214"))
     include(implementation("com.github.ReplayMod:lwjgl-utils:27dcd66"))
     minecraftRuntimeLibraries("com.github.ReplayMod:lwjgl-utils:27dcd66")
@@ -117,6 +111,5 @@ dependencies {
 
     testImplementation 'junit:junit:4.11'
 
-    compileOnly(annotationProcessor("io.github.llamalad7:mixinextras-common:0.3.6"))
-    implementation(include("io.github.llamalad7:mixinextras-forge:0.3.6"))
+    modCompileOnly "maven.modrinth:iris:1.7.0+1.20.6"
 }

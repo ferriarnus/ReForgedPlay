@@ -40,6 +40,7 @@ import net.minecraft.SharedConstants;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.resource.language.I18n;
+import net.minecraft.util.StringHelper;
 
 import static de.johni0702.minecraft.gui.utils.Utils.clamp;
 import static de.johni0702.minecraft.gui.versions.MCVer.Keyboard;
@@ -167,8 +168,10 @@ public abstract class AbstractGuiTextField<T extends AbstractGuiTextField<T>>
 
     @Override
     public T writeChar(char c) {
-        //#if MC>=11400
-        if (!SharedConstants.isValidChar(c)) {
+        //#if MC>=12006
+        if (!StringHelper.isValidChar(c)) {
+        //#elseif MC>=11400
+        //$$ if (!SharedConstants.isValidChar(c)) {
         //#else
         //$$ if (!ChatAllowedCharacters.isAllowedCharacter(c)) {
         //#endif

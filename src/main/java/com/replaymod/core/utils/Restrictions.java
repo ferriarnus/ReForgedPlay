@@ -1,7 +1,11 @@
 package com.replaymod.core.utils;
 
-import net.minecraft.network.packet.s2c.play.CustomPayloadS2CPacket;
+import net.minecraft.network.packet.s2c.common.CustomPayloadS2CPacket;
 import net.minecraft.network.PacketByteBuf;
+//#if MC>=12006
+import net.minecraft.network.codec.PacketCodec;
+import net.minecraft.network.packet.CustomPayload;
+//#endif
 //#if MC>=10904
 import net.minecraft.util.Identifier;
 //#endif
@@ -16,7 +20,7 @@ import io.netty.buffer.Unpooled;
  */
 public class Restrictions {
     //#if MC>=11400
-    public static final Identifier PLUGIN_CHANNEL = new Identifier("replaymod", "restrict");
+    public static final Identifier PLUGIN_CHANNEL = Identifier.of("replaymod", "restrict");
     //#else
     //$$ public static final String PLUGIN_CHANNEL = "Replay|Restrict";
     //#endif
@@ -26,11 +30,13 @@ public class Restrictions {
     private boolean onlyRecordingPlayer;
 
     public String handle(CustomPayloadS2CPacket packet) {
-        //#if MC>=12002
+        //#if MC>=12006
+        PacketByteBuf buffer = new PacketByteBuf(Unpooled.wrappedBuffer(((Payload) packet.payload()).bytes()));
+        //#elseif MC>=12002
         //$$ PacketByteBuf buffer = new PacketByteBuf(Unpooled.buffer());
         //$$ packet.write(buffer);
         //#elseif MC>=10800
-        PacketByteBuf buffer = packet.getData();
+        //PacketByteBuf buffer = packet.getData();
         //#else
         //$$ PacketBuffer buffer = new PacketBuffer(Unpooled.wrappedBuffer(packet.func_149168_d()));
         //#endif
@@ -67,4 +73,22 @@ public class Restrictions {
     public boolean isOnlyRecordingPlayer() {
         return onlyRecordingPlayer;
     }
+
+    //#if MC>=12006
+    public static final CustomPayload.Id<Payload> ID = new CustomPayload.Id<>(PLUGIN_CHANNEL);
+    public static final PacketCodec<? super PacketByteBuf, Payload> CODEC = PacketCodec.ofStatic(
+            (buf, payload) -> buf.writeBytes(payload.bytes()),
+            buf -> {
+                byte[] bytes = new byte[buf.readableBytes()];
+                buf.readBytes(bytes);
+                return new Payload(bytes);
+            }
+    );
+    public record Payload(byte[] bytes) implements CustomPayload {
+        @Override
+        public Id<? extends CustomPayload> getId() {
+            return ID;
+        }
+    }
+    //#endif
 }

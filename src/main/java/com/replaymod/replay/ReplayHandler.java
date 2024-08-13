@@ -5,12 +5,12 @@ import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.systems.VertexSorter;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.core.mixin.MinecraftAccessor;
 import com.replaymod.core.mixin.TimerAccessor;
 import com.replaymod.core.utils.Restrictions;
 import com.replaymod.core.utils.Utils;
-import com.replaymod.core.utils.WrappedTimer;
 import com.replaymod.replay.camera.CameraEntity;
 import com.replaymod.replay.camera.SpectatorCameraController;
 import com.replaymod.replay.events.ReplayClosedCallback;
@@ -28,12 +28,17 @@ import de.johni0702.minecraft.gui.element.advanced.GuiProgressBar;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.popup.AbstractGuiPopup;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelOutboundHandlerAdapter;
+import io.netty.channel.ChannelPromise;
 import io.netty.channel.embedded.EmbeddedChannel;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.DownloadingTerrainScreen;
 import net.minecraft.client.network.ClientLoginNetworkHandler;
 import net.minecraft.client.util.Window;
+import net.minecraft.network.NetworkPhase;
 import net.minecraft.network.NetworkState;
+import net.minecraft.network.codec.PacketEncoder;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.util.crash.CrashReport;
 import net.minecraft.entity.Entity;
@@ -43,15 +48,25 @@ import net.minecraft.network.ClientConnection;
 import java.io.IOException;
 import java.util.*;
 
-//#if MC>=12003
-//$$ import net.minecraft.client.resource.server.ServerResourcePackManager;
+//#if MC>=12006
+import net.minecraft.network.handler.NetworkStateTransitions;
+import net.minecraft.network.state.LoginStates;
 //#endif
 
+//#if MC>=12006
+import com.replaymod.recording.mixin.DecoderHandlerAccessor;
+import net.minecraft.network.NetworkState;
+import net.minecraft.network.handler.DecoderHandler;
+import net.minecraft.network.handler.NetworkStateTransitions;
+import net.minecraft.network.packet.s2c.config.ReadyS2CPacket;
+import net.minecraft.network.state.LoginStates;
+//#else
 //#if MC>=12002
-//$$ import io.netty.channel.ChannelDuplexHandler;
-//$$ import io.netty.channel.ChannelPromise;
-//$$ import net.minecraft.network.handler.NetworkStateTransitionHandler;
-//$$ import net.minecraft.network.packet.Packet;
+//$$ import net.minecraft.network.packet.s2c.login.LoginSuccessS2CPacket;
+//#endif
+
+//#if MC>=12003
+import net.minecraft.client.resource.server.ServerResourcePackManager;
 //#endif
 
 //#if MC>=12000
@@ -60,12 +75,12 @@ import net.minecraft.client.gui.DrawContext;
 //#endif
 
 //#if MC>=11904
-import net.minecraft.network.PacketBundler;
+//$$ import net.minecraft.network.PacketBundler;
 //#endif
 
 //#if MC>=11700
 import net.minecraft.client.render.DiffuseLighting;
-import net.minecraftforge.network.NetworkHooks;
+//$$ import net.minecraftforge.network.NetworkHooks;
 import org.joml.Matrix4f;
 //#endif
 
@@ -124,12 +139,15 @@ import net.minecraft.network.NetworkSide;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import static com.replaymod.core.utils.Utils.DEFAULT_MS_PER_TICK;
 import static com.replaymod.core.versions.MCVer.*;
 import static com.replaymod.replay.ReplayModReplay.LOGGER;
 import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
 
 public class ReplayHandler {
+
+    public static final String PACKET_HANDLER_NAME = "ReplayModReplay_packetHandler";
 
     private static MinecraftClient mc = getMinecraft();
 
@@ -182,7 +200,7 @@ public class ReplayHandler {
 
         markers = replayFile.getMarkers().or(Collections.emptySet());
 
-        fullReplaySender = new FullReplaySender(this, replayFile, false);
+        fullReplaySender = new FullReplaySender(this, replayFile);
         //#if MC>=10800
         quickReplaySender = new QuickReplaySender(ReplayModReplay.instance, replayFile);
         //#endif
@@ -261,7 +279,7 @@ public class ReplayHandler {
 
         TimerAccessor timer = (TimerAccessor) ((MinecraftAccessor) mc).getTimer();
         //#if MC>=11200
-        timer.setTickLength(WrappedTimer.DEFAULT_MS_PER_TICK);
+        timer.setTickLength(DEFAULT_MS_PER_TICK);
         //#else
         //$$ timer.setTimerSpeed(1);
         //#endif
@@ -321,51 +339,72 @@ public class ReplayHandler {
         //$$ ChannelOutboundHandlerAdapter dummyHandler = new ChannelOutboundHandlerAdapter();
         //$$ channel = new EmbeddedChannel(dummyHandler);
         //$$ channel.pipeline().remove(dummyHandler);
+        //$$ channel.pipeline().removeLast();
         //#endif
-        //#if MC>=10800
-        channel.pipeline().addLast("ReplayModReplay_quickReplaySender", quickReplaySender);
-        //#endif
-        channel.pipeline().addLast("ReplayModReplay_replaySender", fullReplaySender);
+        channel.pipeline().addFirst("ReplayModReplay_head", new DropOutboundMessagesHandler());
+
+        quickReplaySender.setChannel(channel);
+        fullReplaySender.setChannel(channel);
+
+        //#if MC>=12006
+        channel.pipeline().addLast("inbound_config", new NetworkStateTransitions.InboundConfigurer());
+        channel.pipeline().addLast("outbound_config", new NetworkStateTransitions.OutboundConfigurer());
+        //#else
         //#if MC>=12002
-        //$$ channel.pipeline().addLast("ReplayModReplay_transition", new DummyNetworkStateTransitionHandler());
+        //$$ channel.pipeline().addLast("decoder", new DecoderHandler(ClientConnection.CLIENTBOUND_PROTOCOL_KEY));
+        //$$ channel.pipeline().addLast("encoder", new PacketEncoder(ClientConnection.SERVERBOUND_PROTOCOL_KEY));
+        //#else
+        //$$ channel.pipeline().addLast("decoder", new DecoderHandler<>(NetworkState.CLIENTBOUND));
+        //$$ channel.pipeline().addLast("encoder", new PacketEncoder<>(NetworkSide.SERVERBOUND));
+        //#endif
+        //#if MC>=12002
         //$$ channel.pipeline().addLast("bundler", new PacketBundler(ClientConnection.CLIENTBOUND_PROTOCOL_KEY));
         //#elseif MC>=11904
-        channel.pipeline().addLast("bundler", new PacketBundler(NetworkSide.CLIENTBOUND));
+        //$$ channel.pipeline().addLast("bundler", new PacketBundler(NetworkSide.CLIENTBOUND));
         //#endif
+        //#endif
+        channel.pipeline().addLast(PACKET_HANDLER_NAME, quickMode ? quickReplaySender : fullReplaySender);
         channel.pipeline().addLast("packet_handler", networkManager);
         channel.pipeline().fireChannelActive();
 
-        NetworkHooks.registerClientLoginChannel(networkManager);
+        //NetworkHooks.registerClientLoginChannel(networkManager);
 
         // MC usually transitions from handshake to login via the packets it sends.
         // We don't send any packets (there is no server to receive them), so we need to switch manually.
+        //#if MC>=12006
+        networkManager.transitionInbound(LoginStates.S2C, new ClientLoginNetworkHandler(
+                networkManager, mc, null, null, false, null, it -> {}, null
+        ));
+        networkManager.transitionOutbound(LoginStates.C2S);
+        //#else
         //#if MC>=12002
         //$$ channel.attr(ClientConnection.CLIENTBOUND_PROTOCOL_KEY).set(NetworkState.LOGIN.getHandler(NetworkSide.CLIENTBOUND));
         //$$ channel.attr(ClientConnection.SERVERBOUND_PROTOCOL_KEY).set(NetworkState.LOGIN.getHandler(NetworkSide.SERVERBOUND));
         //#else
-        networkManager.setState(NetworkState.LOGIN);
+        //$$ networkManager.setState(NetworkPhase.LOGIN);
         //#endif
 
-        networkManager.setPacketListener(new ClientLoginNetworkHandler(
-                networkManager,
-                mc,
-                null
-                //#if MC>=11903
-                , null
-                , false
-                , null
-                //#endif
-                //#if MC>=11400
-                , it -> {}
-                //#endif
-        ));
+        //$$ networkManager.setPacketListener(new ClientLoginNetworkHandler(
+        //$$         networkManager,
+        //$$         mc,
+        //$$         null
+        //$$         //#if MC>=11903
+        //$$         , null
+        //$$         , false
+        //$$         , null
+        //$$         //#endif
+        //$$         //#if MC>=11400
+        //$$         , it -> {}, null
+        //$$         //#endif
+        //$$ ));
+        //#endif
 
         //#if MC>=11400
         ((MinecraftAccessor) mc).setConnection(networkManager);
         //#endif
 
         //#if MC>=12003
-        //$$ mc.getServerResourcePackProvider().init(networkManager, ServerResourcePackManager.AcceptanceStatus.ALLOWED);
+        mc.getServerResourcePackProvider().init(networkManager, ServerResourcePackManager.AcceptanceStatus.ALLOWED);
         //#endif
     }
 
@@ -462,6 +501,8 @@ public class ReplayHandler {
         } else {
             targetCameraPosition = null;
         }
+
+        channel.pipeline().replace(PACKET_HANDLER_NAME, PACKET_HANDLER_NAME, quickMode ? quickReplaySender : fullReplaySender);
 
         if (quickMode) {
             quickReplaySender.register();
@@ -651,7 +692,28 @@ public class ReplayHandler {
         long diff = targetTime - (replaySender.isHurrying() ? replaySender.getDesiredTimestamp() : replaySender.currentTimeStamp());
         if (diff != 0) {
             if (diff > 0 && diff < 5000) { // Small difference and no time travel
-                replaySender.jumpToTime(targetTime);
+                if (replaySender.paused()) {
+                    replaySender.setSyncModeAndWait();
+                    do {
+                        replaySender.sendPacketsTill(targetTime);
+                        targetTime += 500;
+                    } while (mc.player == null || mc.currentScreen instanceof DownloadingTerrainScreen);
+                    replaySender.setAsyncMode(true);
+
+                    for (int i = 0; i < Math.min(diff / 50, 3); i++) {
+                        //#if MC>=10800 && MC<11400
+                        //$$ try {
+                        //$$     mc.runTick();
+                        //$$ } catch (IOException e) {
+                        //$$     e.printStackTrace(); // This should never be thrown but whatever
+                        //$$ }
+                        //#else
+                        mc.tick();
+                        //#endif
+                    }
+                } else {
+                    replaySender.jumpToTime(targetTime);
+                }
             } else { // We either have to restart the replay or send a significant amount of packets
                 // Render our please-wait-screen
                 GuiScreen guiScreen = new GuiScreen();
@@ -683,9 +745,14 @@ public class ReplayHandler {
                         , VertexSorter.BY_Z
                         //#endif
                 );
-                MatrixStack matrixStack = RenderSystem.getModelViewStack();
-                matrixStack.loadIdentity();
-                matrixStack.translate(0, 0, -2000);
+                //#if MC>=12006
+                org.joml.Matrix4fStack matrixStack = RenderSystem.getModelViewStack();
+                matrixStack.translation(0, 0, -2000);
+                //#else
+                //$$ MatrixStack matrixStack = RenderSystem.getModelViewStack();
+                //$$ matrixStack.loadIdentity();
+                //$$ matrixStack.translate(0, 0, -2000);
+                //#endif
                 RenderSystem.applyModelViewMatrix();
                 DiffuseLighting.enableGuiDepthLighting();
                 //#else
@@ -706,7 +773,9 @@ public class ReplayHandler {
 
                 guiScreen.toMinecraft().init(mc, window.getScaledWidth(), window.getScaledHeight());
                 //#if MC>=12000
-                guiScreen.toMinecraft().render(new DrawContext(mc, mc.getBufferBuilders().getEntityVertexConsumers()), 0, 0, 0);
+                DrawContext drawContext = new DrawContext(mc, mc.getBufferBuilders().getEntityVertexConsumers());
+                guiScreen.toMinecraft().render(drawContext, 0, 0, 0);
+                drawContext.draw();
                 //#elseif MC>=11600
                 //$$ guiScreen.toMinecraft().render(new MatrixStack(), 0, 0, 0);
                 //#else
@@ -808,24 +877,24 @@ public class ReplayHandler {
         //#endif
     }
 
-    //#if MC>=12002
-    //$$ private static class DummyNetworkStateTransitionHandler extends ChannelDuplexHandler {
-    //$$     @Override
-    //$$     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-    //$$         if (msg instanceof Packet<?> packet) {
-    //$$             NetworkStateTransitionHandler.handle(ctx.channel().attr(ClientConnection.CLIENTBOUND_PROTOCOL_KEY), packet);
-    //$$         }
-    //$$         super.channelRead(ctx, msg);
-    //$$
-    //$$ }
+    private static class DropOutboundMessagesHandler extends ChannelOutboundHandlerAdapter {
+        @Override
+        public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) {
+            // The embedded channel's event loop will consider every thread to be in it and as such provides no
+            // guarantees that only one thread is using the pipeline at any one time.
+            // For reading the replay sender (either sync or async) is the only thread ever writing.
+            // For writing it may very well happen that multiple threads want to use the pipline at the same time.
+            // It's unclear whether the EmbeddedChannel is supposed to be thread-safe (the behavior of the event loop
+            // does suggest that). However it seems like it either isn't (likely) or there is a race condition.
+            // See: https://www.replaymod.com/forum/thread/1752#post8045 (https://paste.replaymod.com/lotacatuwo)
+            // To work around this issue, we just outright drop all write/flush requests (they aren't needed anyway).
+            // This still leaves channel handlers upstream with the threading issue but they all seem to cope well with it.
+            promise.setSuccess();
+        }
 
-    //$$     @Override
-    //$$     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
-    //$$         if (msg instanceof Packet<?> packet) {
-    //$$             NetworkStateTransitionHandler.handle(ctx.channel().attr(ClientConnection.SERVERBOUND_PROTOCOL_KEY), packet);
-    //$$         }
-    //$$         super.write(ctx, msg, promise);
-    //$$     }
-    //$$ }
-    //#endif
+        @Override
+        public void flush(ChannelHandlerContext ctx) {
+            // See write method above
+        }
+    }
 }

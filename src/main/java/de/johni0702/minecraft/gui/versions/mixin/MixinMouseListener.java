@@ -45,9 +45,13 @@ public abstract class MixinMouseListener {
         }
     }
 
-    @Inject(method = "method_1602", at = @At("HEAD"), cancellable = true)
+    //#if MC>=12005
+    @Inject(method = "method_55795", at = @At("HEAD"), cancellable = true)
+    //#else
+    //$$ @Inject(method = "method_1602", at = @At("HEAD"), cancellable = true)
     //#if MC>=11700
     private void mouseDrag(Screen screen, double x, double y, double dx, double dy, CallbackInfo ci) {
+    //#endif
     //#else
     //$$ private void mouseDrag(Element element, double x, double y, double dx, double dy, CallbackInfo ci) {
     //#endif
@@ -60,28 +64,28 @@ public abstract class MixinMouseListener {
             method = "onMouseScroll",
             at = @At(value = "INVOKE",
                     //#if MC>=12002
-                    //$$ target = "Lnet/minecraft/client/gui/screen/Screen;mouseScrolled(DDDD)Z"
+                    target = "Lnet/minecraft/client/gui/screen/Screen;mouseScrolled(DDDD)Z"
                     //#else
-                    target = "Lnet/minecraft/client/gui/screen/Screen;mouseScrolled(DDD)Z"
+                    //$$ target = "Lnet/minecraft/client/gui/screen/Screen;mouseScrolled(DDD)Z"
                     //#endif
             )
     )
     private boolean mouseScroll(Screen element, double x, double y,
                                 //#if MC>=12002
-                                //$$ double horizontal,
+                                double horizontal,
                                 //#endif
                                 double vertical
     ) {
         //#if MC<12002
-        double horizontal = 0;
+        //$$ double horizontal = 0;
         //#endif
         if (MouseCallback.EVENT.invoker().mouseScroll(x, y, horizontal, vertical)) {
             return true;
         } else {
             //#if MC>=12002
-            //$$ return element.mouseScrolled(x, y, horizontal, vertical);
+            return element.mouseScrolled(x, y, horizontal, vertical);
             //#else
-            return element.mouseScrolled(x, y, vertical);
+            //$$ return element.mouseScrolled(x, y, vertical);
             //#endif
         }
     }

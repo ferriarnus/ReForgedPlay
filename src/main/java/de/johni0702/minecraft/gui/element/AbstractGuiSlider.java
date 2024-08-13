@@ -40,8 +40,8 @@ import net.minecraft.util.Identifier;
 // TODO: Currently assumes a height of 20
 public abstract class AbstractGuiSlider<T extends AbstractGuiSlider<T>> extends AbstractGuiElement<T> implements Clickable, Draggable, IGuiSlider<T> {
     //#if MC>=12002
-    //$$ protected static final Identifier TEXTURE = new Identifier("widget/slider");
-    //$$ protected static final Identifier HANDLE_TEXTURE = new Identifier("widget/slider_handle");
+    protected static final Identifier TEXTURE = Identifier.of("widget/slider");
+    protected static final Identifier HANDLE_TEXTURE = Identifier.of("widget/slider_handle");
     //#endif
 
     private Runnable onValueChanged;
@@ -120,26 +120,26 @@ public abstract class AbstractGuiSlider<T extends AbstractGuiSlider<T>> extends 
         int height = size.getHeight();
 
         //#if MC>=12002
-        //$$ ReadablePoint offset = renderer.getOpenGlOffset();
+        ReadablePoint offset = renderer.getOpenGlOffset();
         //#else
-        renderer.bindTexture(GuiButton.WIDGETS_TEXTURE);
+        //$$ renderer.bindTexture(GuiButton.WIDGETS_TEXTURE);
         //#endif
 
         // Draw background
         //#if MC>=12002
-        //$$ renderer.getContext().drawGuiTexture(TEXTURE, offset.getX(), offset.getY(), width, height);
+        renderer.getContext().drawGuiTexture(TEXTURE, offset.getX(), offset.getY(), width, height);
         //#else
-        renderer.drawTexturedRect(0, 0, 0, 46, width / 2, height);
-        renderer.drawTexturedRect(width / 2, 0, 200 - width / 2, 46, width / 2, height);
+        //$$ renderer.drawTexturedRect(0, 0, 0, 46, width / 2, height);
+        //$$ renderer.drawTexturedRect(width / 2, 0, 200 - width / 2, 46, width / 2, height);
         //#endif
 
         // Draw slider
         int sliderX = (width - 8) * value / steps;
         //#if MC>=12002
-        //$$ renderer.getContext().drawGuiTexture(HANDLE_TEXTURE, offset.getX() + sliderX, offset.getY(), 8, 20);
+        renderer.getContext().drawGuiTexture(HANDLE_TEXTURE, offset.getX() + sliderX, offset.getY(), 8, 20);
         //#else
-        renderer.drawTexturedRect(sliderX, 0, 0, 66, 4, 20);
-        renderer.drawTexturedRect(sliderX + 4, 0, 196, 66, 4, 20);
+        //$$ renderer.drawTexturedRect(sliderX, 0, 0, 66, 4, 20);
+        //$$ renderer.drawTexturedRect(sliderX + 4, 0, 196, 66, 4, 20);
         //#endif
 
         // Draw text

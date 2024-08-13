@@ -103,9 +103,9 @@ public abstract class AbstractGuiScreen<T extends AbstractGuiScreen<T>> extends 
                     break;
                 case DEFAULT:
                     //#if MC>=12002
-                    //$$ wrapped.renderBackground(renderer.getContext(), renderInfo.mouseX, renderInfo.mouseY, renderInfo.partialTick);
+                    wrapped.renderBackground(renderer.getContext(), renderInfo.mouseX, renderInfo.mouseY, renderInfo.partialTick);
                     //#elseif MC>=12000
-                    wrapped.renderBackground(renderer.getContext());
+                    //$$ wrapped.renderBackground(renderer.getContext());
                     //#elseif MC>=11600
                     //$$ wrapped.renderBackground(renderer.getMatrixStack());
                     //#else
@@ -117,8 +117,10 @@ public abstract class AbstractGuiScreen<T extends AbstractGuiScreen<T>> extends 
                     renderer.drawRect(0, 0, size.getWidth(), size.getHeight(), top, top, bottom, bottom);
                     break;
                 case DIRT:
-                    //#if MC>=12000
-                    wrapped.renderBackgroundTexture(renderer.getContext());
+                    //#if MC>=12006
+                    wrapped.renderBackground(renderer.getContext(), renderInfo.mouseX, renderInfo.mouseY, renderInfo.partialTick);
+                    //#elseif MC>=12000
+                    //$$ wrapped.renderBackgroundTexture(renderer.getContext());
                     //#elseif MC>=11904
                     //$$ wrapped.renderBackgroundTexture(renderer.getMatrixStack());
                     //#elseif MC>=11600
@@ -362,6 +364,9 @@ public abstract class AbstractGuiScreen<T extends AbstractGuiScreen<T>> extends 
                 //#endif
                 //#if MC>=12002
                 //$$ double dWheelHorizontal,
+                //#endif
+                //#if MC>=12002
+                double dWheelHorizontal,
                 //#endif
                 double dWheel
         ) {

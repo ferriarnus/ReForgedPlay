@@ -9,12 +9,13 @@
     "entity_tracking.Mixin_FixPartialUpdates",
     "world_border.Mixin_UseReplayTime_ForMovement",
     "world_border.Mixin_UseReplayTime_ForTexture",
+    "Mixin_HandleInputsInReplay",
     "Mixin_FixNPCSkinCaching",
     //#if MC>=11900
     "Mixin_AllowExpiredPlayerKeys",
     //#endif
     //#if MC>=11800
-    "Mixin_FixEntityNotTracking",
+    //$$ "Mixin_FixEntityNotTracking",
     //#endif
     //#if MC>=11600
     "Mixin_MoveRealmsButton",
@@ -55,8 +56,7 @@
     "MixinRenderItem",
     "MixinRenderLivingBase",
     "MixinTileEntityEndPortalRenderer",
-    "MixinWorldClient",
-    "Mixin_ScreenButton"
+    "MixinWorldClient"
   ],
   "compatibilityLevel": "JAVA_8",
   "minVersion": "0.6.11"

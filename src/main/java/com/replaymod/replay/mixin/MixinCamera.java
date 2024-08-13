@@ -13,20 +13,41 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+//#if MC>=12005
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import org.joml.Matrix4f;
+//#endif
+
 @Mixin(GameRenderer.class)
 public class MixinCamera {
     @Shadow @Final private MinecraftClient client;
-    @Inject(
-            method = "renderWorld",
-            at = @At(
-                    value = "INVOKE",
-                    target = "Lnet/minecraft/client/render/Camera;getPitch()F"
-            )
-    )
-    private void applyRoll(float float_1, long long_1, MatrixStack matrixStack, CallbackInfo ci) {
+    //#if MC>=12005
+    //#if MC>=12100
+    @ModifyExpressionValue(method = "renderWorld", at = @At(value = "INVOKE", target = "Lorg/joml/Matrix4f;rotation(Lorg/joml/Quaternionfc;)Lorg/joml/Matrix4f;"))
+    //#else
+    //$$ @ModifyExpressionValue(method = "renderWorld", at = @At(value = "INVOKE", target = "Lorg/joml/Matrix4f;rotationXYZ(FFF)Lorg/joml/Matrix4f;"))
+    //#endif
+    private Matrix4f applyRoll(Matrix4f matrix) {
+    //#else
+    // $$ @Inject(
+    //$$         method = "renderWorld",
+    //$$         at = @At(
+    //$$                 value = "INVOKE",
+    //$$                 target = "Lnet/minecraft/client/render/Camera;getPitch()F"
+    //$$         )
+    //$$ )
+    //$$ private void applyRoll(float float_1, long long_1, MatrixStack matrixStack, CallbackInfo ci) {
+    //#endif
         Entity entity = this.client.getCameraEntity() == null ? this.client.player : this.client.getCameraEntity();
         if (entity instanceof CameraEntity) {
-            matrixStack.multiply(new org.joml.Quaternionf().fromAxisAngleDeg(new org.joml.Vector3f(0, 0, 1), ((CameraEntity) entity).roll));
+            //#if MC>=12005
+            matrix.rotateLocal(((CameraEntity) entity).roll * (float) Math.PI / 180f, 0f, 0f, 1f);
+            //#else
+            //$$ matrixStack.multiply(new org.joml.Quaternionf().fromAxisAngleDeg(new org.joml.Vector3f(0, 0, 1), ((CameraEntity) entity).roll));
+            //#endif
         }
+        //#if MC>=12005
+        return matrix;
+        //#endif
     }
 }

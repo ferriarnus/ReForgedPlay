@@ -10,6 +10,8 @@ import de.johni0702.minecraft.gui.utils.lwjgl.vector.Vector3f;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.render.BufferBuilder;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.network.NetworkPhase;
 import net.minecraft.network.NetworkState;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
@@ -104,33 +106,33 @@ public class MCVer {
         //#endif
     }
 
-    public static NetworkState asMc(State state) {
+    public static NetworkPhase asMc(State state) {
         switch (state) {
-            case HANDSHAKE: return NetworkState.HANDSHAKING;
-            case STATUS: return NetworkState.STATUS;
-            case LOGIN: return NetworkState.LOGIN;
+            case HANDSHAKE: return NetworkPhase.HANDSHAKING;
+            case STATUS: return NetworkPhase.STATUS;
+            case LOGIN: return NetworkPhase.LOGIN;
             //#if MC>=12002
-            //$$ case CONFIGURATION: return NetworkState.CONFIGURATION;
+            case CONFIGURATION: return NetworkPhase.CONFIGURATION;
             //#endif
-            case PLAY: return NetworkState.PLAY;
+            case PLAY: return NetworkPhase.PLAY;
         }
         throw new IllegalArgumentException("Unexpected value: " + state);
     }
 
-    public static State fromMc(NetworkState mcState) {
+    public static State fromMc(NetworkPhase mcState) {
         switch (mcState) {
             case HANDSHAKING: return State.HANDSHAKE;
             case STATUS: return State.STATUS;
             case LOGIN: return State.LOGIN;
             //#if MC>=12002
-            //$$ case CONFIGURATION: return State.CONFIGURATION;
+            case CONFIGURATION: return State.CONFIGURATION;
             //#endif
             case PLAY: return State.PLAY;
         }
         throw new IllegalArgumentException("Unexpected value: " + mcState);
     }
 
-    public static PacketTypeRegistry getPacketTypeRegistry(NetworkState state) {
+    public static PacketTypeRegistry getPacketTypeRegistry(NetworkPhase state) {
         return getPacketTypeRegistry(fromMc(state));
     }
 
@@ -169,20 +171,20 @@ public class MCVer {
     //#endif
 
     //#if MC<12003
-    public static
+    //$$ public static
     //#if MC>=11400
-    CompletableFuture<?>
+    //$$CompletableFuture<?>
     //#else
     //$$ ListenableFuture<?>
     //#endif
-    setServerResourcePack(File file) {
-        //#if MC>=11400
-        return getMinecraft().getServerResourcePackProvider().loadServerPack(
-                file
-                //#if MC>=11600
-                , ResourcePackSource.SERVER
-                //#endif
-        );
+    //$$ setServerResourcePack(File file) {
+    //$$    //#if MC>=11400
+            //$$    return getMinecraft().getServerResourcePackProvider().loadServerPack(
+    //$$            file
+    //$$            //#if MC>=11600
+    //$$            , ResourcePackSource.SERVER
+    //$$           //#endif
+    //$$   );
         //#else
         //$$ ResourcePackRepository repo = getMinecraft().getResourcePackRepository();
         //#if MC>=10800
@@ -195,7 +197,7 @@ public class MCVer {
         //$$ return Futures.immediateFuture(null);
         //#endif
         //#endif
-    }
+    //$$}
     //#endif
 
     public static <T> void addCallback(
@@ -397,8 +399,10 @@ public class MCVer {
     }
 
     public static void pushMatrix() {
-        //#if MC>=11700
-        RenderSystem.getModelViewStack().push();
+        //#if MC>=12006
+        RenderSystem.getModelViewStack().pushMatrix();
+        //#elseif MC>=11700
+        //$$ RenderSystem.getModelViewStack().push();
         //#else
         //$$ GlStateManager.pushMatrix();
         //#endif
@@ -406,7 +410,11 @@ public class MCVer {
 
     public static void popMatrix() {
         //#if MC>=11700
-        RenderSystem.getModelViewStack().pop();
+        //#if MC>=12006
+        RenderSystem.getModelViewStack().popMatrix();
+        //#else
+        //$$ RenderSystem.getModelViewStack().pop();
+        //#endif
         RenderSystem.applyModelViewMatrix();
         //#else
         //$$ GlStateManager.popMatrix();
@@ -431,11 +439,11 @@ public class MCVer {
     }
     //#endif
 
-    public static void emitLine(BufferBuilder buffer, Vector2f p1, Vector2f p2, int color) {
-        emitLine(buffer, new Vector3f(p1.x, p1.y, 0), new Vector3f(p2.x, p2.y, 0), color);
+    public static void emitLine(MatrixStack matrixStack, BufferBuilder buffer, Vector2f p1, Vector2f p2, int color) {
+        emitLine(matrixStack, buffer, new Vector3f(p1.x, p1.y, 0), new Vector3f(p2.x, p2.y, 0), color);
     }
 
-    public static void emitLine(BufferBuilder buffer, Vector3f p1, Vector3f p2, int color) {
+    public static void emitLine(MatrixStack matrixStack, BufferBuilder buffer, Vector3f p1, Vector3f p2, int color) {
         int r = color >> 24 & 0xff;
         int g = color >> 16 & 0xff;
         int b = color >> 8 & 0xff;
@@ -443,18 +451,26 @@ public class MCVer {
         //#if MC>=11700
         Vector3f n = Vector3f.sub(p2, p1, null);
         //#endif
-        buffer.vertex(p1.x, p1.y, p1.z)
+        //#if MC>=11600
+        buffer.vertex(matrixStack.peek().getPositionMatrix(), p1.x, p1.y, p1.z)
+                //#else
+                //$$ buffer.vertex(p1.x, p1.y, p1.z)
+        //#endif
                 .color(r, g, b, a)
                 //#if MC>=11700
                 .normal(n.x, n.y, n.z)
                 //#endif
-                .next();
-        buffer.vertex(p2.x, p2.y, p2.z)
+        ;
+        //#if MC>=11600
+        buffer.vertex(matrixStack.peek().getPositionMatrix(), p2.x, p2.y, p2.z)
+        //#else
+        //$$ buffer.vertex(p2.x, p2.y, p2.z)
+        //#endif
                 .color(r, g, b, a)
                 //#if MC>=11700
                 .normal(n.x, n.y, n.z)
                 //#endif
-                .next();
+        ;
     }
 
     public static void bindTexture(Identifier id) {

@@ -10,6 +10,9 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+//#if MC>=12100
+import net.minecraft.client.render.RenderTickCounter;
+//#endif
 //#else
 //$$ import net.minecraft.client.util.math.MatrixStack;
 //#endif
@@ -34,7 +37,7 @@ public class MixinGameRenderer {
     //$$ private MatrixStack context;
     //#endif
 
-    @ModifyArg(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraftforge/client/ForgeHooksClient;drawScreen(Lnet/minecraft/client/gui/screen/Screen;Lnet/minecraft/client/gui/DrawContext;IIF)V"))
+    @ModifyArg(method = "render", at = @At(value = "INVOKE", target = "Lnet/neoforged/neoforge/client/ClientHooks;drawScreen(Lnet/minecraft/client/gui/screen/Screen;Lnet/minecraft/client/gui/DrawContext;IIF)V"))
     //#if MC>=12000
     private DrawContext captureContext(DrawContext context) {
     //#else
@@ -45,8 +48,19 @@ public class MixinGameRenderer {
     }
     //#endif
 
-    @Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraftforge/client/ForgeHooksClient;drawScreen(Lnet/minecraft/client/gui/screen/Screen;Lnet/minecraft/client/gui/DrawContext;IIF)V", shift = At.Shift.AFTER))
-    private void postRenderScreen(float partialTicks, long nanoTime, boolean renderWorld, CallbackInfo ci) {
+    @Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/neoforged/neoforge/client/ClientHooks;drawScreen(Lnet/minecraft/client/gui/screen/Screen;Lnet/minecraft/client/gui/DrawContext;IIF)V", shift = At.Shift.AFTER))
+    private void postRenderScreen(
+            //#if MC>=12100
+            RenderTickCounter tickCounter,
+            //#else
+            //$$ float partialTicks, long nanoTime,
+            //#endif
+            boolean renderWorld,
+            CallbackInfo ci
+    ) {
+        //#if MC>=12100
+        float partialTicks = tickCounter.getTickDelta(true);
+        //#endif
         //#if MC<11600
         //$$ MatrixStack context = new MatrixStack();
         //#endif

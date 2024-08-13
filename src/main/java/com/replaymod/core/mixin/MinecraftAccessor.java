@@ -11,11 +11,12 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 import java.util.Queue;
 
 //#if MC>=11800
-import java.util.function.Supplier;
+//$$ import java.util.function.Supplier;
 //#endif
 
 //#if MC>=11400
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
 //#endif
 
 //#if MC<11400
@@ -29,13 +30,21 @@ import java.util.concurrent.CompletableFuture;
 
 @Mixin(MinecraftClient.class)
 public interface MinecraftAccessor {
+    //#if MC>=12100
     @Accessor("renderTickCounter")
-    RenderTickCounter getTimer();
+    RenderTickCounter.Dynamic getTimer();
     @Accessor("renderTickCounter")
-    //#if MC>=11200
     @Mutable
+    void setTimer(RenderTickCounter.Dynamic value);
+    //#else
+    //$$@Accessor("renderTickCounter")
+    //$$RenderTickCounter getTimer();
+    //$$@Accessor("renderTickCounter")
+    //#if MC>=11200
+    //$$@Mutable
+        //#endif
+    //$$void setTimer(RenderTickCounter value);
     //#endif
-    void setTimer(RenderTickCounter value);
 
     //#if MC>=11400
     @Accessor
@@ -53,9 +62,9 @@ public interface MinecraftAccessor {
     //#endif
 
     @Accessor("crashReportSupplier")
-    //#if MC>=11800
+        //#if MC>=11800
     Supplier<CrashReport> getCrashReporter();
-    //#else
+        //#else
     //$$ CrashReport getCrashReporter();
     //#endif
 

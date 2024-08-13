@@ -21,10 +21,10 @@ import com.replaymod.core.versions.LangResourcePack;
 //#endif
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.util.Identifier;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 
 import static com.replaymod.core.ReplayMod.MOD_ID;
 //#else
@@ -42,7 +42,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-@Mod.EventBusSubscriber(modid = MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+@EventBusSubscriber(modid = MOD_ID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public class KeyBindingRegistry extends EventRegistrations {
     private static final String CATEGORY = "replaymod.title";
     //#if FABRIC>=1 && MC<11600
@@ -73,7 +73,7 @@ public class KeyBindingRegistry extends EventRegistrations {
             if (keyCode == 0) {
                 keyCode = -1;
             }
-            Identifier id = new Identifier(MOD_ID, name.substring(LangResourcePack.LEGACY_KEY_PREFIX.length()));
+            Identifier id = Identifier.of(MOD_ID, name.substring(LangResourcePack.LEGACY_KEY_PREFIX.length()));
             //#if MC>=11600
             String key = String.format("key.%s.%s", id.getNamespace(), id.getPath());
             KeyBinding keyBinding = new KeyBinding(key, InputUtil.Type.KEYSYM, keyCode, CATEGORY);

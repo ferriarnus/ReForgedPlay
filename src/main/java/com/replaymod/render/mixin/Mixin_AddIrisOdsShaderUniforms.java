@@ -2,9 +2,9 @@
 package com.replaymod.render.mixin;
 
 import com.replaymod.render.capturer.IrisODSFrameCapturer;
-import net.coderbot.iris.gl.uniform.UniformHolder;
-import net.coderbot.iris.gl.uniform.UniformUpdateFrequency;
-import net.coderbot.iris.uniforms.CommonUniforms;
+import net.irisshaders.iris.gl.uniform.UniformHolder;
+import net.irisshaders.iris.gl.uniform.UniformUpdateFrequency;
+import net.irisshaders.iris.uniforms.CommonUniforms;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Pseudo;
 import org.spongepowered.asm.mixin.injection.At;

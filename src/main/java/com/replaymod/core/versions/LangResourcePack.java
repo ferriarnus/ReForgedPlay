@@ -4,10 +4,13 @@ package com.replaymod.core.versions;
 import com.google.gson.Gson;
 import com.replaymod.core.ReplayMod;
 import net.minecraft.resource.AbstractFileResourcePack;
+import net.minecraft.resource.ResourcePackInfo;
+import net.minecraft.resource.ResourcePackSource;
 import net.minecraft.resource.ResourceType;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
-import net.minecraftforge.fml.loading.LoadingModList;
-import net.minecraftforge.fml.loading.moddiscovery.ModFileInfo;
+import net.neoforged.fml.loading.LoadingModList;
+import net.neoforged.fml.loading.moddiscovery.ModFileInfo;
 import org.apache.commons.io.IOUtils;
 
 import java.io.ByteArrayInputStream;
@@ -23,6 +26,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -32,6 +36,13 @@ import java.util.stream.Stream;
 
 //#if FABRIC>=1
 //#else
+//#endif
+
+//#if MC>=12006
+import net.minecraft.resource.ResourcePackInfo;
+import net.minecraft.resource.ResourcePackSource;
+import net.minecraft.text.Text;
+import java.util.Optional;
 //#endif
 
 //#if MC>=11903
@@ -64,8 +75,10 @@ public class LangResourcePack extends AbstractFileResourcePack {
 
     private final Path basePath;
     public LangResourcePack() {
-        //#if MC>=11903
-        super(NAME, true);
+        //#if MC>=12006
+        super(new ResourcePackInfo(NAME, Text.literal("ReplayMod Translations"), ResourcePackSource.NONE, Optional.empty()));
+        //#elseif MC>=11903
+        //$$ super(NAME, true);
         //#else
         //$$ super(new File(NAME));
         //#endif
@@ -247,7 +260,7 @@ public class LangResourcePack extends AbstractFileResourcePack {
                     .map(LANG_FILE_NAME_PATTERN::matcher)
                     .filter(Matcher::matches)
                     .map(matcher -> String.format("%s_%s.json", matcher.group(1), matcher.group(1)))
-                    .map(name -> new Identifier(ReplayMod.MOD_ID, "lang/" + name))
+                    .map(name -> Identifier.of(ReplayMod.MOD_ID, "lang/" + name))
                     .forEach(consumer);
         } catch (IOException e) {
             e.printStackTrace();

@@ -20,8 +20,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ODSFrameCapturer implements FrameCapturer<ODSOpenGlFrame> {
-    private static final Identifier vertexResource = new Identifier("replaymod", "shader/ods.vert");
-    private static final Identifier fragmentResource = new Identifier("replaymod", "shader/ods.frag");
+    private static final Identifier vertexResource = Identifier.of("replaymod", "shader/ods.vert");
+    private static final Identifier fragmentResource = Identifier.of("replaymod", "shader/ods.frag");
 
     private final CubicPboOpenGlFrameCapturer left, right;
     private final Program shaderProgram;

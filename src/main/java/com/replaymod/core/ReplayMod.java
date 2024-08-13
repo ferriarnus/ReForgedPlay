@@ -19,7 +19,6 @@ import com.replaymod.replaystudio.util.I18n;
 import com.replaymod.simplepathing.ReplayModSimplePathing;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.resource.DirectoryResourcePack;
-import net.minecraft.text.LiteralTextContent;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableTextContent;
@@ -36,6 +35,13 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
+//#if MC>=12006
+import net.minecraft.resource.ResourcePackInfo;
+import net.minecraft.resource.ResourcePackSource;
+import net.minecraft.text.Text;
+import java.util.Optional;
+//#endif
+
 //#if MC>=11900
 //#else
 //$$ import net.minecraft.client.option.Option;
@@ -45,9 +51,9 @@ public class ReplayMod implements Module, Scheduler {
 
     public static final String MOD_ID = "replaymod";
 
-    public static final Identifier TEXTURE = new Identifier("replaymod", "replay_gui.png");
+    public static final Identifier TEXTURE = Identifier.of("replaymod", "replay_gui.png");
     public static final int TEXTURE_SIZE = 256;
-    public static final Identifier LOGO_FAVICON = new Identifier("replaymod", "favicon_logo.png");
+    public static final Identifier LOGO_FAVICON = Identifier.of("replaymod", "favicon_logo.png");
 
     private static final MinecraftClient mc = MCVer.getMinecraft();
 
@@ -120,14 +126,16 @@ public class ReplayMod implements Module, Scheduler {
                 return null;
             }
         }
-        //#if MC>=11903
-        return new DirectoryResourcePack(JGUI_RESOURCE_PACK_NAME, folder.toPath(), true) {
+        //#if MC>=12006
+        return new DirectoryResourcePack(new ResourcePackInfo(JGUI_RESOURCE_PACK_NAME, Text.literal("jGui"), ResourcePackSource.NONE, Optional.empty()), folder.toPath()) {
+        //#elseif MC>=11903
+        //$$ return new DirectoryResourcePack(JGUI_RESOURCE_PACK_NAME, folder.toPath(), true) {
         //#else
         //$$ return new DirectoryResourcePack(folder) {
         //#endif
             @Override
             //#if MC>=11400
-            public String getName() {
+            public String getId() {
             //#else
             //$$ public String getPackName() {
             //#endif

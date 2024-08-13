@@ -73,7 +73,7 @@ public class ScreenshotRenderer implements RenderInfo {
     @Override
     public float updateForNextFrame() {
         framesDone++;
-        return mc.getTickDelta();
+        return mc.getRenderTickCounter().getTickDelta(true);
     }
 
     @Override

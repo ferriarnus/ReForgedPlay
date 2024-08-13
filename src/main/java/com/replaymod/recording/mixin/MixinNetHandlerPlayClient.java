@@ -67,32 +67,12 @@ public abstract class MixinNetHandlerPlayClient {
         //#else
         //$$ if (handler != null && packet.getAction() == PlayerListS2CPacket.Action.ADD_PLAYER) {
         //#endif
-            // We cannot reference SPacketPlayerListItem.AddPlayerData directly for complicated (and yet to be
-            // resolved) reasons (see https://github.com/MinecraftForge/ForgeGradle/issues/472), so we use ReplayStudio
-            // to parse it instead.
-            ByteBuf byteBuf = Unpooled.buffer();
-            try {
-                packet.write(new PacketByteBuf(byteBuf));
-
-                byteBuf.readerIndex(0);
-                byte[] array = new byte[byteBuf.readableBytes()];
-                byteBuf.readBytes(array);
-
-                for (PacketPlayerListEntry data : PacketPlayerListEntry.read(new Packet(
-                        MCVer.getPacketTypeRegistry(State.PLAY), 0, PacketType.PlayerListEntry,
-                        com.github.steveice10.netty.buffer.Unpooled.wrappedBuffer(array)
-                ))) {
-                    if (data.getUuid() == null) continue;
-                    // Only add spawn packet for our own player and only if he isn't known yet
-                    if (data.getUuid().equals(mcStatic.player.getGameProfile().getId())
-                            && !this.playerListEntries.containsKey(data.getUuid())) {
-                        handler.spawnRecordingPlayer();
-                    }
+            for (PlayerListS2CPacket.Entry entry : packet.getEntries()) {
+                UUID uuid = entry.profileId();
+                // Only add spawn packet for our own player and only if he isn't known yet
+                if (uuid.equals(mcStatic.player.getGameProfile().getId()) && !this.playerListEntries.containsKey(uuid)) {
+                    handler.spawnRecordingPlayer();
                 }
-            } catch (IOException e) {
-                throw new RuntimeException(e); // we just parsed this?
-            } finally {
-                byteBuf.release();
             }
         }
     }

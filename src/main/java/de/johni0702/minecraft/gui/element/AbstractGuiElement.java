@@ -35,7 +35,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.Identifier;
 
 public abstract class AbstractGuiElement<T extends AbstractGuiElement<T>> implements GuiElement<T> {
-    protected static final Identifier TEXTURE = new Identifier("jgui", "gui.png");
+    protected static final Identifier TEXTURE = Identifier.of("jgui", "gui.png");
 
 
     private final MinecraftClient minecraft = MCVer.getMinecraft();
