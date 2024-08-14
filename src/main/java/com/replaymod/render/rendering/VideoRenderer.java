@@ -666,13 +666,13 @@ public class VideoRenderer implements RenderInfo {
 
     public static String[] checkCompat(RenderSettings settings) {
         //#if FABRIC>=1
-        if (LoadingModList.get().getModFileById("embeddium") != null && !FlawlessFrames.hasSodium()) {
-            return new String[] {
-                    "Rendering is not supported with your Sodium version.",
-                    "It is missing support for the FREX Flawless Frames API.",
-                    "Either use the Sodium build from replaymod.com or uninstall Sodium before rendering!",
-            };
-        }
+//        if (LoadingModList.get().getModFileById("embeddium") != null && !FlawlessFrames.hasSodium()) {
+//            return new String[] {
+//                    "Rendering is not supported with your Sodium version.",
+//                    "It is missing support for the FREX Flawless Frames API.",
+//                    "Either use the Sodium build from replaymod.com or uninstall Sodium before rendering!",
+//            };
+//        }
         //#if MC>=11700
         if (settings.getRenderMethod() == RenderSettings.RenderMethod.ODS
                 && LoadingModList.get().getModFileById("oculus") == null) {

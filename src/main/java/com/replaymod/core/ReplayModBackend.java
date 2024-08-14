@@ -16,7 +16,7 @@ public class ReplayModBackend {
     private final ReplayMod mod = new ReplayMod(this);
 
     @SubscribeEvent
-    public static void construct(FMLClientSetupEvent event) {
+    public static void construct(FMLConstructModEvent event) {
         ReplayMod.instance.initModules();
     }
 
