@@ -54,7 +54,6 @@ public class KeyBindingRegistry extends EventRegistrations {
     private final Map<String, Binding> bindings = new HashMap<>();
     private Set<KeyBinding> onlyInReplay = new HashSet<>();
     private Multimap<Integer, Supplier<Boolean>> rawHandlers = ArrayListMultimap.create();
-    private static List<KeyBinding> keybinds = new ArrayList<>();
 
     public Binding registerKeyBinding(String name, int keyCode, Runnable whenPressed, boolean onlyInRepay) {
         Binding binding = registerKeyBinding(name, keyCode, onlyInRepay);
@@ -80,7 +79,7 @@ public class KeyBindingRegistry extends EventRegistrations {
             String key = String.format("key.%s.%s", id.getNamespace(), id.getPath());
             KeyBinding keyBinding = new KeyBinding(key, InputUtil.Type.KEYSYM, keyCode, CATEGORY);
             //KeyBindingHelper.registerKeyBinding(keyBinding);
-            keybinds.add(keyBinding);
+            ClientRegistry.registerKeyBinding(keyBinding);
             //#else
             //$$ FabricKeyBinding fabricKeyBinding = FabricKeyBinding.Builder.create(id, InputUtil.Type.KEYSYM, keyCode, CATEGORY).build();
             //$$ net.fabricmc.fabric.api.client.keybinding.KeyBindingRegistry.INSTANCE.register(fabricKeyBinding);
@@ -221,13 +220,6 @@ public class KeyBindingRegistry extends EventRegistrations {
             }
             this.autoActivation = active;
             this.autoActivationUpdate.accept(active);
-        }
-    }
-
-    @SubscribeEvent
-    public static void registerKeybinds(FMLClientSetupEvent event) {
-        for (KeyBinding binding: keybinds) {
-            ClientRegistry.registerKeyBinding(binding);
         }
     }
 }
