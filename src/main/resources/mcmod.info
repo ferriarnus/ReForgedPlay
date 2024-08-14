@@ -1,5 +1,20 @@
 [
   {
+    "modid": "reforgedplaymod",
+    "name": "ReForgedPlay Mod",
+    "description": "A Mod which allows you to record, replay and share your Minecraft experience.",
+    "version": "${version}",
+    "mcversion": "${mcversion}",
+    "authorList": [
+      "CrushedPixel",
+      "johni0702",
+      "Ferri_Arnus"
+    ],
+    "logoFile": "logo.png",
+    "screenshots": [],
+    "dependencies": []
+  },
+  {
     "modid": "replaymod",
     "name": "Replay Mod",
     "description": "A Mod which allows you to record, replay and share your Minecraft experience.",
