@@ -8,8 +8,8 @@ import com.replaymod.render.frame.OpenGlFrame;
 import com.replaymod.render.rendering.Channel;
 import com.replaymod.render.rendering.FrameCapturer;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
-import net.coderbot.iris.Iris;
-import net.coderbot.iris.config.IrisConfig;
+import net.irisshaders.iris.Iris;
+import net.irisshaders.iris.config.IrisConfig;
 
 import java.io.IOException;
 import java.util.HashMap;
