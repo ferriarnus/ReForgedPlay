@@ -5,6 +5,7 @@ license="GPL-3.0-or-later"
 modId="reforgedplaymod"
 version="${version}"
 displayName="ReForgedPlay Mod"
+logoFile="logo.png"
 displayTest = "IGNORE_SERVER_VERSION"
 authors="CrushedPixel, johni0702, Ferri_Arnus"
 description='''
@@ -57,7 +58,7 @@ config = "mixins.replay.replaymod.json"
 
 [[mods]]
 modId="replaymod"
-version="${version}"
+version="2.6.18"
 displayName="Replay Mod"
 license="GPL-3.0-or-later"
 displayTest = "IGNORE_SERVER_VERSION"
