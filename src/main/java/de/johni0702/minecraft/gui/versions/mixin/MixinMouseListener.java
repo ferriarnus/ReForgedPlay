@@ -21,7 +21,7 @@ public abstract class MixinMouseListener {
     @Accessor // Note: for some reason Mixin doesn't include this in the refmap json if it's just a @Shadow field
     abstract int getActiveButton();
 
-    @Inject(method = "method_1611", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "method_1611", at = @At("HEAD"), cancellable = true, require = 0)
     //#if MC>=11700
     private void mouseDown(boolean[] result, Screen screen, double x, double y, int button, CallbackInfo ci) {
     //#else
@@ -33,7 +33,19 @@ public abstract class MixinMouseListener {
         }
     }
 
-    @Inject(method = "method_1605", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "m_168084_", at = @At("HEAD"), cancellable = true, remap = false, require = 0)
+    //#if MC>=11700
+    private void mouseDown2(boolean[] result, Screen screen, double x, double y, int button, CallbackInfo ci) {
+        //#else
+        //$$ private void mouseDown(boolean[] result, double x, double y, int button, CallbackInfo ci) {
+        //#endif
+        if (MouseCallback.EVENT.invoker().mouseDown(x, y, button)) {
+            result[0] = true;
+            ci.cancel();
+        }
+    }
+
+    @Inject(method = "method_1605", at = @At("HEAD"), cancellable = true, require = 0)
     //#if MC>=11700
     private void mouseUp(boolean[] result, Screen screen, double x, double y, int button, CallbackInfo ci) {
     //#else
@@ -45,12 +57,35 @@ public abstract class MixinMouseListener {
         }
     }
 
-    @Inject(method = "method_1602", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "m_168078_", at = @At("HEAD"), cancellable = true, remap = false, require = 0)
+    //#if MC>=11700
+    private void mouseUp2(boolean[] result, Screen screen, double x, double y, int button, CallbackInfo ci) {
+        //#else
+        //$$ private void mouseUp(boolean[] result, double x, double y, int button, CallbackInfo ci) {
+        //#endif
+        if (MouseCallback.EVENT.invoker().mouseUp(x, y, button)) {
+            result[0] = true;
+            ci.cancel();
+        }
+    }
+
+    @Inject(method = "method_1602", at = @At("HEAD"), cancellable = true, require = 0)
     //#if MC>=11700
     private void mouseDrag(Screen screen, double x, double y, double dx, double dy, CallbackInfo ci) {
     //#else
     //$$ private void mouseDrag(Element element, double x, double y, double dx, double dy, CallbackInfo ci) {
     //#endif
+        if (MouseCallback.EVENT.invoker().mouseDrag(x, y, getActiveButton(), dx, dy)) {
+            ci.cancel();
+        }
+    }
+
+    @Inject(method = "m_168072_", at = @At("HEAD"), cancellable = true, remap = false, require = 0)
+    //#if MC>=11700
+    private void mouseDrag2(Screen screen, double x, double y, double dx, double dy, CallbackInfo ci) {
+        //#else
+        //$$ private void mouseDrag(Element element, double x, double y, double dx, double dy, CallbackInfo ci) {
+        //#endif
         if (MouseCallback.EVENT.invoker().mouseDrag(x, y, getActiveButton(), dx, dy)) {
             ci.cancel();
         }

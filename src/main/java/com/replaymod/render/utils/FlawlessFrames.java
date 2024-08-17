@@ -1,5 +1,7 @@
 package com.replaymod.render.utils;
 
+import org.embeddedt.embeddium.api.service.FlawlessFramesService;
+
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
@@ -15,17 +17,17 @@ import static com.replaymod.core.ReplayMod.MOD_ID;
  *
  * See https://github.com/grondag/frex/pull/9
  */
-public class FlawlessFrames {
+public class FlawlessFrames implements FlawlessFramesService {
     private static final List<Consumer<Boolean>> CONSUMERS = new CopyOnWriteArrayList<>();
     private static boolean hasSodium;
 
-    private FlawlessFrames() {}
+    public FlawlessFrames() {}
 
-    public static void registerConsumer(Function<String, Consumer<Boolean>> provider) {
+    public void acceptController(Function<String, Consumer<Boolean>> provider) {
         Consumer<Boolean> consumer = provider.apply(MOD_ID);
         CONSUMERS.add(consumer);
 
-        if (provider.getClass().getName().contains(".sodium.") || consumer.getClass().getName().contains(".sodium.")) {
+        if (provider.getClass().getName().contains(".embeddium.") || consumer.getClass().getName().contains(".embeddium.")) {
             hasSodium = true;
         }
     }

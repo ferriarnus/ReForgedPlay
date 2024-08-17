@@ -1,7 +1,7 @@
 package com.replaymod.core.versions;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.replaymod.core.mixin.GuiScreenAccessor;
+//import com.replaymod.core.mixin.GuiScreenAccessor;
 import com.replaymod.replaystudio.lib.viaversion.api.protocol.packet.State;
 import com.replaymod.replaystudio.lib.viaversion.api.protocol.version.ProtocolVersion;
 import com.replaymod.replaystudio.protocol.PacketTypeRegistry;
@@ -252,12 +252,13 @@ public class MCVer {
             //$$ GuiButton button
             //#endif
     ) {
-        GuiScreenAccessor acc = (GuiScreenAccessor) screen;
+        //GuiScreenAccessor acc = (GuiScreenAccessor) screen;
         //#if MC>=11400
-        acc.invokeAddButton(button);
+        //acc.invokeAddButton(button);
         //#else
         //$$ acc.getButtons().add(button);
         //#endif
+        screen.addDrawableChild(button);
     }
 
     //#if MC>=11400

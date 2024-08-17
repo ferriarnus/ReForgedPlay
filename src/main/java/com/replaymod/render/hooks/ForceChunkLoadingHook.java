@@ -1,7 +1,9 @@
 package com.replaymod.render.hooks;
 
 import com.replaymod.render.utils.FlawlessFrames;
+import com.replaymod.render.utils.FlawlessFramesHelper;
 import net.minecraft.client.render.WorldRenderer;
+import net.minecraftforge.fml.loading.LoadingModList;
 
 public class ForceChunkLoadingHook {
 
@@ -10,13 +12,17 @@ public class ForceChunkLoadingHook {
     public ForceChunkLoadingHook(WorldRenderer renderGlobal) {
         this.hooked = renderGlobal;
 
-        FlawlessFrames.setEnabled(true);
+        if (LoadingModList.get().getModFileById("embeddium") != null) {
+            FlawlessFramesHelper.setEnabled(true);
+        }
         IForceChunkLoading.from(renderGlobal).replayModRender_setHook(this);
     }
 
     public void uninstall() {
         IForceChunkLoading.from(hooked).replayModRender_setHook(null);
-        FlawlessFrames.setEnabled(false);
+        if (LoadingModList.get().getModFileById("embeddium") != null) {
+            FlawlessFramesHelper.setEnabled(true);
+        }
     }
 
     public interface IBlockOnChunkRebuilds {
