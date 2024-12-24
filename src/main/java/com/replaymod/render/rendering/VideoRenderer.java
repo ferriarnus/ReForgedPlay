@@ -22,9 +22,9 @@ import com.replaymod.render.gui.GuiVideoRenderer;
 import com.replaymod.render.gui.progress.VirtualWindow;
 import com.replaymod.render.hooks.ForceChunkLoadingHook;
 import com.replaymod.render.metadata.MetadataInjector;
-import com.replaymod.render.mixin.WorldRendererAccessor;
-import com.replaymod.render.utils.FlawlessFrames;
-import com.replaymod.render.utils.FlawlessFramesHelper;
+// import com.replaymod.render.utils.FlawlessFramesHelper;
+import com.replaymod.render.utils.EmbeddiumFlawlessFramesHelper;
+import com.replaymod.render.utils.SodiumFlawlessFramesHelper;
 import com.replaymod.replay.ReplayHandler;
 import com.replaymod.replaystudio.pathing.path.Keyframe;
 import com.replaymod.replaystudio.pathing.path.Path;
@@ -32,14 +32,12 @@ import com.replaymod.replaystudio.pathing.path.Timeline;
 import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import net.minecraft.client.MinecraftClient;
-import com.mojang.blaze3d.platform.GLX;
 import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.client.util.Window;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.crash.CrashException;
 import net.minecraft.sound.SoundCategory;
-import net.minecraft.client.render.RenderTickCounter;
 import net.neoforged.fml.loading.LoadingModList;
 import org.lwjgl.glfw.GLFW;
 
@@ -50,16 +48,12 @@ import net.minecraft.client.gui.DrawContext;
 
 //#if MC>=11700
 import net.minecraft.client.render.DiffuseLighting;
-import org.joml.Matrix4f;
 //#endif
 
 //#if MC>=11600
-import net.minecraft.client.util.math.MatrixStack;
 //#endif
 
 //#if MC>=11500
-import com.mojang.blaze3d.systems.RenderSystem;
-import org.lwjgl.opengl.GL11;
 //#endif
 
 //#if MC>=11400
@@ -81,9 +75,7 @@ import java.util.EnumMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Queue;
 import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
 import java.util.stream.Stream;
 
 import static com.google.common.collect.Iterables.getLast;
@@ -683,13 +675,22 @@ public class VideoRenderer implements RenderInfo {
 
     public static String[] checkCompat(RenderSettings settings) {
         //#if FABRIC>=1
-        if ((LoadingModList.get().getModFileById("embeddium") != null || LoadingModList.get().getModFileById("sodium") != null) && !FlawlessFramesHelper.hasEmbeddium()) {
+        if (EmbeddiumFlawlessFramesHelper.hasEmbeddium() && !EmbeddiumFlawlessFramesHelper.supportFlawlessFrames()) {
+            return new String[] {
+                    "Rendering is not supported with your Embeddium version.",
+                    "It is missing support for the FREX Flawless Frames API.",
+                    "Either use the Sodium build from replaymod.com or uninstall Sodium before rendering!",
+            };
+        }
+
+        if (SodiumFlawlessFramesHelper.hasSodium() && !SodiumFlawlessFramesHelper.supportFlawlessFrames()) {
             return new String[] {
                     "Rendering is not supported with your Sodium version.",
                     "It is missing support for the FREX Flawless Frames API.",
                     "Either use the Sodium build from replaymod.com or uninstall Sodium before rendering!",
             };
         }
+
         //#if MC>=11700
         if (settings.getRenderMethod() == RenderSettings.RenderMethod.ODS
                 && LoadingModList.get().getModFileById("iris") == null) {
