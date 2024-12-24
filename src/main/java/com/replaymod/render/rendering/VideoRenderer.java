@@ -32,12 +32,14 @@ import com.replaymod.replaystudio.pathing.path.Timeline;
 import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import net.minecraft.client.MinecraftClient;
+import com.mojang.blaze3d.platform.GLX;
 import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.client.util.Window;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.crash.CrashException;
 import net.minecraft.sound.SoundCategory;
+import net.minecraft.client.render.RenderTickCounter;
 import net.neoforged.fml.loading.LoadingModList;
 import org.lwjgl.glfw.GLFW;
 
@@ -48,12 +50,16 @@ import net.minecraft.client.gui.DrawContext;
 
 //#if MC>=11700
 import net.minecraft.client.render.DiffuseLighting;
+import org.joml.Matrix4f;
 //#endif
 
 //#if MC>=11600
+import net.minecraft.client.util.math.MatrixStack;
 //#endif
 
 //#if MC>=11500
+import com.mojang.blaze3d.systems.RenderSystem;
+import org.lwjgl.opengl.GL11;
 //#endif
 
 //#if MC>=11400
@@ -75,7 +81,9 @@ import java.util.EnumMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Queue;
 import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 import java.util.stream.Stream;
 
 import static com.google.common.collect.Iterables.getLast;
