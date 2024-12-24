@@ -22,6 +22,8 @@ import com.replaymod.render.gui.GuiVideoRenderer;
 import com.replaymod.render.gui.progress.VirtualWindow;
 import com.replaymod.render.hooks.ForceChunkLoadingHook;
 import com.replaymod.render.metadata.MetadataInjector;
+import com.replaymod.render.mixin.WorldRendererAccessor;
+// import com.replaymod.render.utils.FlawlessFrames;
 // import com.replaymod.render.utils.FlawlessFramesHelper;
 import com.replaymod.render.utils.EmbeddiumFlawlessFramesHelper;
 import com.replaymod.render.utils.SodiumFlawlessFramesHelper;
