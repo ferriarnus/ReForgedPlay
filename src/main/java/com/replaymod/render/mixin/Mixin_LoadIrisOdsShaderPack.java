@@ -17,7 +17,7 @@ public class Mixin_LoadIrisOdsShaderPack {
     @Redirect(method = "loadExternalShaderpack", at = @At(value = "INVOKE", target = "Lnet/coderbot/iris/Iris;getShaderpacksDirectory()Ljava/nio/file/Path;"))
     private static Path loadReplayModOdsPack(String name) {
         if (IrisODSFrameCapturer.INSTANCE != null && IrisODSFrameCapturer.SHADER_PACK_NAME.equals(name)) {
-            return LoadingModList.get().getModFileById("replaymod").getFile().getSecureJar().getRootPath();
+            return IrisODSFrameCapturer.SHADER_PACK_PATH;
         } else {
             return Iris.getShaderpacksDirectory();
         }
