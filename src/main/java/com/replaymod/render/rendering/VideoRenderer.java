@@ -23,8 +23,8 @@ import com.replaymod.render.gui.progress.VirtualWindow;
 import com.replaymod.render.hooks.ForceChunkLoadingHook;
 import com.replaymod.render.metadata.MetadataInjector;
 import com.replaymod.render.mixin.WorldRendererAccessor;
-import com.replaymod.render.utils.FlawlessFrames;
-import com.replaymod.render.utils.FlawlessFramesHelper;
+import com.replaymod.render.utils.EmbeddiumFlawlessFramesHelper;
+import com.replaymod.render.utils.SodiumFlawlessFramesHelper;
 import com.replaymod.replay.ReplayHandler;
 import com.replaymod.replaystudio.pathing.path.Keyframe;
 import com.replaymod.replaystudio.pathing.path.Path;
@@ -683,13 +683,22 @@ public class VideoRenderer implements RenderInfo {
 
     public static String[] checkCompat(RenderSettings settings) {
         //#if FABRIC>=1
-        if ((LoadingModList.get().getModFileById("embeddium") != null || LoadingModList.get().getModFileById("sodium") != null) && !FlawlessFramesHelper.hasEmbeddium()) {
+        if (EmbeddiumFlawlessFramesHelper.hasEmbeddium() && !EmbeddiumFlawlessFramesHelper.supportFlawlessFrames()) {
+            return new String[] {
+                    "Rendering is not supported with your Embeddium version.",
+                    "It is missing support for the FREX Flawless Frames API.",
+                    "Please use a more up to date Embeddium version!",
+            };
+        }
+
+        if (SodiumFlawlessFramesHelper.hasSodium() && !SodiumFlawlessFramesHelper.supportFlawlessFrames()) {
             return new String[] {
                     "Rendering is not supported with your Sodium version.",
                     "It is missing support for the FREX Flawless Frames API.",
-                    "Either use the Sodium build from replaymod.com or uninstall Sodium before rendering!",
+                    "Please use a more up to date Sodium version!",
             };
         }
+
         //#if MC>=11700
         if (settings.getRenderMethod() == RenderSettings.RenderMethod.ODS
                 && LoadingModList.get().getModFileById("iris") == null) {

@@ -3,8 +3,8 @@ package com.replaymod.render.mixin;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.replaymod.render.hooks.ForceChunkLoadingHook;
 import com.replaymod.render.hooks.IForceChunkLoading;
-import com.replaymod.render.utils.FlawlessFrames;
-import com.replaymod.render.utils.FlawlessFramesHelper;
+import com.replaymod.render.utils.EmbeddiumFlawlessFramesHelper;
+import com.replaymod.render.utils.SodiumFlawlessFramesHelper;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.ChunkRenderingDataPreparer;
@@ -15,7 +15,6 @@ import net.minecraft.client.render.WorldRenderer;
 import net.minecraft.client.render.chunk.ChunkBuilder;
 import net.minecraft.client.render.chunk.ChunkRendererRegionBuilder;
 import net.minecraft.client.util.math.MatrixStack;
-import net.neoforged.fml.loading.LoadingModList;
 import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -57,7 +56,12 @@ public abstract class Mixin_ForceChunkLoading implements IForceChunkLoading {
         if (replayModRender_hook == null) {
             return;
         }
-        if (LoadingModList.get().getModFileById("embeddium") != null && FlawlessFramesHelper.hasEmbeddium()) {
+
+        if (EmbeddiumFlawlessFramesHelper.hasEmbeddium() && EmbeddiumFlawlessFramesHelper.supportFlawlessFrames()) {
+            return;
+        }
+
+        if (SodiumFlawlessFramesHelper.hasSodium() && SodiumFlawlessFramesHelper.supportFlawlessFrames()) {
             return;
         }
 

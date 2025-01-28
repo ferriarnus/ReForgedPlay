@@ -12,6 +12,9 @@ description='''
 A Mod which allows you to record, replay and share your Minecraft experience.
 '''
 
+[modproperties.reforgedplaymod]
+"frex:flawless_frames_handler" = "com.replaymod.render.utils.SodiumFlawlessFrames"
+
 [[dependencies.reforgedplaymod]]
 modId = "neoforge"
 type="required"
