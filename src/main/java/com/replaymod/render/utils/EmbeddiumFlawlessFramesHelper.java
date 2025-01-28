@@ -5,7 +5,7 @@ import net.neoforged.fml.ModList;
 public class EmbeddiumFlawlessFramesHelper {
 
     public static boolean hasEmbeddium() {
-        return /*FlawlessFrames.hasSodium()*/ ModList.get().isLoaded("embeddium");
+        return ModList.get().isLoaded("embeddium");
     }
 
     public static boolean supportFlawlessFrames() {

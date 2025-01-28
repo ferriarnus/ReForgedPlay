@@ -1,8 +1,5 @@
 package com.replaymod.render.utils;
 
-// import org.embeddedt.embeddium.api.service.FlawlessFramesService;
-// import org.embeddedt.embeddium.impl.asm.OptionalInterface;
-
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
@@ -18,7 +15,7 @@ import static com.replaymod.core.ReplayMod.MOD_ID;
  *
  * See https://github.com/grondag/frex/pull/9
  */
-public class /*lawlessFrames*/ SodiumFlawlessFrames {
+public class SodiumFlawlessFrames {
     private static final List<Consumer<Boolean>> CONSUMERS = new CopyOnWriteArrayList<>();
     private static boolean supported;
 
