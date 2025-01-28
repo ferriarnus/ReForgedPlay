@@ -95,7 +95,7 @@ dependencies {
     forge "net.minecraftforge:forge:${project.minecraft_version}-${project.forge_version}"
 
     bundle("com.github.ReplayMod:ReplayStudio:d9f7c11-slim")
-    minecraftRuntimeLibraries(implementation("com.github.ReplayMod:ReplayStudio:d9f7c11"))
+    minecraftRuntimeLibraries(implementation("com.github.ReplayMod:ReplayStudio:d9f7c11-slim"))
     include(implementation("com.github.viaversion:opennbt:0a02214"))
     include(implementation("com.github.ReplayMod:lwjgl-utils:27dcd66"))
     minecraftRuntimeLibraries("com.github.ReplayMod:lwjgl-utils:27dcd66")
