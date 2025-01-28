@@ -10,14 +10,18 @@ import com.replaymod.render.rendering.FrameCapturer;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import net.coderbot.iris.Iris;
 import net.coderbot.iris.config.IrisConfig;
+import net.neoforged.fml.loading.LoadingModList;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
 public class IrisODSFrameCapturer implements FrameCapturer<ODSOpenGlFrame> {
 
     public static final String SHADER_PACK_NAME = "assets/replaymod/iris/ods";
+    public static final Path SHADER_PACK_PATH = LoadingModList.get().getModFileById("replaymod").getFile().getSecureJar().getRootPath();
+
     public static IrisODSFrameCapturer INSTANCE;
     private final CubicPboOpenGlFrameCapturer left, right;
     private final String prevShaderPack;
