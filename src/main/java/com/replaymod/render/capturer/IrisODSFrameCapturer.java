@@ -10,7 +10,7 @@ import com.replaymod.render.rendering.FrameCapturer;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import net.coderbot.iris.Iris;
 import net.coderbot.iris.config.IrisConfig;
-import net.neoforged.fml.loading.LoadingModList;
+import net.minecraftforge.fml.loading.LoadingModList;
 
 import java.io.IOException;
 import java.nio.file.Path;
