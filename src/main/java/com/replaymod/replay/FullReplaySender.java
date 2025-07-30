@@ -36,6 +36,7 @@ import net.minecraft.network.packet.s2c.common.DisconnectS2CPacket;
 import net.minecraft.network.packet.s2c.login.LoginSuccessS2CPacket;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.Vec3d;
+import net.neoforged.neoforge.network.payload.AdvancedOpenScreenPayload;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
@@ -604,6 +605,11 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
 
             if (channelNameStr.startsWith("fabric-screen-handler-api-v")) {
                 return null; // we do not want to show modded screens which got opened for the recording player
+            }
+
+            //noinspection UnstableApiUsage
+            if(packet.payload() instanceof AdvancedOpenScreenPayload) {
+                return null;
             }
 
             // On 1.14+ there's a dedicated OpenWrittenBookS2CPacket now
