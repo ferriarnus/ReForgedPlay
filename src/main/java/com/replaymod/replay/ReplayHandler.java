@@ -6,6 +6,8 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.systems.VertexSorter;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.core.mixin.MinecraftAccessor;
 import com.replaymod.core.mixin.TimerAccessor;
@@ -37,7 +39,7 @@ import net.minecraft.client.gui.screen.DownloadingTerrainScreen;
 import net.minecraft.client.network.ClientLoginNetworkHandler;
 import net.minecraft.client.util.Window;
 import net.minecraft.network.NetworkPhase;
-import net.minecraft.network.NetworkState;
+import net.minecraft.network.state.NetworkState;
 import net.minecraft.network.codec.PacketEncoder;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.util.crash.CrashReport;
@@ -53,9 +55,23 @@ import net.minecraft.network.handler.NetworkStateTransitions;
 import net.minecraft.network.state.LoginStates;
 //#endif
 
+//#if MC>=12106
+import com.replaymod.render.mixin.GameRendererAccessor;
+import net.minecraft.client.gui.render.state.GuiRenderState;
+import net.minecraft.client.render.fog.FogRenderer;
+//#endif
+
+//#if MC>=12105
+import net.minecraft.entity.PositionInterpolator;
+//#endif
+
+//#if MC>=12102
+import com.mojang.blaze3d.systems.ProjectionType;
+//#endif
+
 //#if MC>=12006
 import com.replaymod.recording.mixin.DecoderHandlerAccessor;
-import net.minecraft.network.NetworkState;
+import net.minecraft.network.state.NetworkState;
 import net.minecraft.network.handler.DecoderHandler;
 import net.minecraft.network.handler.NetworkStateTransitions;
 import net.minecraft.network.packet.s2c.config.ReadyS2CPacket;
@@ -146,7 +162,6 @@ import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
 
 public class ReplayHandler {
-
     public static final String PACKET_HANDLER_NAME = "ReplayModReplay_packetHandler";
 
     private static MinecraftClient mc = getMinecraft();
@@ -227,8 +242,10 @@ public class ReplayHandler {
         //#endif
 
         // Force re-creation of camera entity by unloading the previous world
-        //#if MC>=11400
-        mc.disconnect();
+        //#if MC>=12106
+        mc.disconnectWithProgressScreen();
+        //#elseif MC>=11400
+        //$$ mc.disconnect();
         //#else
         //$$ // We need to re-set the GUI screen because having one with `allowsUserInput = true` active during world
         //$$ // load (i.e. before player is set) will crash MC...
@@ -269,8 +286,10 @@ public class ReplayHandler {
         }
 
         if (mc.world != null) {
-            //#if MC>=11400
-            mc.disconnect();
+            //#if MC>=12106
+            mc.disconnectWithProgressScreen();
+            //#elseif MC>=11400
+            //$$ mc.disconnect();
             //#else
             //$$ mc.world.sendQuittingDisconnectingPacket();
             //$$ mc.loadWorld(null);
@@ -639,11 +658,11 @@ public class ReplayHandler {
             // Update all entity positions (especially prev/lastTick values)
             for (Entity entity : mc.world.getEntities()) {
                 skipTeleportInterpolation(entity);
-                entity.lastRenderX = entity.prevX = entity.getX();
-                entity.lastRenderY = entity.prevY = entity.getY();
-                entity.lastRenderZ = entity.prevZ = entity.getZ();
-                entity.prevYaw = entity.getYaw();
-                entity.prevPitch = entity.getPitch();
+                entity.lastRenderX = entity.lastX = entity.getX();
+                entity.lastRenderY = entity.lastY = entity.getY();
+                entity.lastRenderZ = entity.lastZ = entity.getZ();
+                entity.lastYaw = entity.getYaw();
+                entity.lastPitch = entity.getPitch();
             }
 
             // Run previous tick
@@ -725,24 +744,36 @@ public class ReplayHandler {
 
                 // Perform the rendering using OpenGL
                 pushMatrix();
-                RenderSystem.clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
-                        //#if MC>=11400
-                        , true
-                        //#endif
-                );
+                //#if MC>=12105
+                RenderSystem.getDevice()
+                        .createCommandEncoder()
+                        .clearColorAndDepthTextures(mc.getFramebuffer().getColorAttachment(), 0, mc.getFramebuffer().getDepthAttachment(), 1);
+                //#else
+                //$$ RenderSystem.clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
+                //$$         //#if MC>=11400  && MC<12102
+                //$$         , true
+                //$$         //#endif
+                //$$ );
+                //#endif
                 //#if MC<11904
                 //$$ RenderSystem.enableTexture();
                 //#endif
-                mc.getFramebuffer().beginWrite(true);
+                //#if MC<12105
+                //$$ mc.getFramebuffer().beginWrite(true);
+                //#endif
                 Window window = mc.getWindow();
                 //#if MC>=11500
-                RenderSystem.clear(256, MinecraftClient.IS_SYSTEM_MAC);
+                //#if MC<12105
+                //#if MC>=12102
+                //$$ RenderSystem.clear(256);
+                //#else
+                //$$ RenderSystem.clear(256, MinecraftClient.IS_SYSTEM_MAC);
                 //#if MC>=11700
-                RenderSystem.setProjectionMatrix(com.replaymod.core.versions.MCVer.ortho(0, (float) (window.getFramebufferWidth() / window.getScaleFactor()), 0, (float) (window.getFramebufferHeight() / window.getScaleFactor()), 1000, 3000)
-                        //#if MC>=12000
-                        , VertexSorter.BY_Z
-                        //#endif
-                );
+                //$$RenderSystem.setProjectionMatrix(com.replaymod.core.versions.MCVer.ortho(0, (float) (window.getFramebufferWidth() / window.getScaleFactor()), 0, (float) (window.getFramebufferHeight() / window.getScaleFactor()), 1000, 3000)
+                //$$        //#if MC>=12000
+                //$$        , VertexSorter.BY_Z
+                //$$        //#endif
+                //$$);
                 //#if MC>=12006
                 org.joml.Matrix4fStack matrixStack = RenderSystem.getModelViewStack();
                 matrixStack.translation(0, 0, -2000);
@@ -751,8 +782,10 @@ public class ReplayHandler {
                 //$$ matrixStack.loadIdentity();
                 //$$ matrixStack.translate(0, 0, -2000);
                 //#endif
-                RenderSystem.applyModelViewMatrix();
-                DiffuseLighting.enableGuiDepthLighting();
+                //#if MC<12102
+                //$$ RenderSystem.applyModelViewMatrix();
+                //#endif
+                //$$ DiffuseLighting.enableGuiDepthLighting();
                 //#else
                 //$$ RenderSystem.matrixMode(GL11.GL_PROJECTION);
                 //$$ RenderSystem.loadIdentity();
@@ -770,10 +803,21 @@ public class ReplayHandler {
                 //#endif
 
                 guiScreen.toMinecraft().init(mc, window.getScaledWidth(), window.getScaledHeight());
-                //#if MC>=12000
-                DrawContext drawContext = new DrawContext(mc, mc.getBufferBuilders().getEntityVertexConsumers());
-                guiScreen.toMinecraft().render(drawContext, 0, 0, 0);
-                drawContext.draw();
+                //#if MC>=12106
+                GameRendererAccessor gameRenderer = (GameRendererAccessor) mc.gameRenderer;
+                GuiRenderState guiRenderState = gameRenderer.getGuiState();
+                guiRenderState.clear();
+                guiScreen.toMinecraft().renderWithTooltip(new DrawContext(mc, guiRenderState), 0, 0, 0);
+                var orgFog = RenderSystem.getShaderFog();
+                var orgProjBuf = RenderSystem.getProjectionMatrixBuffer();
+                var orgProjType = RenderSystem.getProjectionType();
+                gameRenderer.getGuiRenderer().render(gameRenderer.getFogRenderer().getFogBuffer(FogRenderer.FogType.NONE));
+                RenderSystem.setShaderFog(orgFog);
+                RenderSystem.setProjectionMatrix(orgProjBuf, orgProjType);
+                //#elseif MC>=12000
+                //$$ DrawContext drawContext = new DrawContext(mc, mc.getBufferBuilders().getEntityVertexConsumers());
+                //$$ guiScreen.toMinecraft().render(drawContext, 0, 0, 0);
+                //$$ drawContext.draw();
                 //#elseif MC>=11600
                 //$$ guiScreen.toMinecraft().render(new MatrixStack(), 0, 0, 0);
                 //#else
@@ -785,14 +829,22 @@ public class ReplayHandler {
                 //#endif
                 guiScreen.toMinecraft().removed();
 
-                mc.getFramebuffer().endWrite();
+                //#if MC<12105
+                //$$ mc.getFramebuffer().endWrite();
+                //#endif
                 popMatrix();
                 pushMatrix();
-                mc.getFramebuffer().draw(mc.getWindow().getFramebufferWidth(), mc.getWindow().getFramebufferHeight());
+                //#if MC>=12105
+                mc.getFramebuffer().blitToScreen();
+                //#else
+                //$$ mc.getFramebuffer().draw(mc.getWindow().getFramebufferWidth(), mc.getWindow().getFramebufferHeight());
+                //#endif
                 popMatrix();
 
-                //#if MC>=11500
-                mc.getWindow().swapBuffers();
+                //#if MC>=12102
+                mc.getWindow().swapBuffers(null);
+                //#elseif MC>=11500
+                //$$ mc.getWindow().swapBuffers();
                 //#else
                 //#if MC>=11400
                 //$$ mc.window.setFullscreen(true);
@@ -830,11 +882,11 @@ public class ReplayHandler {
 
                 for (Entity entity : mc.world.getEntities()) {
                     skipTeleportInterpolation(entity);
-                    entity.lastRenderX = entity.prevX = entity.getX();
-                    entity.lastRenderY = entity.prevY = entity.getY();
-                    entity.lastRenderZ = entity.prevZ = entity.getZ();
-                    entity.prevYaw = entity.getYaw();
-                    entity.prevPitch = entity.getPitch();
+                    entity.lastRenderX = entity.lastX = entity.getX();
+                    entity.lastRenderY = entity.lastY = entity.getY();
+                    entity.lastRenderZ = entity.lastZ = entity.getZ();
+                    entity.lastYaw = entity.getYaw();
+                    entity.lastPitch = entity.getPitch();
                 }
                 //#if MC>=10800 && MC<11400
                 //$$ try {
@@ -856,14 +908,20 @@ public class ReplayHandler {
     }
 
     private void skipTeleportInterpolation(Entity entity) {
-        //#if MC>=11400
-        if (entity instanceof LivingEntity && !(entity instanceof CameraEntity)) {
-            LivingEntity e = (LivingEntity) entity;
-            EntityLivingBaseAccessor ea = (EntityLivingBaseAccessor) e;
-            e.updatePosition(ea.getInterpTargetX(), ea.getInterpTargetY(), ea.getInterpTargetZ());
-            e.setYaw((float) ea.getInterpTargetYaw());
-            e.setPitch((float) ea.getInterpTargetPitch());
+        //#if MC>=12105
+        PositionInterpolator i = entity.getInterpolator();
+        if (i != null && i.isInterpolating()) {
+            entity.refreshPositionAndAngles(i.getLerpedPos(), i.getLerpedYaw(), i.getLerpedPitch());
+            i.clear();
         }
+        //#elseif MC>=11400
+        //$$ if (entity instanceof LivingEntity && !(entity instanceof CameraEntity)) {
+        //$$     LivingEntity e = (LivingEntity) entity;
+        //$$     EntityLivingBaseAccessor ea = (EntityLivingBaseAccessor) e;
+        //$$     e.updatePosition(ea.getInterpTargetX(), ea.getInterpTargetY(), ea.getInterpTargetZ());
+        //$$     e.setYaw((float) ea.getInterpTargetYaw());
+        //$$     e.setPitch((float) ea.getInterpTargetPitch());
+        //$$}
         //#else
         //$$ if (entity instanceof EntityOtherPlayerMP) {
         //$$     EntityOtherPlayerMP e = (EntityOtherPlayerMP) entity;

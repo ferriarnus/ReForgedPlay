@@ -68,18 +68,31 @@ public class VirtualWindow implements Closeable {
     }
 
     public void beginWrite() {
-        guiFramebuffer.beginWrite(true);
+        MinecraftClientExt.get(mc).setFramebufferDelegate(guiFramebuffer);
+        //#if MC<12105
+        //$$ guiFramebuffer.beginWrite(true);
+        //#endif
     }
 
     public void endWrite() {
-        guiFramebuffer.endWrite();
+        //#if MC<12105
+        //$$ guiFramebuffer.endWrite();
+        //#endif
+        MinecraftClientExt.get(mc).setFramebufferDelegate(null);
     }
 
     public void flip() {
-        guiFramebuffer.draw(framebufferWidth, framebufferHeight);
+        //#if MC>=12105
+        guiFramebuffer.blitToScreen();
+        //#else
+        //$$ guiFramebuffer.draw(framebufferWidth, framebufferHeight);
+        //#endif
 
         //#if MC>=11500
-        window.swapBuffers();
+        //#if MC>=12102
+        window.swapBuffers(null);
+        //#elseif MC>=11500
+        //$$ window.swapBuffers();
         //#else
         //#if MC>=11400
         //$$ window.setFullscreen(false);
@@ -112,8 +125,8 @@ public class VirtualWindow implements Closeable {
 
         //#if MC>=11400
         guiFramebuffer.resize(newWidth, newHeight
-                //#if MC>=11400
-                , false
+                //#if MC>=11400 && MC<12102
+                //$$ , false
                 //#endif
         );
         //#else

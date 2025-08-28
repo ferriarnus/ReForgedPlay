@@ -10,7 +10,7 @@ import net.neoforged.fml.loading.LoadingModList;
 
 import static com.replaymod.core.ReplayMod.MOD_ID;
 
-@EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD, modid = MOD_ID, value = Dist.CLIENT)
+@EventBusSubscriber(modid = MOD_ID, value = Dist.CLIENT)
 @Mod(MOD_ID)
 public class ReplayModBackend {
     private final ReplayMod mod = new ReplayMod(this);
@@ -26,7 +26,11 @@ public class ReplayModBackend {
     }
 
     public String getMinecraftVersion() {
-        return SharedConstants.getGameVersion().getName();
+        //#if MC>=12106
+        return SharedConstants.getGameVersion().name();
+        //#else
+        //$$ return SharedConstants.getGameVersion().getName();
+        //#endif
     }
 
     public boolean isModLoaded(String id) {

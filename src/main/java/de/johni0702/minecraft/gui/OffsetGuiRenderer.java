@@ -35,6 +35,8 @@ import net.minecraft.util.Identifier;
 
 import static de.johni0702.minecraft.gui.versions.MCVer.popScissorState;
 import static de.johni0702.minecraft.gui.versions.MCVer.pushScissorState;
+//#if MC>=12105
+import com.mojang.blaze3d.textures.GpuTexture;
 //#endif
 
 public class OffsetGuiRenderer implements GuiRenderer {
@@ -101,10 +103,12 @@ public class OffsetGuiRenderer implements GuiRenderer {
     }
     //#endif
 
-    @Override
-    public MatrixStack getMatrixStack() {
-        return renderer.getMatrixStack();
-    }
+    //#if MC<12106
+    //$$@Override
+    //$$public MatrixStack getMatrixStack() {
+    //$$    return renderer.getMatrixStack();
+    //$$}
+    //#endif
 
     @Override
     public ReadableDimension getSize() {
@@ -150,6 +154,13 @@ public class OffsetGuiRenderer implements GuiRenderer {
     public void bindTexture(int glId) {
         renderer.bindTexture(glId);
     }
+
+    //#if MC>=12105
+    @Override
+    public void bindTexture(GpuTexture texture) {
+    renderer.bindTexture(texture);
+    }
+    //#endif
 
     @Override
     public void drawTexturedRect(int x, int y, int u, int v, int width, int height) {

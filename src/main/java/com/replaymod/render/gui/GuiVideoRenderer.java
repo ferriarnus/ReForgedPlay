@@ -239,7 +239,10 @@ public class GuiVideoRenderer extends GuiScreen implements Tickable {
 
         if (previewTexture == null) {
             //#if MC>=11400
-            previewTexture = new NativeImageBackedTexture(videoWidth, videoHeight, true);
+            //#if MC>=12105
+            previewTexture = new NativeImageBackedTexture((String) null, videoWidth, videoHeight, true);
+            //#elseif MC>=11400
+            //$$ previewTexture = new NativeImageBackedTexture(videoWidth, videoHeight, true);
             //#else
             //$$ previewTexture = new DynamicTexture(videoWidth, videoHeight);
             //#endif
@@ -250,7 +253,11 @@ public class GuiVideoRenderer extends GuiScreen implements Tickable {
             previewTextureDirty = false;
         }
 
-        guiRenderer.bindTexture(previewTexture.getGlId());
+        //#if MC>=12105
+        guiRenderer.bindTexture(previewTexture.getGlTexture());
+        //#else
+        //$$ guiRenderer.bindTexture(previewTexture.getGlId());
+        //#endif
         renderPreviewTexture(guiRenderer, size, videoWidth, videoHeight);
     }
 
@@ -292,8 +299,12 @@ public class GuiVideoRenderer extends GuiScreen implements Tickable {
                         int r = buffer.get() & 0xff;
                         buffer.get(); // alpha
                         //#if MC>=11400
-                        int value = 0xff << 24 | b << 16 | g << 8 |  r;
-                        data.setColor(x, y, value); // actually takes ABGR, not RGBA
+                        //#if MC>=12102
+                        int value = 0xff << 24 | r << 16 | g << 8 |  b;
+                        data.setColorArgb(x, y, value);
+                        //#elseif MC>=11400
+                        //$$ int value = 0xff << 24 | b << 16 | g << 8 |  r;
+                        //$$ data.setColor(x, y, value); // actually takes ABGR, not RGBA
                         //#else
                         //$$ int value = 0xff << 24 | r << 16 | g << 8 |  b;
                         //$$ data[y * width + x] = value;

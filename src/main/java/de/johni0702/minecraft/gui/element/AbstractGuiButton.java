@@ -41,6 +41,14 @@ import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.Identifier;
 
+//#if MC>=12106
+import net.minecraft.client.gl.RenderPipelines;
+//#endif
+
+//#if MC>=12102
+import net.minecraft.client.render.RenderLayer;
+//#endif
+
 import static com.mojang.blaze3d.systems.RenderSystem.*;
 import static org.lwjgl.opengl.GL11.GL_ONE_MINUS_SRC_ALPHA;
 import static org.lwjgl.opengl.GL11.GL_SRC_ALPHA;
@@ -96,9 +104,11 @@ public abstract class AbstractGuiButton<T extends AbstractGuiButton<T>> extends 
             color = 0xffffa0;
         }
 
-        enableBlend();
-        blendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, 1, 0);
-        blendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        //#if MC<12105
+        //$$ enableBlend();
+        //$$ blendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, 1, 0);
+        //$$ blendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        //#endif
 
         int textureY = 46 + texture * 20;
         int halfWidth = size.getWidth() / 2;
@@ -106,9 +116,16 @@ public abstract class AbstractGuiButton<T extends AbstractGuiButton<T>> extends 
         int halfHeight = size.getHeight() / 2;
         int secondHalfHeight = size.getHeight() - halfHeight;
 
-        //#if MC>=12002
+        //#if MC>=12106
         ReadablePoint offset = renderer.getOpenGlOffset();
-        renderer.getContext().drawGuiTexture(BUTTON_TEXTURES[texture], offset.getX(), offset.getY(), size.getWidth(), size.getHeight());
+        renderer.getContext().drawGuiTexture(RenderPipelines.GUI_TEXTURED, BUTTON_TEXTURES[texture], offset.getX(), offset.getY(), size.getWidth(), size.getHeight());
+        //#elseif MC>=12102
+        //$$ ReadablePoint offset = renderer.getOpenGlOffset();
+        //$$ renderer.getContext().drawGuiTexture(RenderLayer::getGuiTextured, BUTTON_TEXTURES[texture], offset.getX(), offset.getY(), size.getWidth(), size.getHeight());
+        //$$ renderer.getContext().draw();
+        //#elseif MC>=12002
+        //$$ ReadablePoint offset = renderer.getOpenGlOffset();
+        //$$ renderer.getContext().drawGuiTexture(BUTTON_TEXTURES[texture], offset.getX(), offset.getY(), size.getWidth(), size.getHeight());
         //#else
         //$$ renderer.bindTexture(WIDGETS_TEXTURE);
         //$$ renderer.drawTexturedRect(0, 0, 0, textureY, halfWidth, halfHeight);

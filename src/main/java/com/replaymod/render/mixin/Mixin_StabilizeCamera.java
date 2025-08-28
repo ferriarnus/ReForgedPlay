@@ -63,12 +63,12 @@ public abstract class Mixin_StabilizeCamera {
             //#endif
             orgYaw = entity.getYaw();
             orgPitch = entity.getPitch();
-            orgPrevYaw = entity.prevYaw;
-            orgPrevPitch = entity.prevPitch;
+            orgPrevYaw = entity.lastYaw;
+            orgPrevPitch = entity.lastPitch;
             orgRoll = entity instanceof CameraEntity ? ((CameraEntity) entity).roll : 0;
             if (entity instanceof LivingEntity) {
                 orgHeadYaw = ((LivingEntity) entity).headYaw;
-                orgPrevHeadYaw = ((LivingEntity) entity).prevHeadYaw;
+                orgPrevHeadYaw = ((LivingEntity) entity).lastHeadYaw;
             }
         }
     //#if MC<11400
@@ -83,14 +83,14 @@ public abstract class Mixin_StabilizeCamera {
             //#endif
             RenderSettings settings = getHandler().getSettings();
             if (settings.isStabilizeYaw()) {
-                entity.prevYaw = 0;
+                entity.lastYaw = 0;
                 entity.setYaw(0);
                 if (entity instanceof LivingEntity) {
-                    ((LivingEntity) entity).prevHeadYaw = ((LivingEntity) entity).headYaw = 0;
+                    ((LivingEntity) entity).lastHeadYaw = ((LivingEntity) entity).headYaw = 0;
                 }
             }
             if (settings.isStabilizePitch()) {
-                entity.prevPitch = 0;
+                entity.lastPitch = 0;
                 entity.setPitch(0);
             }
             if (settings.isStabilizeRoll() && entity instanceof CameraEntity) {
@@ -123,14 +123,14 @@ public abstract class Mixin_StabilizeCamera {
             //#endif
             entity.setYaw(orgYaw);
             entity.setPitch(orgPitch);
-            entity.prevYaw = orgPrevYaw;
-            entity.prevPitch = orgPrevPitch;
+            entity.lastYaw = orgPrevYaw;
+            entity.lastPitch = orgPrevPitch;
             if (entity instanceof CameraEntity) {
                 ((CameraEntity) entity).roll = orgRoll;
             }
             if (entity instanceof LivingEntity) {
                 ((LivingEntity) entity).headYaw = orgHeadYaw;
-                ((LivingEntity) entity).prevHeadYaw = orgPrevHeadYaw;
+                ((LivingEntity) entity).lastHeadYaw = orgPrevHeadYaw;
             }
         }
     }

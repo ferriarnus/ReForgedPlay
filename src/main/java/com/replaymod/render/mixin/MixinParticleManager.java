@@ -2,7 +2,6 @@ package com.replaymod.render.mixin;
 
 //#if MC>=10904
 import com.replaymod.core.versions.MCVer;
-import com.replaymod.render.blend.BlendState;
 import com.replaymod.render.hooks.EntityRendererHandler;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleManager;
@@ -26,6 +25,7 @@ import org.joml.Quaternionf;
 
 //#if MC>=11400
 import net.minecraft.client.render.Camera;
+
 //#else
 //$$ import net.minecraft.entity.Entity;
 //#endif
@@ -33,8 +33,13 @@ import net.minecraft.client.render.Camera;
 @Mixin(ParticleManager.class)
 public abstract class MixinParticleManager {
     //#if MC>=11500
-    @Redirect(method = "renderParticles", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/particle/Particle;buildGeometry(Lnet/minecraft/client/render/VertexConsumer;Lnet/minecraft/client/render/Camera;F)V"))
+    //#if MC>=12104
+    @Redirect(method = "renderParticleType", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/particle/Particle;render(Lnet/minecraft/client/render/VertexConsumer;Lnet/minecraft/client/render/Camera;F)V"))
+    static
+    //#else
+    //$$ @Redirect(method = "renderParticles", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/particle/Particle;buildGeometry(Lnet/minecraft/client/render/VertexConsumer;Lnet/minecraft/client/render/Camera;F)V"))
     private void buildOrientedGeometry(Particle particle, VertexConsumer vertexConsumer, Camera camera, float partialTicks) {
+    //#endif
         EntityRendererHandler handler = ((EntityRendererHandler.IEntityRenderer) MCVer.getMinecraft().gameRenderer).replayModRender_getHandler();
         if (handler == null || !handler.omnidirectional) {
             buildGeometry(particle, vertexConsumer, camera, partialTicks);
@@ -55,14 +60,14 @@ public abstract class MixinParticleManager {
         }
     }
 
-    private void buildGeometry(Particle particle, VertexConsumer vertexConsumer, Camera camera, float partialTicks) {
+    private static void buildGeometry(Particle particle, VertexConsumer vertexConsumer, Camera camera, float partialTicks) {
         //#if MC<11900
         //$$ BlendState blendState = BlendState.getState();
         //$$ if (blendState != null) {
         //$$     blendState.get(ParticlesExporter.class).onRender(particle, partialTicks);
         //$$ }
         //#endif
-        particle.buildGeometry(vertexConsumer, camera, partialTicks);
+        particle.render(vertexConsumer, camera, partialTicks);
     }
     //#else
     //#if MC>=11200

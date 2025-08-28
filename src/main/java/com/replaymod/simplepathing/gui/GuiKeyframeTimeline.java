@@ -1,5 +1,7 @@
 package com.replaymod.simplepathing.gui;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.core.versions.MCVer;
 import com.replaymod.pathing.properties.CameraProperties;
@@ -36,6 +38,34 @@ import static com.replaymod.core.versions.MCVer.emitLine;
 import static de.johni0702.minecraft.gui.versions.MCVer.popScissorState;
 import static de.johni0702.minecraft.gui.versions.MCVer.pushScissorState;
 import static de.johni0702.minecraft.gui.versions.MCVer.setScissorDisabled;
+
+//#if MC>=12106
+import com.replaymod.replay.mixin.DrawContextAccessor;
+import com.replaymod.render.mixin.GameRendererAccessor;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.ScreenRect;
+import net.minecraft.client.gui.render.SpecialGuiElementRenderer;
+import net.minecraft.client.gui.render.state.special.SpecialGuiElementRenderState;
+import net.minecraft.client.util.ClosableFactory;
+import net.minecraft.client.util.Pool;
+import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.render.VertexConsumerProvider;
+import org.jetbrains.annotations.Nullable;
+import java.util.ArrayList;
+import java.util.List;
+//#endif
+
+//#if MC>=12105
+import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.render.VertexConsumer;
+import net.minecraft.client.render.VertexConsumerProvider;
+//#endif
+
+//#if MC>=12102
+//#if MC<12105
+//$$ import net.minecraft.client.gl.ShaderProgramKeys;
+//#endif
+//#endif
 
 //#if MC>=11700
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -104,6 +134,10 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
 
         renderer.bindTexture(ReplayMod.TEXTURE);
 
+        //#if MC>=12106
+        TimeTimelineLinesRenderState linesRenderState = new TimeTimelineLinesRenderState();
+        //#endif
+
         SPTimeline timeline = mod.getCurrentTimeline();
 
         timeline.getTimeline().getPaths().stream().flatMap(path -> path.getKeyframes().stream()).forEach(keyframe -> {
@@ -153,12 +187,18 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
                     float positionXKeyframeTimeline = positonX + KEYFRAME_SIZE / 2f;
 
                     final int color = 0xff0000ff;
-                    Tessellator tessellator = Tessellator.getInstance();
+                    //#if MC>=12105
+                    VertexConsumerProvider.Immediate immediate = getMinecraft().getBufferBuilders().getEntityVertexConsumers();
+                    immediate.draw();
+                    VertexConsumer buffer = immediate.getBuffer(RenderLayer.LINE_STRIP);
+                    //#else
+                    //$$ Tessellator tessellator = Tessellator.getInstance();
                     //#if MC>=12100
-                    BufferBuilder buffer = tessellator.begin(net.minecraft.client.render.VertexFormat.DrawMode.LINE_STRIP, VertexFormats.LINES);
+                    //$$ BufferBuilder buffer = tessellator.begin(net.minecraft.client.render.VertexFormat.DrawMode.LINE_STRIP, VertexFormats.LINES);
                     //#else
                     //$$ BufferBuilder buffer = tessellator.getBuffer();
                     //$$ buffer.begin(net.minecraft.client.render.VertexFormat.DrawMode.LINE_STRIP, VertexFormats.LINES);
+                    //#endif
                     //#endif
 
                     // Start just below the top border of the replay timeline
@@ -170,35 +210,71 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
                     // And finally another vertical bit (the timeline is already crammed enough, so only the border)
                     Vector2f p4 = new Vector2f(keyframeTimelineLeft + positionXKeyframeTimeline, keyframeTimelineTop + BORDER_TOP);
 
-                    MatrixStack matrixStack = renderer.getMatrixStack();
-                    emitLine(matrixStack, buffer, p1, p2, color);
-                    emitLine(matrixStack, buffer, p2, p3, color);
-                    emitLine(matrixStack, buffer, p3, p4, color);
+                    //#if MC>=12106
+                    linesRenderState.color = color;
+                    linesRenderState.line(p1, p2);
+                    linesRenderState.line(p2, p3);
+                    linesRenderState.line(p3, p4);
+                    //#else
+                    //$$ MatrixStack matrixStack = renderer.getMatrixStack();
+                    //$$ emitLine(matrixStack, buffer, p1, p2, color);
+                    //$$ emitLine(matrixStack, buffer, p2, p3, color);
+                    //$$ emitLine(matrixStack, buffer, p3, p4, color);
 
-                    //#if MC>=11700
-                    RenderSystem.setShader(GameRenderer::getRenderTypeLinesProgram);
+                    //$$ pushScissorState();
+                    //$$ setScissorDisabled();
+                    //$$ GL11.glLineWidth(2);
+
+                    //#if MC>=12105
+                    //$$ immediate.draw();
+                    //#else
+                    //#if MC>=12102
+                    //$$ RenderSystem.setShader(ShaderProgramKeys.RENDERTYPE_LINES);
+                    //#elseif MC>=11700
+                    //$$ RenderSystem.setShader(GameRenderer::getRenderTypeLinesProgram);
                     //#else
                     //$$ GL11.glEnable(GL11.GL_LINE_SMOOTH);
                     //$$ GL11.glDisable(GL11.GL_TEXTURE_2D);
                     //#endif
-                    pushScissorState();
-                    setScissorDisabled();
-                    com.mojang.blaze3d.systems.RenderSystem.lineWidth(2);
                     //#if MC>=12100
-                    try (var builtBuffer = buffer.end()) {
-                        net.minecraft.client.render.BufferRenderer.drawWithGlobalProgram(builtBuffer);
-                    }
+                    //$$ try (var builtBuffer = buffer.end()) {
+                    //$$     net.minecraft.client.render.BufferRenderer.drawWithGlobalProgram(builtBuffer);
+                    //$$ }
                     //#else
                     //$$ tessellator.draw();
                     //#endif
-                    popScissorState();
+                    //$$ popScissorState();
                     //#if MC<11700
                     //$$ GL11.glEnable(GL11.GL_TEXTURE_2D);
                     //$$ GL11.glDisable(GL11.GL_LINE_SMOOTH);
                     //#endif
+                    //#endif
+
+                    popScissorState();
+                    //#endif
                 }
             }
         });
+
+        //#if MC>=12106
+        if (!linesRenderState.lines.isEmpty()) {
+            MinecraftClient mc = getMinecraft();
+            int scale = mc.getWindow().getScaleFactor();
+            // MC's special rendering code has multiple issues, we'll use a size matching the screen to avoid some
+            linesRenderState.x1 = 0;
+            linesRenderState.y1 = 0;
+            linesRenderState.x2 = mc.getWindow().getFramebufferWidth() / scale;
+            linesRenderState.y2 = mc.getWindow().getFramebufferHeight() / scale;
+
+            Pool pool = ((GameRendererAccessor) mc.gameRenderer).getPool();
+            TimeTimelineLinesRenderer linesRenderer = pool.acquire(TimeTimelineLinesRenderer.FACTORY);
+            pushScissorState();
+            setScissorDisabled();
+            linesRenderer.render(linesRenderState, ((DrawContextAccessor) renderer.getContext()).getState(), scale);
+            popScissorState();
+            pool.release(TimeTimelineLinesRenderer.FACTORY, linesRenderer); // Note: Assumes we only render one per frame
+        }
+        //#endif
 
         // Draw colored quads on spectator path segments
         for (PathSegment segment : timeline.getPositionPath().getSegments()) {
@@ -220,6 +296,64 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
         }
 
         super.drawTimelineCursor(renderer, size);
+    }
+
+    //#if MC>=12106
+    private static class TimeTimelineLinesRenderState implements SpecialGuiElementRenderState {
+        int x1, x2, y1, y2;
+        ScreenRect scissorState;
+
+        List<Pair<Vector2f, Vector2f>> lines = new ArrayList<>();
+        int color;
+
+        public void line(Vector2f p1, Vector2f p2) {
+            lines.add(Pair.of(p1, p2));
+        }
+
+       @Override public int x1() {return x1;}
+       @Override public int x2() {return x2;}
+       @Override public int y1() {return y1;}
+       @Override public int y2() {return y2;}
+       @Override public float scale() {return 1; /* scale */}
+       @Override public @Nullable ScreenRect scissorArea() {return scissorState;}
+       @Override public @Nullable ScreenRect bounds() {return SpecialGuiElementRenderState.createBounds(x1, y1, x2, y2, scissorState);}
+    }
+
+        private static class TimeTimelineLinesRenderer extends SpecialGuiElementRenderer<TimeTimelineLinesRenderState> {
+        private static ClosableFactory<TimeTimelineLinesRenderer> FACTORY = new ClosableFactory<>() {
+            @Override
+            public TimeTimelineLinesRenderer create() {
+                return new TimeTimelineLinesRenderer(MinecraftClient.getInstance().getBufferBuilders().getEntityVertexConsumers());
+            }
+
+            @Override
+            public void close(TimeTimelineLinesRenderer object) {
+                object.close();
+            }
+        };
+
+        protected TimeTimelineLinesRenderer(VertexConsumerProvider.Immediate immediate) {
+            super(immediate);
+        }
+
+        @Override
+        public Class<TimeTimelineLinesRenderState> getElementClass() {
+             return TimeTimelineLinesRenderState.class;
+        }
+
+        @Override
+        protected void render(TimeTimelineLinesRenderState state, MatrixStack matrixStack) {
+            matrixStack.translate(-state.x2 / 2f, -state.y2, 100);
+            RenderSystem.lineWidth(2);
+            for (Pair<Vector2f, Vector2f> line : state.lines) {
+                 emitLine(matrixStack, vertexConsumers.getBuffer(RenderLayer.LINES), line.getLeft(), line.getRight(), state.color);
+             }
+        }
+
+        @Override
+        protected String getName() {
+            return "time_timeline_lines";
+        }
     }
 
     private void drawQuadOnSegment(GuiRenderer renderer, int visibleWidth, PathSegment segment, int y, int color) {

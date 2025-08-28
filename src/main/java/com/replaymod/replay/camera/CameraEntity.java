@@ -33,6 +33,11 @@ import net.minecraft.stat.StatHandler;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Box;
 
+//#if MC>=12106
+import net.minecraft.util.PlayerInput;
+//#endif
+
+
 //#if FABRIC>=1
 //#else
 //$$ import net.minecraftforge.client.event.EntityViewRenderEvent;
@@ -44,6 +49,7 @@ import net.minecraft.util.math.Box;
 
 //#if MC>=12002
 //$$ import net.minecraft.client.util.SkinTextures;
+//$$ import net.minecraft.util.math.MathHelper;
 //#endif
 
 //#if MC>=11400
@@ -85,6 +91,7 @@ import net.minecraft.util.Hand;
 
 //#if MC>=10800
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.util.math.MathHelper;
 //#else
 //$$ import net.minecraft.client.entity.EntityClientPlayerMP;
 //$$ import net.minecraft.util.Session;
@@ -164,7 +171,11 @@ public class CameraEntity
                 , recipeBook
                 //#endif
                 //#if MC>=11600
-                , false
+                //#if MC>=12106
+                 , PlayerInput.DEFAULT
+                //#else
+                //$$, false
+                //#endif
                 , false
                 //#endif
         );
@@ -206,9 +217,9 @@ public class CameraEntity
      * @param z Z coordinate
      */
     public void setCameraPosition(double x, double y, double z) {
-        this.lastRenderX = this.prevX = x;
-        this.lastRenderY = this.prevY = y;
-        this.lastRenderZ = this.prevZ = z;
+        this.lastRenderX = this.lastX = x;
+        this.lastRenderY = this.lastY = y;
+        this.lastRenderZ = this.lastZ = z;
         this.setPos(x, y, z);
         updateBoundingBox();
     }
@@ -220,8 +231,13 @@ public class CameraEntity
      * @param roll Roll in degrees
      */
     public void setCameraRotation(float yaw, float pitch, float roll) {
-        this.prevYaw = yaw;
-        this.prevPitch = pitch;
+        //#if MC>=12102
+        // Note: MC's `setPitch` now forces values into the [-90; 90] range, however the math it uses is incorrect, so
+        //       we need to wrap our value into the [-180; 180] range first to get correct results.
+        pitch = MathHelper.wrapDegrees(pitch);
+        //#endif
+        this.lastYaw = yaw;
+        this.lastPitch = pitch;
         this.setYaw(yaw);
         this.setPitch(pitch);
         this.roll = roll;
@@ -247,11 +263,11 @@ public class CameraEntity
         //#else
         //$$ float yOffset = 1.62f; // Magic value (eye height) from EntityRenderer#orientCamera
         //#endif
-        this.prevX = to.prevX;
-        this.prevY = to.prevY + yOffset;
-        this.prevZ = to.prevZ;
-        this.prevYaw = to.prevYaw;
-        this.prevPitch = to.prevPitch;
+        this.lastX = to.lastX;
+        this.lastY = to.lastY + yOffset;
+        this.lastZ = to.lastZ;
+        this.lastYaw = to.lastYaw;
+        this.lastPitch = to.lastPitch;
         this.setPos(to.getX(), to.getY(), to.getZ());
         this.setYaw(to.getYaw());
         this.setPitch(to.getPitch());
@@ -267,7 +283,7 @@ public class CameraEntity
     public float getYaw(float tickDelta) {
         Entity view = this.client.getCameraEntity();
         if (view != null && view != this) {
-            return this.prevYaw + (this.getYaw() - this.prevYaw) * tickDelta;
+            return this.lastYaw + (this.getYaw() - this.lastYaw) * tickDelta;
         }
         return super.getYaw(tickDelta);
     }
@@ -276,7 +292,7 @@ public class CameraEntity
     public float getPitch(float tickDelta) {
         Entity view = this.client.getCameraEntity();
         if (view != null && view != this) {
-            return this.prevPitch + (this.getPitch() - this.prevPitch) * tickDelta;
+            return this.lastPitch + (this.getPitch() - this.lastPitch) * tickDelta;
         }
         return super.getPitch(tickDelta);
     }
@@ -455,15 +471,24 @@ public class CameraEntity
     //$$ }
     //#endif
 
-    //#if MC>=10800
+    //#if MC>=12102
     @Override
-    public float getFovMultiplier() {
+    public float getFovMultiplier(boolean firstPerson, float fovEffectScale) {
         Entity view = this.client.getCameraEntity();
         if (view != this && view instanceof AbstractClientPlayerEntity) {
-            return ((AbstractClientPlayerEntity) view).getFovMultiplier();
+            return ((AbstractClientPlayerEntity) view).getFovMultiplier(firstPerson, fovEffectScale);
         }
         return 1;
     }
+    //#elseif MC>=10800
+    //$$ @Override
+    //$$ public float getFovMultiplier() {
+    //$$     Entity view = this.client.getCameraEntity();
+    //$$     if (view != this && view instanceof AbstractClientPlayerEntity) {
+    //$$         return ((AbstractClientPlayerEntity) view).getFovMultiplier();
+    //$$     }
+    //$$     return 1;
+    //$$ }
     //#else
     //$$ @Override
     //$$ public float getFOVMultiplier() {

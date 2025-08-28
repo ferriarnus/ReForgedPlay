@@ -30,13 +30,14 @@ import net.minecraft.client.gui.screen.DownloadingTerrainScreen;
 import net.minecraft.client.gui.screen.NoticeScreen;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
-import net.minecraft.network.NetworkState;
+import net.minecraft.network.state.NetworkState;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.s2c.common.CustomPayloadS2CPacket;
 import net.minecraft.network.packet.s2c.common.DisconnectS2CPacket;
 import net.minecraft.network.packet.s2c.common.ResourcePackSendS2CPacket;
 import net.minecraft.network.packet.s2c.config.ReadyS2CPacket;
+import net.minecraft.network.packet.s2c.login.LoginHelloS2CPacket;
 import net.minecraft.network.packet.s2c.play.*;
 import net.minecraft.network.packet.s2c.login.LoginSuccessS2CPacket;
 import net.minecraft.text.Text;
@@ -44,6 +45,15 @@ import net.minecraft.util.math.Vec3d;
 import net.neoforged.neoforge.network.payload.AdvancedOpenScreenPayload;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+
+//#if MC>=12105
+//#else
+//$$ import net.minecraft.network.packet.s2c.play.ExperienceOrbSpawnS2CPacket;
+//#endif
+
+//#if MC>=12005
+import net.minecraft.network.packet.s2c.common.ServerTransferS2CPacket;
+//#endif
 
 //#if MC>=12002
 import net.minecraft.network.packet.s2c.config.ReadyS2CPacket;
@@ -111,6 +121,7 @@ import net.minecraft.world.GameMode;
 
 //#if MC>=10800
 import net.minecraft.network.NetworkSide;
+import org.apache.commons.lang3.mutable.MutableBoolean;
 //#else
 //$$ import org.apache.commons.io.Charsets;
 //#endif
@@ -139,6 +150,10 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
      * These packets are ignored completely during replay.
      */
     private static final List<Class> BAD_PACKETS = Arrays.<Class>asList(
+            LoginHelloS2CPacket.class, // workaround for an issue where ReplayMod prior to 2.6.20 would record these
+            //#if MC>=12005
+            ServerTransferS2CPacket.class,
+            //#endif
             //#if MC>=11404
             PlayerActionResponseS2CPacket.class,
             //#endif
@@ -410,7 +425,9 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
                             ClientWorld world = mc.world;
                             if (world != null) {
                                 //#if MC>=11800
-                                while (!world.hasNoChunkUpdaters()) {
+                                MutableBoolean done = new MutableBoolean();
+                                world.enqueueChunkUpdate(done::setTrue);
+                                while (!done.booleanValue()) {
                                     world.runQueuedChunkUpdates();
                                 }
                                 //#endif
@@ -459,7 +476,9 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
                 //#if MC<11600
                 //$$ || packet instanceof EntitySpawnGlobalS2CPacket
                 //#endif
-                || packet instanceof ExperienceOrbSpawnS2CPacket
+                //#if MC<12105
+                //$$|| packet instanceof ExperienceOrbSpawnS2CPacket
+                //#endif
                 || packet instanceof EntitiesDestroyS2CPacket;
         if (!relevantPacket) {
             return; // don't want to do it too often, only when there's likely to be a dead entity
@@ -820,7 +839,11 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
 
             //#if MC>=10800
             //#if MC>=11904
-            for (PositionFlag relative : ppl.getFlags()) {
+            //#if MC>=12102
+            for (PositionFlag relative : ppl.relatives()) {
+            //#else
+            //$$ for (PositionFlag relative : ppl.getFlags()) {
+            //#endif
                 if (relative == PositionFlag.X || relative == PositionFlag.Y || relative == PositionFlag.Z) {
             //#elseif MC>=11400
             //$$ for (PlayerPositionLookS2CPacket.Flag relative : ppl.getFlags()) {
@@ -854,14 +877,24 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
                     }
 
                     CameraEntity cent = replayHandler.getCameraEntity();
-                    if (!allowMovement && !((Math.abs(cent.getX() - ppl.getX()) > TP_DISTANCE_LIMIT) ||
-                            (Math.abs(cent.getZ() - ppl.getZ()) > TP_DISTANCE_LIMIT))) {
+                    //#if MC>=12102
+                    if (!allowMovement && !((Math.abs(cent.getX() - ppl.change().position().x) > TP_DISTANCE_LIMIT) ||
+                             (Math.abs(cent.getZ() - ppl.change().position().z) > TP_DISTANCE_LIMIT))) {
+                    //#else
+                    //$$ if (!allowMovement && !((Math.abs(cent.getX() - ppl.getX()) > TP_DISTANCE_LIMIT) ||
+                    //$$         (Math.abs(cent.getZ() - ppl.getZ()) > TP_DISTANCE_LIMIT))) {
+                    //#endif
                         return;
                     } else {
                         allowMovement = false;
                     }
-                    cent.setCameraPosition(ppl.getX(), ppl.getY(), ppl.getZ());
-                    cent.setCameraRotation(ppl.getYaw(), ppl.getPitch(), cent.roll);
+                    //#if MC>=12102
+                    cent.setCameraPosition(ppl.change().position().x, ppl.change().position().y, ppl.change().position().z);
+                    cent.setCameraRotation(ppl.change().yaw(), ppl.change().pitch(), cent.roll);
+                    //#else
+                    //$$ cent.setCameraPosition(ppl.getX(), ppl.getY(), ppl.getZ());
+                    //$$ cent.setCameraRotation(ppl.getYaw(), ppl.getPitch(), cent.roll);
+                    //#endif
                 }
             });
 
@@ -929,6 +962,9 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
                 org.isFlat(),
                 org.lastDeathLocation(),
                 org.portalCooldown()
+                //#if MC>=12102
+                , org.seaLevel()
+                //#endif
          );
     }
     //#endif
@@ -1355,11 +1391,7 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
             //#if MC>=11400
             ClientWorld world = mc.world;
             ChunkManager chunkProvider = world.getChunkManager();
-            WorldChunk chunk = chunkProvider.getWorldChunk(x, z
-                    //#if MC<11500
-                    //$$ , false
-                    //#endif
-            );
+            WorldChunk chunk = chunkProvider.getWorldChunk(x, z);
             if (chunk != null) {
             //#else
             //$$ World world = mc.world;
@@ -1397,10 +1429,7 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
                     //$$         // Entity has left the chunk
                     //$$         chunk.remove(entity, entity.chunkY);
                     //$$     }
-                    //$$     WorldChunk newChunk = chunkProvider.getWorldChunk(chunkX, chunkZ
-                                //#if MC<11500
-                                //$$ , false
-                                //#endif
+                    //$$     WorldChunk newChunk = chunkProvider.getWorldChunk(chunkX, chunkZ);
                     //$$     );
                     //$$     if (newChunk != null) {
                     //$$         newChunk.addEntity(entity);

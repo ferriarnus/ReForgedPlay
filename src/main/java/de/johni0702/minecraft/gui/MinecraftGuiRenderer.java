@@ -24,8 +24,8 @@
  */
 package de.johni0702.minecraft.gui;
 
-import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import de.johni0702.minecraft.gui.utils.NonNull;
 import de.johni0702.minecraft.gui.utils.lwjgl.*;
 import de.johni0702.minecraft.gui.versions.MCVer;
@@ -36,12 +36,46 @@ import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 import org.joml.Matrix4f;
+import net.minecraft.client.render.BufferBuilder;
+import net.minecraft.client.render.Tessellator;
+import net.minecraft.client.render.VertexFormats;
 
 import static com.mojang.blaze3d.systems.RenderSystem.*;
 import static de.johni0702.minecraft.gui.versions.MCVer.getMinecraft;
 import static de.johni0702.minecraft.gui.versions.MCVer.newScaledResolution;
 import static org.lwjgl.opengl.GL11.GL_ONE_MINUS_SRC_ALPHA;
 import static org.lwjgl.opengl.GL11.GL_SRC_ALPHA;
+
+//#if MC>=12106
+import net.minecraft.client.texture.AbstractTexture;
+import org.joml.Matrix3x2fStack;
+//#endif
+
+//#if MC>=12105
+import com.mojang.blaze3d.buffers.GpuBuffer;
+import com.mojang.blaze3d.systems.RenderPass;
+import com.mojang.blaze3d.textures.GpuTexture;
+import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.blaze3d.textures.TextureFormat;
+import net.minecraft.client.gl.Framebuffer;
+import net.minecraft.client.gl.RenderPipelines;
+import net.minecraft.client.texture.GlTexture;
+import java.util.OptionalDouble;
+import java.util.OptionalInt;
+//#endif
+
+//#if MC>=12102
+//#if MC<12105
+//$$ import net.minecraft.client.gl.ShaderProgramKeys;
+//#endif
+//#endif
+
+//#if MC>=12100
+import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.render.VertexConsumer;
+import net.minecraft.client.render.VertexConsumerProvider;
+import org.lwjgl.opengl.GL11;
+//#endif
 
 public class MinecraftGuiRenderer implements GuiRenderer {
 
@@ -53,7 +87,11 @@ public class MinecraftGuiRenderer implements GuiRenderer {
     //$$ private final DrawableHelper gui = new DrawableHelper(){};
     //#endif
 
-    private final MatrixStack matrixStack;
+    //#if MC>=12106
+    private final Matrix3x2fStack matrixStack;
+    //#else
+    //$$ private final MatrixStack matrixStack;
+    //#endif
 
     @NonNull
     //#if MC>=11400
@@ -70,6 +108,9 @@ public class MinecraftGuiRenderer implements GuiRenderer {
     public MinecraftGuiRenderer(DrawContext context) {
         this.context = context;
         this.matrixStack = context.getMatrices();
+        //#if MC>=12102 && MC<12106
+        //$$ context.draw();
+        //#endif
     }
     //#else
     //$$ public MinecraftGuiRenderer(MatrixStack matrixStack) {
@@ -89,10 +130,12 @@ public class MinecraftGuiRenderer implements GuiRenderer {
     }
     //#endif
 
-    @Override
-    public MatrixStack getMatrixStack() {
-        return matrixStack;
-    }
+    //#if MC<12106
+    //$$ @Override
+    //$$ public MatrixStack getMatrixStack() {
+    //$$     return matrixStack;
+    //$$ }
+    //#endif
 
     @Override
     public ReadableDimension getSize() {
@@ -123,21 +166,47 @@ public class MinecraftGuiRenderer implements GuiRenderer {
         MCVer.setScissorBounds(x * f, y * f, width * f, height * f);
     }
 
+    private Identifier boundTexture;
+    //#if MC>=12105
+    private GpuTexture boundTextureGpu;
+    //#else
+    //$$ private int boundTextureGpu;
+    //#endif
+
     @Override
     public void bindTexture(Identifier location) {
-        MCVer.bindTexture(location);
+        boundTexture = location;
+        //#if MC>=12105
+        boundTextureGpu = null;
+        //#else
+        //$$ boundTextureGpu = 0;
+        //#endif
     }
 
     @Override
     public void bindTexture(int glId) {
-        //#if MC>=11700
-        RenderSystem.setShaderTexture(0, glId);
-        //#elseif MC>=10800
-        //$$ GlStateManager.bindTexture(glId);
+        boundTexture = null;
+        //#if MC>=12105
+        //#if MC>=12106
+        boundTextureGpu = new GlTexture(GlTexture.USAGE_TEXTURE_BINDING, null, TextureFormat.RGBA8, 0, 0, 0, 1, glId) {
         //#else
-        //$$ GL11.glBindTexture(GL_TEXTURE_2D, glId);
+        //$$ boundTextureGpu = new GlTexture(null, TextureFormat.RGBA8, 0, 0, 0, glId) {
+        //#endif
+            {
+                this.needsReinit = false;
+            }
+        };
+        //#else
+        //$$ boundTextureGpu = glId;
         //#endif
     }
+
+    //#if MC>=12105
+    public void bindTexture(GpuTexture texture) {
+        boundTexture = null;
+        boundTextureGpu = texture;
+    }
+    //#endif
 
     @Override
     public void drawTexturedRect(int x, int y, int u, int v, int width, int height) {
@@ -147,6 +216,21 @@ public class MinecraftGuiRenderer implements GuiRenderer {
     @Override
     public void drawTexturedRect(int x, int y, int u, int v, int width, int height, int uWidth, int vHeight, int textureWidth, int textureHeight) {
         color(1, 1, 1);
+
+        //#if MC<12105
+        //$$if (boundTexture != null) {
+        //$$    MCVer.bindTexture(boundTexture);
+        //$$} else {
+        //$$    //#if MC>=11700
+        //$$    //$$ RenderSystem.setShaderTexture(0, boundTextureGpu);
+        //$$    //#elseif MC>=10800
+        //$$    GlStateManager.bindTexture(boundTextureGpu);
+        //$$    //#else
+        //$$    //$$ GL11.glBindTexture(GL_TEXTURE_2D, boundTextureGpu);
+        //$$    //#endif
+        //$$}
+        //#endif
+
         //#if MC>=12000
         drawTexturedRect(x, x + width, y, y + height, u / (float) textureWidth, (u + uWidth) / (float) textureWidth, v / (float) textureHeight, (v + vHeight) / (float) textureHeight);
         //#elseif MC>=11600
@@ -162,18 +246,67 @@ public class MinecraftGuiRenderer implements GuiRenderer {
 
     //#if MC>=12000
     private void drawTexturedRect(int x1, int x2, int y1, int y2, float u1, float u2, float v1, float v2) {
-        RenderSystem.setShader(GameRenderer::getPositionTexProgram);
-        Matrix4f matrix = matrixStack.peek().getPositionMatrix();
-        Tessellator tessellator = Tessellator.getInstance();
-        //#if MC>=12100
-        BufferBuilder bufferBuilder = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);
-        bufferBuilder.vertex(matrix, x1, y1, 0).texture(u1, v1);
-        bufferBuilder.vertex(matrix, x1, y2, 0).texture(u1, v2);
-        bufferBuilder.vertex(matrix, x2, y2, 0).texture(u2, v2);
-        bufferBuilder.vertex(matrix, x2, y1, 0).texture(u2, v1);
-        try (var builtBuffer = bufferBuilder.end()) {
-            BufferRenderer.drawWithGlobalProgram(builtBuffer);
+        //#if MC>=12106
+        Identifier identifier;
+        if (boundTexture != null) {
+            identifier = boundTexture;
+        } else {
+            identifier = Identifier.of("jgui", "__tmp_texture__");
+            mc.getTextureManager().registerTexture(identifier, new AbstractTexture() {
+                { glTextureView = RenderSystem.getDevice().createTextureView(boundTextureGpu); }
+                @Override public void close() {} // ignore later `destroyTexture` call
+            });
         }
+
+        context.drawTexturedQuad(identifier, x1, y1, x2, y2, u1, u2, v1, v2);
+
+        if (boundTexture == null) {
+            mc.getTextureManager().destroyTexture(identifier);
+        }
+        //#else
+        //#if MC<12105
+        //#if MC>=12102
+        //$$ RenderSystem.setShader(ShaderProgramKeys.POSITION_TEX);
+        //#else
+        //$$ RenderSystem.setShader(GameRenderer::getPositionTexProgram);
+        //#endif
+        //#endif
+        //$$ Matrix4f matrix = matrixStack.peek().getPositionMatrix();
+        //$$ Tessellator tessellator = Tessellator.getInstance();
+        //#if MC>=12100
+        //$$ BufferBuilder bufferBuilder = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
+        //$$ bufferBuilder.vertex(matrix, x1, y1, 0).texture(u1, v1).color(255, 255, 255, 255);
+        //$$ bufferBuilder.vertex(matrix, x1, y2, 0).texture(u1, v2).color(255, 255, 255, 255);
+        //$$ bufferBuilder.vertex(matrix, x2, y2, 0).texture(u2, v2).color(255, 255, 255, 255);
+        //$$ bufferBuilder.vertex(matrix, x2, y1, 0).texture(u2, v1).color(255, 255, 255, 255);
+        //$$ try (var builtBuffer = bufferBuilder.end()) {
+            //#if MC>=12105
+            //$$ GpuTexture texture;
+            //$$ if (boundTexture != null) {
+            //$$     texture = mc.getTextureManager().getTexture(boundTexture).getGlTexture();
+            //$$ } else {
+            //$$     texture = boundTextureGpu;
+            //$$ }
+            //$$ RenderPipeline renderPipeline = RenderPipelines.GUI_TEXTURED;
+            //$$ GpuBuffer vertBuffer = renderPipeline.getVertexFormat().uploadImmediateVertexBuffer(builtBuffer.getBuffer());
+            //$$ RenderSystem.ShapeIndexBuffer shapeIndexBuffer = RenderSystem.getSequentialBuffer(builtBuffer.getDrawParameters().mode());
+            //$$ GpuBuffer indexBuffer = shapeIndexBuffer.getIndexBuffer(builtBuffer.getDrawParameters().indexCount());
+            //$$ VertexFormat.IndexType indexType = shapeIndexBuffer.getIndexType();
+            //$$ Framebuffer framebuffer = getMinecraft().getFramebuffer();
+            //$$ try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(framebuffer.getColorAttachment(), OptionalInt.empty(), framebuffer.getDepthAttachment(), OptionalDouble.empty())) {
+            //$$     renderPass.setPipeline(renderPipeline);
+            //$$     renderPass.setVertexBuffer(0, vertBuffer);
+            //$$     if (RenderSystem.SCISSOR_STATE.isEnabled()) {
+            //$$         renderPass.enableScissor(RenderSystem.SCISSOR_STATE);
+            //$$     }
+            //$$     renderPass.bindSampler("Sampler0", texture);
+            //$$     renderPass.setIndexBuffer(indexBuffer, indexType);
+            //$$     renderPass.drawIndexed(0, builtBuffer.getDrawParameters().indexCount());
+            //$$ }
+            //#else
+            //$$ BufferRenderer.drawWithGlobalProgram(builtBuffer);
+            //#endif
+        //$$}
         //#else
         //$$ BufferBuilder bufferBuilder = tessellator.getBuffer();
         //$$ bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);
@@ -183,6 +316,7 @@ public class MinecraftGuiRenderer implements GuiRenderer {
         //$$ bufferBuilder.vertex(matrix, x2, y1, 0).texture(u2, v1).next();
         //$$ BufferRenderer.drawWithGlobalProgram(bufferBuilder.end());
         //#endif
+        //#endif
     }
     //#endif
 
@@ -190,6 +324,9 @@ public class MinecraftGuiRenderer implements GuiRenderer {
     public void drawRect(int x, int y, int width, int height, int color) {
         //#if MC>=12000
         context.fill(x, y, x + width, y + height, color);
+        //#if MC>=12102 && MC<12106
+        //$$ context.draw();
+        //#endif
         //#else
         //$$ DrawableHelper.fill(
                 //#if MC>=11600
@@ -198,7 +335,9 @@ public class MinecraftGuiRenderer implements GuiRenderer {
         //$$         x, y, x + width, y + height, color);
         //#endif
         color(1, 1, 1);
-        enableBlend();
+        //#if MC<12105
+        //$$ enableBlend();
+        //#endif
     }
 
     @Override
@@ -213,18 +352,68 @@ public class MinecraftGuiRenderer implements GuiRenderer {
 
     @Override
     public void drawRect(int x, int y, int width, int height, ReadableColor tl, ReadableColor tr, ReadableColor bl, ReadableColor br) {
+        //#if MC>=12106
+        context.fillGradient(x, y, x + width, y + height, color(tl), color(bl));
+        }
+        //#else
+        //$$drawRect(x, y, width, height, tl, tr, bl, br, false);
+        //$$}
+    //$$
+    //$$private void drawRect(int x, int y, int width, int height, ReadableColor tl, ReadableColor tr, ReadableColor bl, ReadableColor br, boolean highlight) {
         //#if MC<11904
         //$$ disableTexture();
         //#endif
-        enableBlend();
-        blendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, 1, 0);
-        //#if MC>=11700
-        setShader(GameRenderer::getPositionColorProgram);
+        //#if MC<12105
+        //$$ enableBlend();
+        //$$ blendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, 1, 0);
+        //#endif
+        //#if MC>=12100
+        //#elseif MC>=11700
+        //$$ setShader(GameRenderer::getPositionColorProgram);
         //#else
         //$$ disableAlphaTest();
         //$$ shadeModel(GL_SMOOTH);
         //#endif
-        MCVer.drawRect(x, y, width, height, tl, tr, bl, br);
+        //#if MC>=12100
+        //$$    VertexConsumerProvider.Immediate provider = getMinecraft().getBufferBuilders().getEntityVertexConsumers();
+        //$$    VertexConsumer vertexConsumer = provider.getBuffer(highlight ? RenderLayer.getGuiTextHighlight() : RenderLayer.getGui());
+        //$$    vertexConsumer.vertex(x, y + height, 0).color(bl.getRed(), bl.getGreen(), bl.getBlue(), bl.getAlpha());
+        //$$     vertexConsumer.vertex(x + width, y + height, 0).color(br.getRed(), br.getGreen(), br.getBlue(), br.getAlpha());
+        //$$    vertexConsumer.vertex(x + width, y, 0).color(tr.getRed(), tr.getGreen(), tr.getBlue(), tr.getAlpha());
+        //$$    vertexConsumer.vertex(x, y, 0).color(tl.getRed(), tl.getGreen(), tl.getBlue(), tl.getAlpha());
+        //$$    provider.draw();
+        //#else
+        //#if MC>=10800
+        //$$ Tessellator tessellator = Tessellator.getInstance();
+        //$$ BufferBuilder vertexBuffer = tessellator.getBuffer();
+        //#else
+        //$$ Tessellator tessellator = Tessellator.instance;
+        //$$ Tessellator vertexBuffer = tessellator;
+        //#endif
+        //#if MC>=10809
+        //#if MC>=11700
+        //$$ vertexBuffer.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
+        //#else
+        //$$ vertexBuffer.begin(GL11.GL_QUADS, VertexFormats.POSITION_COLOR);
+        //#endif
+        //$$ vertexBuffer.vertex(x, y + height, 0).color(bl.getRed(), bl.getGreen(), bl.getBlue(), bl.getAlpha()).next();
+        //$$ vertexBuffer.vertex(x + width, y + height, 0).color(br.getRed(), br.getGreen(), br.getBlue(), br.getAlpha()).next();
+        //$$ vertexBuffer.vertex(x + width, y, 0).color(tr.getRed(), tr.getGreen(), tr.getBlue(), tr.getAlpha()).next();
+        //$$ vertexBuffer.vertex(x, y, 0).color(tl.getRed(), tl.getGreen(), tl.getBlue(), tl.getAlpha()).next();
+        //#else
+        //$$ vertexBuffer.startDrawingQuads();
+        //$$ vertexBuffer.setColorRGBA(bl.getRed(), bl.getGreen(), bl.getBlue(), bl.getAlpha());
+        //$$ vertexBuffer.addVertex(x, y + height, 0);
+        //$$ vertexBuffer.setColorRGBA(br.getRed(), br.getGreen(), br.getBlue(), br.getAlpha());
+        //$$ vertexBuffer.addVertex(x + width, y + height, 0);
+        //$$ vertexBuffer.setColorRGBA(tr.getRed(), tr.getGreen(), tr.getBlue(), tr.getAlpha());
+        //$$ vertexBuffer.addVertex(x + width, y, 0);
+        //$$ vertexBuffer.setColorRGBA(tl.getRed(), tl.getGreen(), tl.getBlue(), tl.getAlpha());
+        //$$ vertexBuffer.addVertex(x, y, 0);
+        //#endif
+        //$$ tessellator.draw();
+        //#endif
+
         //#if MC>=11700
         //#else
         //$$ shadeModel(GL_FLAT);
@@ -233,7 +422,8 @@ public class MinecraftGuiRenderer implements GuiRenderer {
         //#if MC<11904
         //$$ enableTexture();
         //#endif
-    }
+        //$$}
+    //#endif
 
     @Override
     public int drawString(int x, int y, int color, String text) {
@@ -259,8 +449,15 @@ public class MinecraftGuiRenderer implements GuiRenderer {
     public int drawString(int x, int y, int color, String text, boolean shadow) {
         TextRenderer fontRenderer = MCVer.getFontRenderer();
         try {
-            //#if MC>=12000
-            return context.drawText(fontRenderer, text, x, y, color, shadow);
+            //#if MC>=12106
+            context.drawText(fontRenderer, text, x, y, color | 0xff000000, shadow);
+            return x + fontRenderer.getWidth(text);
+            //#elseif MC>=12000
+            //$$ int nx = context.drawText(fontRenderer, text, x, y, color, shadow);
+            //#if MC>=12102
+            //$$ context.draw();
+            //#endif
+            //$$ return nx;
             //#else
             //$$ if (shadow) {
             //$$     return fontRenderer.drawWithShadow(
@@ -310,8 +507,9 @@ public class MinecraftGuiRenderer implements GuiRenderer {
     }
 
     private void color(float r, float g, float b) {
-        //#if MC>=11700
-        RenderSystem.setShaderColor(r, g, b, 1);
+        //#if MC>=12106
+        //#elseif MC>=11700
+        //$$ RenderSystem.setShaderColor(r, g, b, 1);
         //#else
         //#if MC>=10800
         //#if MC>=11400
@@ -329,23 +527,31 @@ public class MinecraftGuiRenderer implements GuiRenderer {
     public void invertColors(int right, int bottom, int left, int top) {
         if (left >= right || top >= bottom) return;
 
-        color(0, 0, 1);
+        //#if MC>=12106
+        context.fill(RenderPipelines.GUI_TEXT_HIGHLIGHT, left, top, right, bottom, 0xff0000ff);
+        //#else
+        //$$ color(0, 0, 1);
         //#if MC<11904
         //$$ disableTexture();
         //#endif
-        enableColorLogicOp();
+        //#if MC<12100
+        //$$ enableColorLogicOp();
         //#if MC>=11700
-        logicOp(GlStateManager.LogicOp.OR_REVERSE);
+        //$$ logicOp(GlStateManager.LogicOp.OR_REVERSE);
         //#else
         //$$ logicOp(GL11.GL_OR_REVERSE);
         //#endif
-
-        MCVer.drawRect(right, bottom, left, top);
-
-        disableColorLogicOp();
+        //#endif
+        //$$
+        //$$ drawRect(right, bottom, right - left, bottom - top, ReadableColor.WHITE, ReadableColor.WHITE, ReadableColor.WHITE, ReadableColor.WHITE, true);
+        //$$
+        //#if MC<12100
+        //$$ disableColorLogicOp();
+        //#endif
         //#if MC<11904
         //$$ enableTexture();
         //#endif
-        color(1, 1, 1);
+        //$$ color(1, 1, 1);
+        //#endif
     }
 }

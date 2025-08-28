@@ -1,6 +1,6 @@
 package com.replaymod.recording.mixin;
 
-import net.minecraft.network.NetworkState;
+import net.minecraft.network.state.NetworkState;
 import net.minecraft.network.handler.DecoderHandler;
 import net.minecraft.network.listener.PacketListener;
 import org.spongepowered.asm.mixin.Mixin;

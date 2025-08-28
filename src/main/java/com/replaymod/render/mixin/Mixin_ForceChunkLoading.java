@@ -94,7 +94,7 @@ public abstract class Mixin_ForceChunkLoading implements IForceChunkLoading {
 
             // If that async processing did change the chunk graph, we need to re-apply the frustum (otherwise this is
             // only done in the next setupTerrain call, which not happen this frame)
-            if (renderingData.method_52836()) {
+            if (renderingData.updateFrustum()) {
                 this.applyFrustum((new Frustum(frustum)).coverBoxAroundSetPosition(8)); // call based on the one in setupTerrain
             }
 
@@ -106,7 +106,11 @@ public abstract class Mixin_ForceChunkLoading implements IForceChunkLoading {
                 }
                 // MC sometimes schedules invalid chunks when you're outside of loaded chunks (e.g. y > 256)
                 if (builtChunk.shouldBuild()) {
-                    builtChunk.scheduleRebuild(this.chunkBuilder, chunkRendererRegionBuilder);
+                    //#if MC>=12106
+                    builtChunk.scheduleRebuild(chunkRendererRegionBuilder);
+                    //#else
+                    //$$ builtChunk.scheduleRebuild(this.field_45614, chunkRendererRegionBuilder);
+                    //#endif
                     areWeDoneYet = false;
                 }
                 builtChunk.cancelRebuild();
@@ -119,7 +123,7 @@ public abstract class Mixin_ForceChunkLoading implements IForceChunkLoading {
 
             // Repeat until no more updates are needed
             if (!areWeDoneYet) {
-                renderingData.method_52817(); // sets shouldUpdate to true
+                renderingData.scheduleTerrainUpdate(); // sets shouldUpdate to true
             }
         } while (renderingDataAcc.shouldUpdate());
     }

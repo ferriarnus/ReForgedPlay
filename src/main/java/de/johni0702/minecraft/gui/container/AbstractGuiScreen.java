@@ -102,8 +102,10 @@ public abstract class AbstractGuiScreen<T extends AbstractGuiScreen<T>> extends 
                 case NONE:
                     break;
                 case DEFAULT:
-                    //#if MC>=12002
-                    wrapped.renderBackground(renderer.getContext(), renderInfo.mouseX, renderInfo.mouseY, renderInfo.partialTick);
+                    //#if MC>=12106
+                    // Handled by override in MinecraftGuiScreen
+                    //#elseif MC>=12002
+                    //$$ wrapped.renderBackground(renderer.getContext(), renderInfo.mouseX, renderInfo.mouseY, renderInfo.partialTick);
                     //#elseif MC>=12000
                     //$$ wrapped.renderBackground(renderer.getContext());
                     //#elseif MC>=11600
@@ -117,8 +119,10 @@ public abstract class AbstractGuiScreen<T extends AbstractGuiScreen<T>> extends 
                     renderer.drawRect(0, 0, size.getWidth(), size.getHeight(), top, top, bottom, bottom);
                     break;
                 case DIRT:
-                    //#if MC>=12006
-                    wrapped.renderBackground(renderer.getContext(), renderInfo.mouseX, renderInfo.mouseY, renderInfo.partialTick);
+                    //#if MC>=12106
+                    // Handled by override in MinecraftGuiScreen
+                    //#elseif MC>=12006
+                    //$$ wrapped.renderBackground(renderer.getContext(), renderInfo.mouseX, renderInfo.mouseY, renderInfo.partialTick);
                     //#elseif MC>=12000
                     //$$ wrapped.renderBackgroundTexture(renderer.getContext());
                     //#elseif MC>=11904
@@ -227,6 +231,22 @@ public abstract class AbstractGuiScreen<T extends AbstractGuiScreen<T>> extends 
         public Text getTitle() {
             GuiLabel title = AbstractGuiScreen.this.title;
             return literalText(title == null ? "" : title.getText());
+        }
+        //#endif
+
+        //#if MC>=12106
+        @Override
+        public void renderBackground(DrawContext drawContext, int mouseX, int mouseY, float partialTicks) {
+            switch (background) {
+                case NONE -> {}
+                case DEFAULT -> super.renderBackground(drawContext, mouseX, mouseY, partialTicks);
+                case TRANSPARENT -> {} // handled in AbstractGuiScreen.draw
+                case DIRT -> {
+                    super.renderPanoramaBackground(drawContext, partialTicks);
+                    super.applyBlur(drawContext);
+                    super.renderDarkening(drawContext);
+                }
+            }
         }
         //#endif
 

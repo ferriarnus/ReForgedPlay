@@ -1,34 +1,21 @@
 package com.replaymod.render.mixin;
 
+import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
+import com.mojang.blaze3d.systems.CommandEncoder;
+import com.mojang.blaze3d.textures.GpuTexture;
 import com.replaymod.render.hooks.EntityRendererHandler;
 import net.minecraft.client.render.GameRenderer;
-import org.lwjgl.opengl.GL11;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.ModifyArg;
 
 @Mixin(GameRenderer.class)
 public abstract class Mixin_PreserveDepthDuringHandRendering {
-    @ModifyArg(
-            //#if MC>=11400
+    @WrapWithCondition(
             method = "renderWorld",
-            //#else
-            //$$ method = "renderWorldPass",
-            //#endif
-            //#if MC>=11500
-            at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;clear(IZ)V"),
-            //#elseif MC>=11400
-            //$$ at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/platform/GlStateManager;clear(IZ)V", ordinal = 1),
-            //#else
-            //$$ at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GlStateManager;clear(I)V", ordinal = 1),
-            //#endif
-            index = 0
+            at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/CommandEncoder;clearDepthTexture(Lcom/mojang/blaze3d/textures/GpuTexture;D)V")
     )
-    private int replayModRender_skipClearWhenRecordingDepth(int mask) {
+    private boolean replayModRender_skipClearWhenRecordingDepth(CommandEncoder instance, GpuTexture texture, double v) {
         EntityRendererHandler handler = ((EntityRendererHandler.IEntityRenderer) this).replayModRender_getHandler();
-        if (handler != null && handler.getSettings().isDepthMap()) {
-            mask = mask & ~GL11.GL_DEPTH_BUFFER_BIT;
-        }
-        return mask;
+        return handler == null || !handler.getSettings().isDepthMap();
     }
 }

@@ -58,7 +58,7 @@ public class ReplayTimer extends RenderTickCounter.Dynamic {
     public float tickDelta;
 
     @Override
-    public float getTickDelta(boolean bl) {
+    public float getTickProgress(boolean bl) {
         return tickDelta;
     }
     //#endif

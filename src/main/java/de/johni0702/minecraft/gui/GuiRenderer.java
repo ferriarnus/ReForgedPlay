@@ -32,6 +32,10 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 //#endif
 
+//#if MC>=12105
+import com.mojang.blaze3d.textures.GpuTexture;
+//#endif
+
 public interface GuiRenderer {
 
     ReadablePoint getOpenGlOffset();
@@ -40,7 +44,9 @@ public interface GuiRenderer {
     DrawContext getContext();
     //#endif
 
-    MatrixStack getMatrixStack();
+    //#if MC<12106
+    //$$ MatrixStack getMatrixStack();
+    //#endif
 
     ReadableDimension getSize();
 
@@ -49,6 +55,10 @@ public interface GuiRenderer {
     void bindTexture(Identifier location);
 
     void bindTexture(int glId);
+
+    //#if MC>=12105
+    void bindTexture(GpuTexture texture);
+    //#endif
 
     void drawTexturedRect(int x, int y, int u, int v, int width, int height);
 

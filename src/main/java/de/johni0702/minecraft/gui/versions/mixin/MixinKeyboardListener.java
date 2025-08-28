@@ -1,97 +1,43 @@
-//#if FABRIC>=1
 package de.johni0702.minecraft.gui.versions.mixin;
 
 import de.johni0702.minecraft.gui.versions.callbacks.KeyboardCallback;
 import net.minecraft.client.Keyboard;
-import net.minecraft.client.gui.Element;
-import net.minecraft.client.gui.screen.Screen;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Group;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-//#else
-//$$ import net.minecraft.client.gui.ParentElement;
-//#endif
 
 @Mixin(Keyboard.class)
 public class MixinKeyboardListener {
     @Inject(
-            method = "lambda$keyPress$5", remap = false,
-            //#if MC>=11700
+            method = "onKey",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screen/Screen;keyPressed(III)Z"),
-            //#else
-            //$$ at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/ParentElement;keyPressed(III)Z"),
-            //#endif
             cancellable = true
     )
-    //#if MC>=11700
-    //#if MC>=11903
-    static
-    //#endif
-    private void keyPressed(int i, boolean[] bls, Screen screen, int keyCode, int scanCode, int modifiers, CallbackInfo ci) {
-    //#else
-    //$$ private void keyPressed(int i, boolean[] bls, ParentElement element, int keyCode, int scanCode, int modifiers, CallbackInfo ci) {
-    //#endif
+    private void keyPressed(long window, int keyCode, int scanCode, int action, int modifiers, CallbackInfo ci) {
         if (KeyboardCallback.EVENT.invoker().keyPressed(keyCode, scanCode, modifiers)) {
-            bls[0] = true;
             ci.cancel();
         }
     }
 
     @Inject(
-            method = "lambda$keyPress$5", remap = false,
-            //#if MC>=11700
+            method = "onKey",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screen/Screen;keyReleased(III)Z"),
-            //#else
-            //$$ at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/ParentElement;keyReleased(III)Z"),
-            //#endif
             cancellable = true
     )
-    //#if MC>=11700
-    //#if MC>=11903
-    static
-    //#endif
-    private void keyReleased(int i, boolean[] bls, Screen screen, int keyCode, int scanCode, int modifiers, CallbackInfo ci) {
-    //#else
-    //$$ private void keyReleased(int i, boolean[] bls, ParentElement element, int keyCode, int scanCode, int modifiers, CallbackInfo ci) {
-    //#endif
+    private void keyReleased(long window, int keyCode, int scanCode, int action, int modifiers, CallbackInfo ci) {
         if (KeyboardCallback.EVENT.invoker().keyReleased(keyCode, scanCode, modifiers)) {
-            bls[0] = true;
             ci.cancel();
         }
     }
 
-    //@Inject(method = "method_1458", at = @At("HEAD"), cancellable = true)
-    //@Group(min = 1, max = 1, name = "replaymod-jgui-charTyped-int")
-//    private static void charTyped(Element element, int keyChar, int modifiers, CallbackInfo ci) {
-//        if (KeyboardCallback.EVENT.invoker().charTyped((char) keyChar, modifiers)) {
-//            ci.cancel();
-//        }
-//    }
-
-    @Inject(method = "lambda$charTyped$6", at = @At("HEAD"), cancellable = true, remap = false)
-    @Group(min = 1, max = 1, name = "replaymod-jgui-charTyped-int")
-    private static void charTypedOptifine(Screen guieventlistener, int keyChar, int modifiers, CallbackInfo ci) {
-        if (KeyboardCallback.EVENT.invoker().charTyped((char) keyChar, modifiers)) {
-            ci.cancel();
-        }
-   }
-
-   //@Inject(method = "method_1473", at = @At("HEAD"), cancellable = true)
-   //@Group(min = 1, max = 1, name = "replaymod-jgui-charTyped-char")
-//   private static void charTyped(Element element, char keyChar, int modifiers, CallbackInfo ci) {
-//       if (KeyboardCallback.EVENT.invoker().charTyped(keyChar, modifiers)) {
-//           ci.cancel();
-//       }
-//   }
-
-    @Inject(method = "lambda$charTyped$7", at = @At("HEAD"), cancellable = true, remap = false)
-    @Group(min = 1, max = 1, name = "replaymod-jgui-charTyped-char")
-    private static void charTypedOptifine(Screen guieventlistener, char keyChar, int modifiers, CallbackInfo ci) {
-        if (KeyboardCallback.EVENT.invoker().charTyped(keyChar, modifiers)) {
-            ci.cancel();
+    @Inject(method = "onChar", at = @At("HEAD"), cancellable = true)
+    private void charTyped(long window, int codePoint, int modifiers, CallbackInfo ci) {
+        if (Character.isBmpCodePoint(codePoint)) {
+            if (KeyboardCallback.EVENT.invoker().charTyped((char) codePoint, modifiers)) ci.cancel();
+        } else if (Character.isValidCodePoint(codePoint)) {
+            if (KeyboardCallback.EVENT.invoker().charTyped(Character.highSurrogate(codePoint), modifiers)) ci.cancel();
+            if (KeyboardCallback.EVENT.invoker().charTyped(Character.lowSurrogate(codePoint), modifiers)) ci.cancel();
         }
     }
 }
-//#endif

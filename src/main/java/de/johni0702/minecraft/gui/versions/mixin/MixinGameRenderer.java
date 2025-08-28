@@ -59,7 +59,7 @@ public class MixinGameRenderer {
             CallbackInfo ci
     ) {
         //#if MC>=12100
-        float partialTicks = tickCounter.getTickDelta(true);
+        float partialTicks = tickCounter.getTickProgress(true);
         //#endif
         //#if MC<11600
         //$$ MatrixStack context = new MatrixStack();

@@ -10,7 +10,7 @@ import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.option.GameOptions;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.render.VertexConsumer;
-import net.minecraft.client.render.VertexFormat;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.texture.TextureManager;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.client.render.Tessellator;
@@ -19,7 +19,7 @@ import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.NetworkSide;
-import net.minecraft.network.NetworkState;
+import net.minecraft.network.state.NetworkState;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.common.CustomPayloadS2CPacket;
 import net.minecraft.network.packet.s2c.common.DisconnectS2CPacket;
@@ -496,7 +496,7 @@ class Patterns {
     private static float getRenderPartialTicks(MinecraftClient mc) {
         //#if MC>=10900
         //#if MC>=12100
-        return mc.getRenderTickCounter().getTickDelta(true);
+        return mc.getRenderTickCounter().getTickProgress(true);
         //#elseif MC>=10900
         //$$ return mc.getTickDelta();
         //#else
@@ -605,20 +605,6 @@ class Patterns {
         //$$ GL11.glRotatef(angle, x, y, z);
         //#endif
     }
-
-    // FIXME preprocessor bug: there are mappings for this, not sure why it doesn't remap by itself
-    //#if MC>=11600
-    @Pattern
-    private static Matrix4f getPositionMatrix(MatrixStack.Entry stack) {
-        //#if MC>=11800
-        return stack.getPositionMatrix();
-        //#else
-        //$$ return stack.getModel();
-        //#endif
-    }
-    //#else
-    //$$ private static void getPositionMatrix() {}
-    //#endif
 
     @SuppressWarnings("rawtypes") // preprocessor bug: doesn't work with generics
     @Pattern

@@ -22,6 +22,13 @@ import net.minecraft.server.integrated.IntegratedServer;
 //$$ import net.minecraftforge.event.entity.player.PlayerEvent.ItemPickupEvent;
 //#endif
 
+//#if MC>=12102
+import net.minecraft.entity.player.PlayerPosition;
+import net.minecraft.network.packet.s2c.play.EntityPositionSyncS2CPacket;
+//#else
+//$$ import net.minecraft.network.packet.s2c.play.EntityPositionS2CPacket;
+//#endi
+
 //#if MC>=12002
 //#else
 //$$ import net.minecraft.network.packet.s2c.play.PlayerSpawnS2CPacket;
@@ -186,8 +193,10 @@ public class RecordingEventHandler extends EventRegistrations {
 
             Packet packet;
             if (force || Math.abs(dx) > maxRelDist || Math.abs(dy) > maxRelDist || Math.abs(dz) > maxRelDist) {
-                //#if MC>=10800
-                packet = new EntityPositionS2CPacket(player);
+                //#if MC>=12102
+                packet = new EntityPositionSyncS2CPacket(player.getId(), PlayerPosition.fromEntity(player), player.isOnGround());
+                //#elseif MC>=10800
+                //$$ packet = new EntityPositionS2CPacket(player);
                 //#else
                 //$$ // In 1.7.10 the client player entity has its posY at eye height
                 //$$ // but for all other entities it's at their feet (as it should be).

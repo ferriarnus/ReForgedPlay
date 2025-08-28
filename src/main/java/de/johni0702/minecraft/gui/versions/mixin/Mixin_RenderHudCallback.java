@@ -18,11 +18,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(InGameHud.class)
 public class Mixin_RenderHudCallback {
     @Inject(
-            //#if MC>=12005
-            method = "lambda$new$6",
+            //#if MC>=12005 && MC<12106
+            method = "renderDebugHud",
             //#else
             //#endif
-            //#if MC>=12002
+            //#if MC>=12106
+            //$$ at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/hud/InGameHud;renderDebugHud(Lnet/minecraft/client/gui/DrawContext;Lnet/minecraft/client/render/RenderTickCounter;)V")
+            //#elseif MC>=12002
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/hud/DebugHud;shouldShowDebugHud()Z")
             //#else
             //$$ at = @At(value = "FIELD", opcode = Opcodes.GETFIELD, target = "Lnet/minecraft/client/options/GameOptions;debugEnabled:Z")
@@ -30,7 +32,7 @@ public class Mixin_RenderHudCallback {
     )
     //#if MC>=12100
     private void renderOverlay(DrawContext stack, RenderTickCounter renderTickCounter, CallbackInfo ci) {
-        float partialTicks = renderTickCounter.getTickDelta(true);
+        float partialTicks = renderTickCounter.getTickProgress(true);
     //#elseif MC>=12000
     //$$ private void renderOverlay(DrawContext stack, float partialTicks, CallbackInfo ci) {
     //#elseif MC>=11600

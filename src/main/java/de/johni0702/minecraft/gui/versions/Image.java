@@ -59,8 +59,12 @@ public class Image implements AutoCloseable {
     }
 
     public void setRGBA(int x, int y, int r, int g, int b, int a) {
+        //#if MC>=12102
+        inner.setColorArgb(x, y, ((a & 0xff) << 24) | ((r & 0xff) << 16) | ((g & 0xff) << 8) | (b & 0xff));
+        //#else
         // actually takes ABGR, not RGBA
-        inner.setColor(x, y, ((a & 0xff) << 24) | ((b & 0xff) << 16) | ((g & 0xff) << 8) | (r & 0xff));
+        //$$ inner.setPixelColor(x, y, ((a & 0xff) << 24) | ((b & 0xff) << 16) | ((g & 0xff) << 8) | (r & 0xff));
+        //#endif
     }
 
     public static Image read(Path path) throws IOException {
@@ -120,6 +124,10 @@ public class Image implements AutoCloseable {
     }
 
     public NativeImageBackedTexture toTexture() {
-        return new NativeImageBackedTexture(inner);
+        //#if MC>=12105
+        return new NativeImageBackedTexture(null, inner);
+        //#else
+        //$$ return new NativeImageBackedTexture(inner);
+        //#endif
     }
 }

@@ -32,8 +32,9 @@ import io.netty.util.AttributeKey;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.entity.Entity;
+import net.minecraft.network.packet.s2c.login.LoginHelloS2CPacket;
 import net.minecraft.network.NetworkPhase;
-import net.minecraft.network.NetworkState;
+import net.minecraft.network.state.NetworkState;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.s2c.common.CustomPayloadS2CPacket;
 import net.minecraft.network.packet.s2c.common.DisconnectS2CPacket;
@@ -47,7 +48,7 @@ import org.apache.logging.log4j.Logger;
 
 //#if MC>=12006
 import com.replaymod.recording.mixin.DecoderHandlerAccessor;
-import net.minecraft.network.NetworkState;
+import net.minecraft.network.state.NetworkState;
 import net.minecraft.network.handler.DecoderHandler;
 import net.minecraft.network.handler.NetworkStateTransitions;
 import net.minecraft.network.packet.s2c.config.ReadyS2CPacket;
@@ -493,6 +494,10 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
         @Override
         public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
 
+            if (msg instanceof LoginHelloS2CPacket) {
+                super.channelRead(ctx, msg);
+                return;
+            }
             if (msg instanceof LoginCompressionS2CPacket) {
                 super.channelRead(ctx, msg);
                 return;

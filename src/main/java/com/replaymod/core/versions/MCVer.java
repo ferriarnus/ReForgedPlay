@@ -1,6 +1,7 @@
 package com.replaymod.core.versions;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import com.replaymod.core.mixin.GuiScreenAccessor;
 import com.replaymod.replaystudio.lib.viaversion.api.protocol.packet.State;
 import com.replaymod.replaystudio.lib.viaversion.api.protocol.version.ProtocolVersion;
@@ -12,10 +13,14 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.network.NetworkPhase;
-import net.minecraft.network.NetworkState;
+import net.minecraft.network.state.NetworkState;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.Vec3d;
+
+//#if MC>=12105
+import net.minecraft.client.render.VertexConsumer;
+//#endif
 
 //#if MC>=11700
 import org.joml.Matrix4f;
@@ -73,8 +78,8 @@ import net.minecraft.client.particle.Particle;
 //#endif
 
 //#if MC>=10800
-import net.minecraft.client.render.VertexFormat;
-import net.minecraft.client.render.VertexFormatElement;
+import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.blaze3d.vertex.VertexFormatElement;
 //#if MC<11500
 //$$ import net.minecraft.client.render.chunk.ChunkRenderTask;
 //#endif
@@ -100,7 +105,10 @@ import java.util.Optional;
 public class MCVer {
     public static int getProtocolVersion() {
         //#if MC>=11400
-        return SharedConstants.getGameVersion().getProtocolVersion();
+        //#if MC>=12106
+        return SharedConstants.getProtocolVersion();
+        //#elseif MC>=11400
+        //$$ return SharedConstants.getGameVersion().getProtocolVersion();
         //#else
         //$$ return RealmsSharedConstants.NETWORK_PROTOCOL_VERSION;
         //#endif
@@ -415,7 +423,9 @@ public class MCVer {
         //#else
         //$$ RenderSystem.getModelViewStack().pop();
         //#endif
-        RenderSystem.applyModelViewMatrix();
+        //#if MC<12102
+        //$$ RenderSystem.applyModelViewMatrix();
+        //#endif
         //#else
         //$$ GlStateManager.popMatrix();
         //#endif
@@ -439,11 +449,19 @@ public class MCVer {
     }
     //#endif
 
-    public static void emitLine(MatrixStack matrixStack, BufferBuilder buffer, Vector2f p1, Vector2f p2, int color) {
+    //#if MC>=12105
+    public static void emitLine(MatrixStack matrixStack, VertexConsumer buffer, Vector2f p1, Vector2f p2, int color) {
+    //#else
+    // $$ public static void emitLine(MatrixStack matrixStack, BufferBuilder buffer, Vector2f p1, Vector2f p2, int color) {
+    // #endif
         emitLine(matrixStack, buffer, new Vector3f(p1.x, p1.y, 0), new Vector3f(p2.x, p2.y, 0), color);
     }
 
-    public static void emitLine(MatrixStack matrixStack, BufferBuilder buffer, Vector3f p1, Vector3f p2, int color) {
+    //#if MC>=12105
+    public static void emitLine(MatrixStack matrixStack, VertexConsumer buffer, Vector3f p1, Vector3f p2, int color) {
+    //#else
+    //$$ public static void emitLine(MatrixStack matrixStack, BufferBuilder buffer, Vector3f p1, Vector3f p2, int color) {
+    //#endif
         int r = color >> 24 & 0xff;
         int g = color >> 16 & 0xff;
         int b = color >> 8 & 0xff;
@@ -473,9 +491,12 @@ public class MCVer {
         ;
     }
 
-    public static void bindTexture(Identifier id) {
-        de.johni0702.minecraft.gui.versions.MCVer.bindTexture(id);
-    }
+    //#if MC<12105
+    //$$ public static void bindTexture(Identifier id) {
+    //$$     de.johni0702.minecraft.gui.versions.MCVer.bindTexture(id);
+    //$$ }
+    //#endif
+
 
     //#if MC<10900
     //$$ public static class SoundEvent {}
