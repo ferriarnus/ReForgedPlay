@@ -249,8 +249,8 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
                     //$$ GL11.glDisable(GL11.GL_LINE_SMOOTH);
                     //#endif
                     //#endif
-
-                    popScissorState();
+                    //$$
+                    //$$ popScissorState();
                     //#endif
                 }
             }

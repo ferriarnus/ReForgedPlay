@@ -61,7 +61,7 @@ config = "mixins.replay.replaymod.json"
 
 [[mods]]
 modId="replaymod"
-version="2.6.18"
+version="2.6.23"
 displayName="Replay Mod"
 license="GPL-3.0-or-later"
 displayTest = "IGNORE_SERVER_VERSION"

@@ -282,7 +282,7 @@ public class PathPreviewRenderer extends EventRegistrations {
         //#endif
         emitLine(new MatrixStack(), buffer, Vector3f.sub(pos1, view, null), Vector3f.sub(pos2, view, null), color);
 
-        GL11.glLineWidth(3);
+        RenderSystem.lineWidth(3);
 
         //#if MC>=12105
         immediate.draw();

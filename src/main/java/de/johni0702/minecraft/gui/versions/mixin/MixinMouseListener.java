@@ -9,6 +9,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(Mouse.class)
@@ -65,8 +66,11 @@ public abstract class MixinMouseListener {
         }
     }
 
-    @WrapWithCondition(method = "onMouseScroll", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screen/Screen;mouseScrolled(DDDD)Z"))
+    @Redirect(method = "onMouseScroll", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screen/Screen;mouseScrolled(DDDD)Z"))
     private boolean mouseScroll(Screen element, double x, double y, double horizontal, double vertical) {
-        return !MouseCallback.EVENT.invoker().mouseScroll(x, y, horizontal, vertical);
+        if (MouseCallback.EVENT.invoker().mouseScroll(x, y, horizontal, vertical)) {
+            return true;
+        }
+        return element.mouseScrolled(x, y, horizontal, vertical);
     }
 }

@@ -243,7 +243,7 @@ public class ReplayMod implements Module, Scheduler {
     }
 
     public MinecraftClient getMinecraft() {
-        return mc;
+        return MinecraftClient.getInstance();
     }
 
     public void printInfoToChat(String message, Object... args) {
@@ -257,7 +257,7 @@ public class ReplayMod implements Module, Scheduler {
     private void printToChat(boolean warning, String message, Object... args) {
         if (getSettingsRegistry().get(Setting.NOTIFICATIONS)) {
             // Some nostalgia: "§8[§6Replay Mod§8]§r Your message goes here"
-            //#if MC>=10904
+            //#if MC>=10904mc
             //#if MC>=11600
             Style coloredDarkGray = Style.EMPTY.withColor(Formatting.DARK_GRAY);
             Style coloredGold = Style.EMPTY.withColor(Formatting.GOLD);
@@ -282,7 +282,7 @@ public class ReplayMod implements Module, Scheduler {
             //#endif
             // Send message to chat GUI
             // The ingame GUI is initialized at startup, therefore this is possible before the client is connected
-            mc.inGameHud.getChatHud().addMessage(text);
+            MinecraftClient.getInstance().inGameHud.getChatHud().addMessage(text);
         }
     }
 

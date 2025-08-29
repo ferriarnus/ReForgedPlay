@@ -78,7 +78,7 @@ public abstract class Mixin_ForceChunkLoading implements IForceChunkLoading {
             setupTerrain(camera, this.frustum, this.capturedFrustum != null, this.client.player.isSpectator());
 
             // Wait for async processing to be complete
-            Future<?> fullUpdateFuture = renderingDataAcc.fullUpdateFuture();
+            Future<?> fullUpdateFuture = renderingDataAcc.terrainUpdateFuture();
             if (fullUpdateFuture != null) {
                 try {
                     fullUpdateFuture.get(5, TimeUnit.SECONDS);
@@ -125,6 +125,6 @@ public abstract class Mixin_ForceChunkLoading implements IForceChunkLoading {
             if (!areWeDoneYet) {
                 renderingData.scheduleTerrainUpdate(); // sets shouldUpdate to true
             }
-        } while (renderingDataAcc.shouldUpdate());
+        } while (renderingDataAcc.terrainUpdateScheduled());
     }
 }

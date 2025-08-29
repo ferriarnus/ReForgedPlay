@@ -116,7 +116,7 @@ dependencies {
     //modRuntimeOnly("maven.modrinth:iris:1.8.6+1.21.1-neoforge")
 
     modCompileOnly("org.embeddedt:embeddium-1.21:1.0.8-beta.367+mc1.21")
-    modRuntimeOnly("org.embeddedt:embeddium-1.21:1.0.8-beta.367+mc1.21")
+    //modRuntimeOnly("org.embeddedt:embeddium-1.21:1.0.8-beta.367+mc1.21")
 
     modCompileOnly("maven.modrinth:sodium:mc1.21.1-0.6.5-neoforge")
     //modRuntimeOnly("maven.modrinth:sodium:mc1.21.1-0.6.5-neoforge")

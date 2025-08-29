@@ -12,11 +12,11 @@ public interface ParticleAccessor
 {
     //#if MC>=10904
     @Accessor
-    double getPrevPosX();
+    double getLastX();
     @Accessor
-    double getPrevPosY();
+    double getLastY();
     @Accessor
-    double getPrevPosZ();
+    double getLastZ();
     @Accessor("x")
     double getPosX();
     @Accessor("y")

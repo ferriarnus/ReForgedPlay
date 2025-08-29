@@ -351,9 +351,9 @@ public class MCVer {
     // TODO: this can be inlined once https://github.com/SpongePowered/Mixin/issues/305 is fixed
     public static Vec3d getPosition(Particle particle, float partialTicks) {
         ParticleAccessor acc = (ParticleAccessor) particle;
-        double x = acc.getPrevPosX() + (acc.getPosX() - acc.getPrevPosX()) * partialTicks;
-        double y = acc.getPrevPosY() + (acc.getPosY() - acc.getPrevPosY()) * partialTicks;
-        double z = acc.getPrevPosZ() + (acc.getPosZ() - acc.getPrevPosZ()) * partialTicks;
+        double x = acc.getLastX() + (acc.getPosX() - acc.getLastX()) * partialTicks;
+        double y = acc.getLastY() + (acc.getPosY() - acc.getLastY()) * partialTicks;
+        double z = acc.getLastZ() + (acc.getPosZ() - acc.getLastZ()) * partialTicks;
         return new Vec3d(x, y, z);
     }
     //#endif

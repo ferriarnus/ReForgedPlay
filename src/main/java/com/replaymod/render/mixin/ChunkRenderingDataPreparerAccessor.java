@@ -10,12 +10,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 @Mixin(ChunkRenderingDataPreparer.class)
 public interface ChunkRenderingDataPreparerAccessor {
-    @Accessor("field_45623")
+    @Accessor("builtChunkStorage")
     BuiltChunkStorage builtChunkStorage();
 
-    @Accessor("field_45621")
-    boolean shouldUpdate();
+    @Accessor("terrainUpdateScheduled")
+    boolean terrainUpdateScheduled();
 
-    @Accessor("field_45622")
-    Future<?> fullUpdateFuture();
+    @Accessor("terrainUpdateFuture")
+    Future<?> terrainUpdateFuture();
 }

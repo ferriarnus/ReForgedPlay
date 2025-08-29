@@ -61,7 +61,7 @@
     "Mixin_CreateReplayCamera",
     "MixinRenderItem",
     "MixinRenderLivingBase",
-    "MixinTileEntityEndPortalRenderer",
+    //"MixinTileEntityEndPortalRenderer",
     "MixinWorldClient",
     "Mixin_ScreenButton"
   ],

@@ -8,6 +8,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.replaymod.core.events.SettingsChangedCallback;
 import net.minecraft.client.MinecraftClient;
+import net.neoforged.fml.loading.FMLPaths;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -29,7 +30,8 @@ class SettingsRegistryBackend {
     private static final Logger LOGGER = LogManager.getLogger();
     private final Map<SettingsRegistry.SettingKey<?>, Object> settings;
 
-    private final Path configFile = getMinecraft().runDirectory.toPath().resolve("config/replaymod.json");
+    //private final Path configFile = getMinecraft().runDirectory.toPath().resolve("config/replaymod.json");
+    private final Path configFile = FMLPaths.CONFIGDIR.get().resolve("replaymod.json");
 
     SettingsRegistryBackend(Map<SettingsRegistry.SettingKey<?>, Object> settings) {
         this.settings = settings;

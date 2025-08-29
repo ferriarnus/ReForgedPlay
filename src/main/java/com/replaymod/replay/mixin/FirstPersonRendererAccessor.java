@@ -14,11 +14,11 @@ public interface FirstPersonRendererAccessor {
     void setItemStackOffHand(ItemStack value);
     @Accessor("equipProgressMainHand")
     void setEquippedProgressMainHand(float value);
-    @Accessor("prevEquipProgressMainHand")
+    @Accessor("lastEquipProgressMainHand")
     void setPrevEquippedProgressMainHand(float value);
     @Accessor("equipProgressOffHand")
     void setEquippedProgressOffHand(float value);
-    @Accessor("prevEquipProgressOffHand")
+    @Accessor("lastEquipProgressOffHand")
     void setPrevEquippedProgressOffHand(float value);
     //#else
     //$$ @Accessor

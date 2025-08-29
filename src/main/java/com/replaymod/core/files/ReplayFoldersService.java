@@ -4,6 +4,7 @@ import com.google.common.net.PercentEscaper;
 import com.replaymod.core.Setting;
 import com.replaymod.core.SettingsRegistry;
 import net.minecraft.client.MinecraftClient;
+import net.neoforged.fml.loading.FMLPaths;
 
 import java.io.IOException;
 import java.net.URLDecoder;
@@ -13,7 +14,8 @@ import java.nio.file.Path;
 import static com.replaymod.core.utils.Utils.ensureDirectoryExists;
 
 public class ReplayFoldersService {
-    private final Path mcDir = MinecraftClient.getInstance().runDirectory.toPath();
+    //private final Path mcDir = MinecraftClient.getInstance().runDirectory.toPath();
+    private final Path mcDir = FMLPaths.GAMEDIR.get();
     private final SettingsRegistry settings;
 
     public ReplayFoldersService(SettingsRegistry settings) {

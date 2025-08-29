@@ -14,11 +14,11 @@ import net.minecraft.util.crash.ReportType;
 //#endif
 
 public class SchedulerImpl implements  Scheduler {
-    private static final MinecraftClient mc = MinecraftClient.getInstance();
+    //private static final MinecraftClient mc = MinecraftClient.getInstance();
 
     @Override
     public void runSync(Runnable runnable) throws InterruptedException, ExecutionException, TimeoutException {
-        if (mc.isOnThread()) {
+        if (MinecraftClient.getInstance().isOnThread()) {
             runnable.run();
         } else {
             executor.submit(() -> {
@@ -33,7 +33,7 @@ public class SchedulerImpl implements  Scheduler {
         runLater(new Runnable() {
             @Override
             public void run() {
-                if (mc.getOverlay() != null) {
+                if (MinecraftClient.getInstance().getOverlay() != null) {
                     // delay until after resources have been loaded
                     runLater(this);
                     return;
@@ -101,8 +101,8 @@ public class SchedulerImpl implements  Scheduler {
     }
 
     private void runLater(Runnable runnable, Runnable defer) {
-        if (mc.isOnThread() && inRunLater && !inRenderTaskQueue) {
-            ((MinecraftAccessor) mc).getRenderTaskQueue().offer(() -> {
+        if (MinecraftClient.getInstance().isOnThread() && inRunLater && !inRenderTaskQueue) {
+            ((MinecraftAccessor) MinecraftClient.getInstance()).getRenderTaskQueue().offer(() -> {
                 inRenderTaskQueue = true;
                 try {
                     defer.run();
@@ -122,7 +122,7 @@ public class SchedulerImpl implements  Scheduler {
                     //#else
                     //$$ System.err.println(e.getReport().asString());
                     //#endif
-                    mc.setCrashReportSupplier(e.getReport());
+                    MinecraftClient.getInstance().setCrashReportSupplier(e.getReport());
                 } finally {
                     inRunLater = false;
                 }
