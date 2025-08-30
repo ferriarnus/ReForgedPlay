@@ -13,7 +13,13 @@ import com.replaymod.replay.ReplayHandler;
 import io.netty.channel.Channel;
 import io.netty.util.AttributeKey;
 import net.minecraft.network.ClientConnection;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
+import net.neoforged.neoforge.network.registration.HandlerThread;
 import net.neoforged.neoforge.network.registration.NetworkRegistry;
+import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -66,14 +72,24 @@ public class ReplayModRecording implements Module {
         }, false);
     }
 
+    @SubscribeEvent
+    static void registerNetwork(RegisterPayloadHandlersEvent event) {
+        final PayloadRegistrar registrar = event.registrar("1");
+        registrar.commonToClient(Restrictions.ID, Restrictions.CODEC, (payload, context) -> {});
+    }
+
     @Override
     public void initClient() {
         connectionEventHandler = new ConnectionEventHandler(LOGGER, core);
 
         new GuiHandler(core).register();
         //#if FABRIC>=1
-        //#if MC>=11700
-        // ClientPlayNetworking.registerGlobalReceiver(Restrictions.PLUGIN_CHANNEL, (client, handler, buf, resp) -> {});
+        //#if MC>=12006
+        //$$ PayloadTypeRegistry.configurationS2C().register(Restrictions.ID, Restrictions.CODEC);
+        //$$ PayloadTypeRegistry.playS2C().register(Restrictions.ID, Restrictions.CODEC);
+        //$$ ClientPlayNetworking.registerGlobalReceiver(Restrictions.ID, (payload, context) -> {});
+        //#elseif MC>=11700
+        //$$  ClientPlayNetworking.registerGlobalReceiver(Restrictions.PLUGIN_CHANNEL, (client, handler, buf, resp) -> {});
         //#else
         //$$ ClientSidePacketRegistry.INSTANCE.register(Restrictions.PLUGIN_CHANNEL, (packetContext, packetByteBuf) -> {});
         //#endif
