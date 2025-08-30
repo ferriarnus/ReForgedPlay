@@ -52,6 +52,7 @@ import net.minecraft.network.packet.s2c.play.SignEditorOpenS2CPacket;
 import net.minecraft.network.packet.s2c.play.StatisticsS2CPacket;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.Vec3d;
+import net.minecraftforge.network.PlayMessages;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
@@ -188,7 +189,8 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             SignEditorOpenS2CPacket.class,
             StatisticsS2CPacket.class,
             ExperienceBarUpdateS2CPacket.class,
-            PlayerAbilitiesS2CPacket.class
+            PlayerAbilitiesS2CPacket.class,
+            PlayMessages.OpenContainer.class
     );
 
     private static int TP_DISTANCE_LIMIT = 128;
@@ -630,6 +632,8 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             //$$ String channelName = packet.getChannelName();
             //#endif
             String channelNameStr = channelName.toString();
+
+
 
             if (channelNameStr.startsWith("fabric-screen-handler-api-v")) {
                 return null; // we do not want to show modded screens which got opened for the recording player
