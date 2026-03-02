@@ -73,7 +73,7 @@ public class ReplayModRecording implements Module {
 
     @SubscribeEvent
     static void registerNetwork(RegisterPayloadHandlersEvent event) {
-        final PayloadRegistrar registrar = event.registrar("1");
+        final PayloadRegistrar registrar = event.registrar("1").optional();
         registrar.commonToClient(Restrictions.ID, Restrictions.CODEC, (payload, context) -> {});
     }
 
