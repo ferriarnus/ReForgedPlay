@@ -12,6 +12,7 @@ import com.replaymod.render.EXRWriter;
 import com.replaymod.render.PNGWriter;
 import com.replaymod.render.RenderSettings;
 import com.replaymod.render.ReplayModRender;
+import com.replaymod.render.Setting;
 import com.replaymod.render.FFmpegWriter;
 import com.replaymod.render.blend.BlendState;
 import com.replaymod.render.capturer.RenderInfo;
@@ -196,18 +197,26 @@ public class VideoRenderer implements RenderInfo {
 
         ReplayTimer timer = (ReplayTimer) ((MinecraftAccessor) mc).getTimer();
 
-        // Play up to one second before starting to render
+        // Play up to several seconds before starting to render
         // This is necessary in order to ensure that all entities have at least two position packets
         // and their first position in the recording is correct.
+        // Additionally, this gives time for player skins to load from the network.
         // Note that it is impossible to also get the interpolation between their latest position
         // and the one in the recording correct as there's no reliable way to tell when the server ticks
         // or when we should be done with the interpolation of the entity
+        int preloadDelaySeconds = 3; // Default value, try to read from config
+        try {
+            preloadDelaySeconds = ReplayModRender.instance.getCore().getSettingsRegistry().get(Setting.SKIN_PRELOAD_DELAY);
+        } catch (Exception e) {
+            LOGGER.warn("Failed to load skin preload delay setting, using default value of 3 seconds", e);
+        }
+        int preloadDelayMs = preloadDelaySeconds * 1000;
         Optional<Integer> optionalVideoStartTime = timeline.getValue(TimestampProperty.PROPERTY, 0);
         if (optionalVideoStartTime.isPresent()) {
             int videoStart = optionalVideoStartTime.get();
 
-            if (videoStart > 1000) {
-                int replayTime = videoStart - 1000;
+            if (videoStart > preloadDelayMs) {
+                int replayTime = videoStart - preloadDelayMs;
                 //#if MC>=11200
                 timer.tickDelta = 0;
                 ((TimerAccessor) timer).setTickLength(DEFAULT_MS_PER_TICK);

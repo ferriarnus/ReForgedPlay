@@ -9,4 +9,6 @@ public final class Setting<T> {
             new SettingsRegistry.SettingKeys<>("advanced", "skipPostRenderGui", null, false);
     public static final SettingsRegistry.SettingKey<Boolean> FRAME_TIME_FROM_WORLD_TIME =
             new SettingsRegistry.SettingKeys<>("render", "frameTimeFromWorldTime", null, false);
+    public static final SettingsRegistry.SettingKey<Integer> SKIN_PRELOAD_DELAY =
+            new SettingsRegistry.SettingKeys<>("render", "skinPreloadDelay", null, 3);
 }
