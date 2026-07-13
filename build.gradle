@@ -24,7 +24,9 @@ loom {
                 "mixins.replay.replaymod.json"
         ]
     }
+
     accessWidenerPath = file("src/main/resources/replay.accesswidener")
+
     runs {
         it.configureEach {
             vmArgs("-Xmx8G", "-XX:+UseZGC")
@@ -36,15 +38,40 @@ loom {
 
 configurations {
     bundle {
-        // bundle command, to copy jar contents with the shadow plugin
+        canBeResolved = true
+        canBeConsumed = false
+    }
+
+    lwjglBundle {
         canBeResolved = true
         canBeConsumed = false
     }
 }
 
+def lwjglJarTask = tasks.register("lwjglJar", Jar) {
+    archiveFileName.set("lwjgl.jar")
+    destinationDirectory.set(layout.buildDirectory.dir("generated-lwjgl"))
+
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+    from {
+        configurations.lwjglBundle.collect { dependency ->
+            dependency.isDirectory() ? dependency : zipTree(dependency)
+        }
+    }
+
+    exclude "META-INF/*.SF"
+    exclude "META-INF/*.RSA"
+    exclude "META-INF/*.DSA"
+    exclude "META-INF/INDEX.LIST"
+    exclude "module-info.class"
+    exclude "META-INF/versions/**/module-info.class"
+}
+
 processResources {
     inputs.property "version", project.version
     archivesBaseName = "reforgedplaymod-${project.minecraft_version}"
+
     filesMatching("META-INF/mods.toml") {
         expand "version": project.version
     }
@@ -54,78 +81,253 @@ repositories {
     flatDir {
         dirs 'libs'
     }
+
     maven {
         name = "Modrinth"
         url = "https://api.modrinth.com/maven"
+
         content {
             includeGroup "maven.modrinth"
         }
     }
-    maven { url "https://maven.neoforged.net" }
-    maven { url "https://jitpack.io" }
 
+    maven {
+        url "https://maven.neoforged.net"
+    }
+
+    maven {
+        url "https://jitpack.io"
+    }
 }
 
 shadowJar {
     configurations = [
             project.configurations.bundle
     ]
+
     archiveClassifier.set("dev-shadow")
 }
 
 remapJar {
     input.set shadowJar.archiveFile
+
     dependsOn shadowJar
+    dependsOn lwjglJarTask
+
     atAccessWideners.add('replay.accesswidener')
+
+    doLast {
+        def embeddedJar = lwjglJarTask.get().archiveFile.get().asFile
+        def outputJar = archiveFile.get().asFile
+
+        ant.zip(
+                destfile: outputJar,
+                update: true
+        ) {
+            zipfileset(
+                    dir: embeddedJar.parentFile,
+                    includes: embeddedJar.name,
+                    prefix: "com/replaymod/render/utils"
+            )
+        }
+    }
 }
 
 dependencies {
-
     mappings loom.layered() {
-        it.mappings("net.fabricmc:yarn:${project.yarn_mappings}:v2")
+        it.mappings(
+                "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+        )
+
         it.mappings file("mappings/yarnpatch.tiny")
     }
-    // To change the versions see the gradle.properties file
+
+    // Minecraft / Forge
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    //mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
-    forge "net.minecraftforge:forge:${project.minecraft_version}-${project.forge_version}"
 
-    bundle("com.github.ReplayMod:ReplayStudio:d9f7c11-slim")
-    minecraftRuntimeLibraries(implementation("com.github.ReplayMod:ReplayStudio:d9f7c11-slim"))
-    include(implementation("com.github.viaversion:opennbt:0a02214"))
-    minecraftClientRuntimeLibraries("com.github.viaversion:opennbt:0a02214")
-    include(implementation("com.github.ReplayMod:lwjgl-utils:27dcd66"))
-    minecraftRuntimeLibraries("com.github.ReplayMod:lwjgl-utils:27dcd66")
-    include(implementation("com.github.javagl.JglTF:jgltf-model:3af6de4"))
-    include(implementation("com.github.ReplayMod.JavaBlend:2.79.0:a0696f8"))
-    include(implementation("org.aspectj:aspectjrt:1.8.2"))
-    include(implementation("org.lwjgl:lwjgl-tinyexr:3.3.1"))
-    bundle("org.lwjgl:lwjgl-tinyexr:3.3.1:natives-windows") {
+    forge(
+            "net.minecraftforge:forge:" +
+                    "${project.minecraft_version}-${project.forge_version}"
+    )
+
+    // ReplayStudio
+    bundle(
+            "com.github.ReplayMod:ReplayStudio:d9f7c11-slim"
+    )
+
+    minecraftRuntimeLibraries(
+            implementation(
+                    "com.github.ReplayMod:ReplayStudio:d9f7c11-slim"
+            )
+    )
+
+    // OpenNBT
+    include(
+            implementation(
+                    "com.github.viaversion:opennbt:0a02214"
+            )
+    )
+
+    minecraftClientRuntimeLibraries(
+            "com.github.viaversion:opennbt:0a02214"
+    )
+
+    // ReplayMod LWJGL utility loader
+    include(
+            implementation(
+                    "com.github.ReplayMod:lwjgl-utils:27dcd66"
+            )
+    )
+
+    minecraftRuntimeLibraries(
+            "com.github.ReplayMod:lwjgl-utils:27dcd66"
+    )
+
+    // JavaBlend / glTF / AspectJ
+    include(
+            implementation(
+                    "com.github.javagl.JglTF:jgltf-model:3af6de4"
+            )
+    )
+
+    include(
+            implementation(
+                    "com.github.ReplayMod.JavaBlend:2.79.0:a0696f8"
+            )
+    )
+
+    include(
+            implementation(
+                    "org.aspectj:aspectjrt:1.8.2"
+            )
+    )
+
+    compileOnly("org.lwjgl:lwjgl-tinyexr:3.3.1")
+
+    lwjglBundle(
+            "org.lwjgl:lwjgl:3.3.1"
+    ) {
         transitive = false
     }
-    bundle("org.lwjgl:lwjgl-tinyexr:3.3.1:natives-linux") {
+
+    lwjglBundle(
+            "org.lwjgl:lwjgl-tinyexr:3.3.1"
+    ) {
         transitive = false
     }
-    bundle("org.lwjgl:lwjgl-tinyexr:3.3.1:natives-macos") {
+
+    // Windows x64
+    lwjglBundle(
+            "org.lwjgl:lwjgl:3.3.1:natives-windows"
+    ) {
         transitive = false
     }
-    include(implementation('com.googlecode.mp4parser:isoparser:1.1.7'))
-    include(implementation('org.apache.commons:commons-exec:1.3'))
-    minecraftClientRuntimeLibraries('org.apache.commons:commons-exec:1.3')
-    include(implementation('com.google.apis:google-api-services-youtube:v3-rev178-1.22.0'))
-    include(implementation('com.google.api-client:google-api-client-gson:1.20.0'))
-    include(implementation('com.google.api-client:google-api-client-java6:1.20.0'))
-    include(implementation('com.google.oauth-client:google-oauth-client-jetty:1.20.0'))
 
-    modCompileOnly("maven.modrinth:oculus:1.20.1-1.7.0")
-    //modRuntimeOnly("maven.modrinth:oculus:1.20.1-1.7.0")
-    minecraftRuntimeLibraries("org.anarres:jcpp:1.4.14")
+    lwjglBundle(
+            "org.lwjgl:lwjgl-tinyexr:3.3.1:natives-windows"
+    ) {
+        transitive = false
+    }
 
-    modCompileOnly("maven.modrinth:embeddium:0.3.30+mc1.20.1")
-    modRuntimeOnly("maven.modrinth:embeddium:0.3.30+mc1.20.1")
+    // Linux x64
+    lwjglBundle(
+            "org.lwjgl:lwjgl:3.3.1:natives-linux"
+    ) {
+        transitive = false
+    }
 
+    lwjglBundle(
+            "org.lwjgl:lwjgl-tinyexr:3.3.1:natives-linux"
+    ) {
+        transitive = false
+    }
+
+    // macOS Intel x64
+    lwjglBundle(
+            "org.lwjgl:lwjgl:3.3.1:natives-macos"
+    ) {
+        transitive = false
+    }
+
+    lwjglBundle(
+            "org.lwjgl:lwjgl-tinyexr:3.3.1:natives-macos"
+    ) {
+        transitive = false
+    }
+
+    // MP4 / process execution
+    include(
+            implementation(
+                    'com.googlecode.mp4parser:isoparser:1.1.7'
+            )
+    )
+
+    include(
+            implementation(
+                    'org.apache.commons:commons-exec:1.3'
+            )
+    )
+
+    minecraftClientRuntimeLibraries(
+            'org.apache.commons:commons-exec:1.3'
+    )
+
+    // YouTube API
+    include(
+            implementation(
+                    'com.google.apis:google-api-services-youtube:v3-rev178-1.22.0'
+            )
+    )
+
+    include(
+            implementation(
+                    'com.google.api-client:google-api-client-gson:1.20.0'
+            )
+    )
+
+    include(
+            implementation(
+                    'com.google.api-client:google-api-client-java6:1.20.0'
+            )
+    )
+
+    include(
+            implementation(
+                    'com.google.oauth-client:google-oauth-client-jetty:1.20.0'
+            )
+    )
+
+    // Oculus
+    modCompileOnly(
+            "maven.modrinth:oculus:1.20.1-1.7.0"
+    )
+
+    // Embeddium
+    modCompileOnly(
+            "maven.modrinth:embeddium:0.3.30+mc1.20.1"
+    )
+
+    modRuntimeOnly(
+            "maven.modrinth:embeddium:0.3.30+mc1.20.1"
+    )
+
+    minecraftRuntimeLibraries(
+            "org.anarres:jcpp:1.4.14"
+    )
+
+    // Tests
     testImplementation 'junit:junit:4.11'
 
-    compileOnly(annotationProcessor("io.github.llamalad7:mixinextras-common:0.3.6"))
-    implementation(include("io.github.llamalad7:mixinextras-forge:0.3.6"))
+    // MixinExtras
+    compileOnly(
+            annotationProcessor(
+                    "io.github.llamalad7:mixinextras-common:0.3.6"
+            )
+    )
+
+    implementation(
+            include(
+                    "io.github.llamalad7:mixinextras-forge:0.3.6"
+            )
+    )
 }
