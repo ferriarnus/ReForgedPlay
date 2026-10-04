@@ -11,6 +11,7 @@ import net.neoforged.fml.event.lifecycle.FMLLoadCompleteEvent;
 import net.neoforged.fml.loading.LoadingModList;
 
 import static com.replaymod.core.ReplayMod.MOD_ID;
+import static com.replaymod.core.ReplayMod.isMinimalMode;
 
 @EventBusSubscriber(modid = MOD_ID, value = Dist.CLIENT)
 @Mod(MOD_ID)

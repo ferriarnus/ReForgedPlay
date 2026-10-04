@@ -120,7 +120,7 @@ dependencies {
     implementation "net.neoforged:neoforge:${neo_version}"
 
     bundle("com.github.ReplayMod:ReplayStudio:master-SNAPSHOT-slim")
-    implementation("com.github.ReplayMod:ReplayStudio:master-SNAPSHOT-slim")
+    implementation("com.github.ReplayMod:ReplayStudio:master-SNAPSHOT")
     implementation("com.github.viaversion:opennbt:0a02214")
     implementation("com.github.viaversion:opennbt:0a02214")
     implementation("com.github.ReplayMod:lwjgl-utils:27dcd66")

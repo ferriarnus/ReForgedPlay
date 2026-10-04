@@ -18,7 +18,7 @@ public abstract class Mixin_MoveRealmsButton {
     //$$ private static final String REALMS_INIT = "Lnet/minecraft/client/gui/screen/Screen;init(Lnet/minecraft/client/MinecraftClient;II)V";
     //#endif
 
-    @ModifyArg(method = "init", at = @At(value = "INVOKE", target = "Lcom/mojang/realmsclient/gui/screens/RealmsNotificationsScreen;init(II)V"), index = 2)
+    @ModifyArg(method = "init", at = @At(value = "INVOKE", target = "Lcom/mojang/realmsclient/gui/screens/RealmsNotificationsScreen;init(II)V"), index = 1)
     private int adjustRealmsButton(int height) {
         String setting = ReplayMod.instance.getSettingsRegistry().get(Setting.MAIN_MENU_BUTTON);
         if (MainMenuButtonPosition.valueOf(setting) == MainMenuButtonPosition.BIG) {

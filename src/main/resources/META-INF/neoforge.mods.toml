@@ -1,9 +1,7 @@
-modLoader="javafml"
-loaderVersion="[1,)"
 license="GPL-3.0-or-later"
 [[mods]]
 modId="reforgedplaymod"
-version="${version}"
+version="0.4"
 displayName="ReForgedPlay Mod"
 displayTest = "IGNORE_SERVER_VERSION"
 logoFile = "logo.png"
@@ -25,7 +23,7 @@ side = "BOTH"
 [[dependencies.reforgedplaymod]]
 modId = "minecraft"
 type="required"
-versionRange = "[26.1,26.1.2)"
+versionRange = "[26.1,26.2)"
 ordering = "NONE"
 side = "BOTH"
 

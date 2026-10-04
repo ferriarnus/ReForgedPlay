@@ -133,7 +133,7 @@ public class EntityRendererHandler extends EventRegistrations implements WorldRe
         }
 
         //#if MC>=11400
-        PostRenderCallback.EVENT.invoker().postRender();
+        //PostRenderCallback.EVENT.invoker().postRender();
         //#else
         //#if MC>=11400
         //$$ BasicEventHooks.onRenderTickEnd(partialTicks);

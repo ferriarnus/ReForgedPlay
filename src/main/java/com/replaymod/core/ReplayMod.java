@@ -250,7 +250,7 @@ public class ReplayMod implements Module, Scheduler {
     }
 
     private void printToChat(boolean warning, String message, Object... args) {
-        if (!mc.isSameThread()) {
+        if (!Minecraft.getInstance().isSameThread()) {
             runLater(() -> printToChat(warning, message, args));
             return;
         }

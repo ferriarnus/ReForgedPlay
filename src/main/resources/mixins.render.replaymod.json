@@ -63,7 +63,8 @@
     //$$ "MixinOpenGlHelper",
     //#endif
     "MixinRenderManager",
-    "Mixin_HideNameTags_PlayerEntity"
+    "Mixin_HideNameTags_PlayerEntity",
+    "Mixin_FixCopyTextureToBuffer_DepthTexture"
   ],
   "compatibilityLevel": "JAVA_8",
   "minVersion": "0.6.11"

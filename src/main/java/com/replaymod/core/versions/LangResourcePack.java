@@ -19,6 +19,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -78,7 +80,8 @@ public class LangResourcePack extends AbstractPackResources {
         if (container == null) {
             throw new IllegalStateException("Could not find ReplayMod container for " + ReplayMod.MOD_ID);
         }
-        this.basePath = container.getFile().getFilePath().getRoot();
+        this.basePath = container.getFile().getFilePath();
+
         //#else
         //$$ this.basePath = null; // stub
         //#endif

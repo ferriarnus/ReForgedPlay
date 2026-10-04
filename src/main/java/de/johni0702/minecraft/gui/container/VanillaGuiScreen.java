@@ -195,7 +195,7 @@ public class VanillaGuiScreen extends GuiScreen implements Draggable, KeyHandler
         //$$ private void onGuiRender(MatrixStack stack, float partialTicks) {
         //#endif
             Point mousePos = MouseUtils.getMousePos();
-            getSuperMcGui().extractRenderState(
+            getSuperMcGui().extractRenderStateWithTooltipAndSubtitles(
                     //#if MC>=11600
                     stack,
                     //#endif

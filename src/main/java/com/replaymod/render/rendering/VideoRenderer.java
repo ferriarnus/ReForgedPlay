@@ -471,6 +471,16 @@ public class VideoRenderer implements RenderInfo {
             break;
         }
         ((MinecraftMethodAccessor) mc).replayModExecuteTaskQueue();
+
+        //#if MC>=12109
+        //$$ // The SplashOverlay now only closes on `tick`, but there are no ticks while we're waiting,
+        //$$ // so we need to manually tick it to not get stuck.
+        Overlay overlay = mc.getOverlay();
+        if (overlay != null) {
+            overlay.tick();
+        }
+        //#endif
+
         //#else
         //$$ Queue<FutureTask<?>> scheduledTasks = ((MinecraftAccessor) mc).getScheduledTasks();
         //$$ //noinspection SynchronizationOnLocalVariableOrMethodParameter
@@ -513,7 +523,7 @@ public class VideoRenderer implements RenderInfo {
                 return false;
             }
             //#if MC >= 26.1
-            //$$ RenderSystem.pollEvents();
+            RenderSystem.pollEvents();
             //#endif
 
             pushMatrix();
