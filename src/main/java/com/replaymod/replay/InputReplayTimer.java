@@ -5,14 +5,10 @@ import com.replaymod.core.versions.MCVer;
 import com.replaymod.replay.camera.CameraController;
 import com.replaymod.replay.camera.CameraEntity;
 import de.johni0702.minecraft.gui.versions.ScreenExt;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.RenderTickCounter;
-
-//#if MC>=11802
-import net.minecraft.client.gui.screen.DownloadingTerrainScreen;
-//#endif
-
+import net.minecraft.client.Minecraft;
 //#if MC>=11400
+import net.minecraft.client.gui.screens.LevelLoadingScreen;
+import net.minecraft.client.gui.screens.Overlay;
 import org.lwjgl.glfw.GLFW;
 //#else
 //$$ import net.minecraft.client.settings.KeyBinding;
@@ -35,7 +31,7 @@ import org.lwjgl.glfw.GLFW;
 public class InputReplayTimer {
     public static void updateInReplay() {
         ReplayModReplay mod = ReplayModReplay.instance;
-        MinecraftClient mc = mod.getCore().getMinecraft();
+        Minecraft mc = mod.getCore().getMinecraft();
 
         ReplayMod.instance.runTasks();
 
@@ -50,13 +46,13 @@ public class InputReplayTimer {
 
         // If we are in a replay, we have to manually process key and mouse events as the
         // tick speed may vary or there may not be any ticks at all (when the replay is paused)
-        if (mod.getReplayHandler() != null && mc.world != null && mc.player != null) {
+        if (mod.getReplayHandler() != null && mc.level != null && mc.player != null) {
             //#if MC>=11400
-            if (mc.currentScreen == null || ((ScreenExt) mc.currentScreen).doesPassEvents()) {
+            if (mc.screen == null || ((ScreenExt) mc.screen).doesPassEvents()) {
                 GLFW.glfwPollEvents();
                 MCVer.processKeyBinds();
             }
-            mc.keyboard.pollDebugCrash();
+            mc.keyboardHandler.tick();
             //#else
             //$$ if (mc.currentScreen != null) {
                 //#if MC>=10800
@@ -93,8 +89,20 @@ public class InputReplayTimer {
             //#if MC>=11802
             // As of 1.18.2, this screen always stays open for at least two seconds, and requires ticking to close.
             // Thanks, but we'll have none of that (at least while in a replay).
-            if (mc.currentScreen instanceof DownloadingTerrainScreen) {
-                mc.currentScreen.close();
+            //#if MC>=12109
+            if (mc.screen instanceof LevelLoadingScreen) {
+            //#else
+               //$$ if (mc.screen instanceof ReceivingLevelScreen) {
+                mc.screen.onClose();
+            }
+            //#endif
+
+            //#if MC>=12109
+            //$$ // The SplashOverlay now only closes on `tick`, but there are no ticks while the replay is paused.
+            //$$ // so we need to manually tick it to not get stuck.
+            Overlay overlay = mc.getOverlay();
+            if (overlay != null) {
+                overlay.tick();
             }
             //#endif
 

@@ -3,6 +3,7 @@ package com.replaymod.extras.playeroverview;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.core.events.PreRenderHandCallback;
 import com.replaymod.core.utils.Utils;
+import com.replaymod.core.versions.MCVer.Keyboard;
 import com.replaymod.extras.Extra;
 import com.replaymod.replay.ReplayHandler;
 import com.replaymod.replay.ReplayModReplay;
@@ -11,9 +12,6 @@ import com.replaymod.replay.events.ReplayClosedCallback;
 import com.replaymod.replay.events.ReplayOpenedCallback;
 import com.replaymod.replaystudio.lib.guava.base.Optional;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-
 //#if MC>=11400
 import java.util.stream.Collectors;
 //#else
@@ -27,7 +25,8 @@ import java.util.stream.Collectors;
 //$$ import java.util.stream.Collectors;
 //#endif
 //#endif
-
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
 import java.io.IOException;
 import java.util.*;
 
@@ -48,9 +47,9 @@ public class PlayerOverview extends EventRegistrations implements Extra {
             public void run() {
                 if (module.getReplayHandler() != null) {
                     //#if MC>=11400
-                    List<PlayerEntity> players = mod.getMinecraft().world.getPlayers()
+                    List<Player> players = mod.getMinecraft().level.players()
                             .stream()
-                            .map(it -> (PlayerEntity) it)
+                            .map(it -> (Player) it)
                             .filter(it -> !(it instanceof CameraEntity))
                             .collect(Collectors.toList());
                     //#else
@@ -71,9 +70,9 @@ public class PlayerOverview extends EventRegistrations implements Extra {
                     //#endif
                     if (!Utils.isCtrlDown()) {
                         // Hide all players that have an UUID v2 (commonly used for NPCs)
-                        Iterator<PlayerEntity> iter = players.iterator();
+                        Iterator<Player> iter = players.iterator();
                         while (iter.hasNext()) {
-                            UUID uuid = iter.next().getGameProfile().getId();
+                            UUID uuid = iter.next().getGameProfile().id();
                             if (uuid != null && uuid.version() == 2) {
                                 iter.remove();
                             }
@@ -118,7 +117,7 @@ public class PlayerOverview extends EventRegistrations implements Extra {
     { on(PreRenderHandCallback.EVENT, this::shouldHideHand); }
     private boolean shouldHideHand() {
         Entity view = module.getCore().getMinecraft().getCameraEntity();
-        return view != null && isHidden(view.getUuid());
+        return view != null && isHidden(view.getUUID());
     }
 
     // See MixinRender for why this is 1.7.10 only

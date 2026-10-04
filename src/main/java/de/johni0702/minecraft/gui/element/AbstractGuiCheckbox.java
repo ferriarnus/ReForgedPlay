@@ -27,18 +27,19 @@ package de.johni0702.minecraft.gui.element;
 import de.johni0702.minecraft.gui.GuiRenderer;
 import de.johni0702.minecraft.gui.RenderInfo;
 import de.johni0702.minecraft.gui.container.GuiContainer;
+import de.johni0702.minecraft.gui.function.Click;
 import de.johni0702.minecraft.gui.utils.lwjgl.Color;
 import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableColor;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import de.johni0702.minecraft.gui.versions.MCVer;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.resource.language.I18n;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.resources.language.I18n;
+import net.minecraft.resources.Identifier;
 
 public abstract class AbstractGuiCheckbox<T extends AbstractGuiCheckbox<T>>
         extends AbstractGuiClickable<T> implements IGuiCheckbox<T> {
-    protected static final Identifier BUTTON_SOUND = Identifier.of("gui.button.press");
+    protected static final Identifier BUTTON_SOUND = Identifier.parse("gui.button.press");
     protected static final ReadableColor BOX_BACKGROUND_COLOR = new Color(46, 46, 46);
 
     private String label;
@@ -74,9 +75,9 @@ public abstract class AbstractGuiCheckbox<T extends AbstractGuiCheckbox<T>>
 
     @Override
     public ReadableDimension calcMinSize() {
-        TextRenderer fontRenderer = MCVer.getFontRenderer();
-        int height = fontRenderer.fontHeight + 2;
-        int width = height + 2 + fontRenderer.getWidth(label);
+        Font fontRenderer = MCVer.getFontRenderer();
+        int height = fontRenderer.lineHeight + 2;
+        int width = height + 2 + fontRenderer.width(label);
         return new Dimension(width, height);
     }
 
@@ -86,10 +87,10 @@ public abstract class AbstractGuiCheckbox<T extends AbstractGuiCheckbox<T>>
     }
 
     @Override
-    public void onClick() {
+    public void onClick(Click click) {
         AbstractGuiButton.playClickSound(getMinecraft());
         setChecked(!isChecked());
-        super.onClick();
+        super.onClick(click);
     }
 
     @Override
@@ -100,7 +101,7 @@ public abstract class AbstractGuiCheckbox<T extends AbstractGuiCheckbox<T>>
 
     @Override
     public T setI18nLabel(String label, Object... args) {
-        return setLabel(I18n.translate(label, args));
+        return setLabel(I18n.get(label, args));
     }
 
     @Override

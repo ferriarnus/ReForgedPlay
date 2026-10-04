@@ -4,6 +4,7 @@
   "mixins": [],
   "server": [],
   "client": [
+    "BlockableEventLoopAccessor",
     "Mixin_ContextualKeyBindings",
     //#if MC>=11400
     "AbstractButtonWidgetAccessor",

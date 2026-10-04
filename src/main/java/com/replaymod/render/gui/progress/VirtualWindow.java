@@ -1,29 +1,27 @@
 package com.replaymod.render.gui.progress;
 
+import com.mojang.blaze3d.pipeline.MainTarget;
+import com.mojang.blaze3d.pipeline.RenderTarget;
+import com.mojang.blaze3d.platform.Window;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.replaymod.render.hooks.MinecraftClientExt;
 import com.replaymod.render.mixin.MainWindowAccessor;
 import de.johni0702.minecraft.gui.function.Closeable;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gl.Framebuffer;
-import net.minecraft.client.util.Window;
-
-//#if MC>=11700
-import net.minecraft.client.gl.WindowFramebuffer;
-//#endif
+import net.minecraft.client.Minecraft;
 
 public class VirtualWindow implements Closeable {
-    private final MinecraftClient mc;
+    private final Minecraft mc;
     private final Window window;
     private final MainWindowAccessor acc;
 
-    private final Framebuffer guiFramebuffer;
+    private final RenderTarget guiFramebuffer;
     private boolean isBound;
     private int framebufferWidth, framebufferHeight;
 
     private int gameWidth, gameHeight;
 
 
-    public VirtualWindow(MinecraftClient mc) {
+    public VirtualWindow(Minecraft mc) {
         this.mc = mc;
         this.window = mc.getWindow();
         this.acc = (MainWindowAccessor) (Object) this.window;
@@ -32,7 +30,7 @@ public class VirtualWindow implements Closeable {
         framebufferHeight = acc.getFramebufferHeight();
 
         //#if MC>=11700
-        guiFramebuffer = new WindowFramebuffer(framebufferWidth, framebufferHeight);
+        guiFramebuffer = new MainTarget(framebufferWidth, framebufferHeight);
         //#else
         //$$ guiFramebuffer = new Framebuffer(framebufferWidth, framebufferHeight, true
                 //#if MC>=11400
@@ -46,7 +44,7 @@ public class VirtualWindow implements Closeable {
 
     @Override
     public void close() {
-        guiFramebuffer.delete();
+        guiFramebuffer.destroyBuffers();
 
         MinecraftClientExt.get(mc).setWindowDelegate(null);
     }
@@ -89,8 +87,10 @@ public class VirtualWindow implements Closeable {
         //#endif
 
         //#if MC>=11500
-        //#if MC>=12102
-        window.swapBuffers(null);
+        //#if MC >= 26.1
+        RenderSystem.flipFrame(null);
+        //#elseif MC>=12102
+        //$$ window.updateDisplay(null);
         //#elseif MC>=11500
         //$$ window.swapBuffers();
         //#else
@@ -134,14 +134,18 @@ public class VirtualWindow implements Closeable {
         //#endif
 
         applyScaleFactor();
-        if (mc.currentScreen != null) {
-            mc.currentScreen.resize(mc, window.getScaledWidth(), window.getScaledHeight());
+        if (mc.screen != null) {
+            //#if MC>=12111
+            mc.screen.resize(window.getGuiScaledWidth(), window.getGuiScaledHeight());
+            //#else
+            //$$ mc.screen.resize(mc, window.getGuiScaledWidth(), window.getGuiScaledHeight());
+            //#endif
         }
     }
 
     private void applyScaleFactor() {
         //#if MC>=11400
-        window.setScaleFactor(window.calculateScaleFactor(mc.options.getGuiScale().getValue(), mc.forcesUnicodeFont()));
+        window.setGuiScale(window.calculateScale(mc.options.guiScale().get(), mc.isEnforceUnicode()));
         //#else
         //$$ // Nothing to do, ScaledResolution re-computes the scale factor every time it is created
         //#endif

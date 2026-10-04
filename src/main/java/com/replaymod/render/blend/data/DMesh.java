@@ -148,7 +148,7 @@ public class DMesh {
         });
     }
 
-    public void addTriangle(DMesh.Vertex v1, DMesh.Vertex v2, DMesh.Vertex v3,
+    public void addTriangle(Vertex v1, Vertex v2, Vertex v3,
                             Vector2f uv1, Vector2f uv2, Vector2f uv3,
                             int c1, int c2, int c3,
                             int materialSlot) {
@@ -167,7 +167,7 @@ public class DMesh {
         polys.add(new Poly(lOffset, 3, materialSlot));
     }
 
-    public void addQuad(DMesh.Vertex v1, DMesh.Vertex v2, DMesh.Vertex v3, DMesh.Vertex v4,
+    public void addQuad(Vertex v1, Vertex v2, Vertex v3, Vertex v4,
                         Vector2f uv1, Vector2f uv2, Vector2f uv3, Vector2f uv4,
                         int c1, int c2, int c3, int c4,
                         int materialSlot) {

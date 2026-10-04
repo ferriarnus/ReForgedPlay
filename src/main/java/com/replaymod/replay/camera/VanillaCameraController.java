@@ -1,9 +1,9 @@
 package com.replaymod.replay.camera;
 
 import de.johni0702.minecraft.gui.utils.lwjgl.vector.Vector3f;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.option.GameOptions;
-import net.minecraft.client.option.KeyBinding;
+import net.minecraft.client.KeyMapping;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.Options;
 
 /**
  * Camera controller performing vanilla creative-like camera movements.
@@ -17,21 +17,21 @@ public class VanillaCameraController implements CameraController {
             new Vector3f(0, 1, 0), new Vector3f(0, -1, 0),
     };
 
-    private final KeyBinding[] bindings = new KeyBinding[6];
+    private final KeyMapping[] bindings = new KeyMapping[6];
 
     private final CameraEntity camera;
 
     private int speed;
 
-    public VanillaCameraController(MinecraftClient mc, CameraEntity camera) {
+    public VanillaCameraController(Minecraft mc, CameraEntity camera) {
         this.camera = camera;
-        GameOptions gameSettings = mc.options;
-        this.bindings[0] = gameSettings.forwardKey;
-        this.bindings[1] = gameSettings.backKey;
-        this.bindings[2] = gameSettings.leftKey;
-        this.bindings[3] = gameSettings.rightKey;
-        this.bindings[4] = gameSettings.jumpKey;
-        this.bindings[5] = gameSettings.sneakKey;
+        Options gameSettings = mc.options;
+        this.bindings[0] = gameSettings.keyUp;
+        this.bindings[1] = gameSettings.keyDown;
+        this.bindings[2] = gameSettings.keyLeft;
+        this.bindings[3] = gameSettings.keyRight;
+        this.bindings[4] = gameSettings.keyJump;
+        this.bindings[5] = gameSettings.keyShift;
     }
 
     @Override
@@ -39,13 +39,13 @@ public class VanillaCameraController implements CameraController {
         if (partialTicksPassed == 0) return;
         Vector3f direction = new Vector3f(0, 0, 0);
         for (int i = 0; i < 6; i++) { // First, get movement direction depending on keys pressed
-            if (bindings[i].isPressed()) {
+            if (bindings[i].isDown()) {
                 Vector3f.add(direction, DIRECTIONS[i], direction);
             }
         }
         if (direction.length() == 0) return;
         direction.normalise(direction); // Normalize, so we don't move quicker if we hold down multiple keys
-        double yawRadians = Math.toRadians(camera.getYaw());
+        double yawRadians = Math.toRadians(camera.getYRot());
         float yawSin = (float) Math.sin(yawRadians), yawCos = (float) Math.cos(yawRadians);
         // Rotate by yaw
         direction.set(

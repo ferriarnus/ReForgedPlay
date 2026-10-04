@@ -29,7 +29,7 @@ public class ReplayModBackend {
 
     public String getMinecraftVersion() {
         //#if MC>=12106
-        return SharedConstants.getGameVersion().name();
+        return SharedConstants.getCurrentVersion().name();
         //#else
         //$$ return SharedConstants.getGameVersion().getName();
         //#endif

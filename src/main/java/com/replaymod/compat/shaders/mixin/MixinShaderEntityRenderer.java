@@ -4,7 +4,7 @@ package com.replaymod.compat.shaders.mixin;
 import com.replaymod.compat.shaders.ShaderReflection;
 import com.replaymod.replay.ReplayHandler;
 import com.replaymod.replay.ReplayModReplay;
-import net.minecraft.client.render.GameRenderer;
+import net.minecraft.client.renderer.GameRenderer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class MixinShaderEntityRenderer {
 
     //#if MC>=11400
-    @Inject(method = "renderWorld", at = @At("HEAD"))
+    @Inject(method = "renderLevel", at = @At("HEAD"))
     //#else
     //#if MC>=11400
     //$$ @Inject(method = "updateCameraAndRender(FJ)V", at = @At("HEAD"))

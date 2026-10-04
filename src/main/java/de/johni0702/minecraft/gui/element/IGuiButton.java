@@ -28,9 +28,8 @@ import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.Point;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadablePoint;
-import net.minecraft.sound.SoundEvent;
-import net.minecraft.util.Identifier;
-//#endif
+import net.minecraft.resources.Identifier;
+import net.minecraft.sounds.SoundEvent;
 
 public interface IGuiButton<T extends IGuiButton<T>> extends IGuiClickable<T> {
     T setLabel(String label);

@@ -4,9 +4,6 @@ import de.johni0702.minecraft.gui.utils.lwjgl.vector.Matrix3f;
 import de.johni0702.minecraft.gui.utils.lwjgl.vector.Matrix4f;
 import de.johni0702.minecraft.gui.utils.lwjgl.vector.Quaternion;
 import de.johni0702.minecraft.gui.utils.lwjgl.vector.Vector3f;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.block.entity.BlockEntity;
 import org.blender.dna.Link;
 import org.blender.dna.ListBase;
 import org.blender.utils.BlenderFactory;
@@ -16,10 +13,9 @@ import org.lwjgl.opengl.GL11;
 
 import java.io.IOException;
 import java.nio.FloatBuffer;
-
-//#if MC>=11400
-import net.minecraft.util.math.Vec3d;
-//#endif
+import net.minecraft.client.Minecraft;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.phys.Vec3;
 
 public class Util {
     public static BlenderFactory factory() {
@@ -138,10 +134,13 @@ public class Util {
 
     //#if MC>=10800
     public static Vector3f getCameraPos() {
-        MinecraftClient mc = MinecraftClient.getInstance();
-        //#if MC>=11400
-        Vec3d pos = mc.getEntityRenderDispatcher().camera.getPos();
+        Minecraft mc = Minecraft.getInstance();
+        //#if MC>=12111
+        Vec3 pos = mc.getEntityRenderDispatcher().camera.position();
         return new Vector3f((float) pos.x, (float) pos.y, (float) pos.z);
+        //#elseif MC>=11400
+        //$$ Vec3 pos = mc.getEntityRenderDispatcher().camera.getPosition();
+        //$$ return new Vector3f((float) pos.x, (float) pos.y, (float) pos.z);
         //#else
         //$$ return new Vector3f(
         //$$         (float) -mc.getRenderManager().viewerPosX,
@@ -182,9 +181,11 @@ public class Util {
         }
     }
 
-    public static String getTileEntityId(BlockEntity tileEntity) {
+    //#if MC >= 26.1
+    //#else
+    //$$ public static String getTileEntityId(BlockEntity tileEntity) {
         //#if MC>=12006
-        return net.minecraft.block.entity.BlockEntityType.getId(tileEntity.getType()).toString();
+    //$$ return net.minecraft.world.level.block.entity.BlockEntityType.getKey(tileEntity.getType()).toString();
         //#else
         //#if MC>=11800
         //$$ NbtCompound nbt = tileEntity.createNbt();
@@ -198,7 +199,7 @@ public class Util {
         //#endif
         //$$ return nbt.getString("id");
         //#endif
-    }
+    //$$ }
 
     public interface IOCallable<R> {
         R call() throws IOException;

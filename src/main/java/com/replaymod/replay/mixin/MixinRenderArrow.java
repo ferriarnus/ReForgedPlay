@@ -2,24 +2,14 @@
 package com.replaymod.replay.mixin;
 
 import com.replaymod.replay.ReplayModReplay;
-import net.minecraft.client.render.entity.EntityRenderer;
-import net.minecraft.client.render.entity.ArrowEntityRenderer;
-import net.minecraft.entity.Entity;
+import net.minecraft.client.renderer.culling.Frustum;
+import net.minecraft.client.renderer.entity.EntityRenderer;
+import net.minecraft.client.renderer.entity.EntityRendererProvider.Context;
+import net.minecraft.client.renderer.entity.TippableArrowRenderer;
+import net.minecraft.world.entity.Entity;
 import org.spongepowered.asm.mixin.Mixin;
 
-//#if MC>=11700
-import net.minecraft.client.render.entity.EntityRendererFactory.Context;
-//#else
-//$$ import net.minecraft.client.render.entity.EntityRenderDispatcher;
-//#endif
-
-//#if MC>=11500
-import net.minecraft.client.render.Frustum;
-//#else
-//$$ import net.minecraft.client.render.VisibleRegion;
-//#endif
-
-@Mixin(ArrowEntityRenderer.class)
+@Mixin(TippableArrowRenderer.class)
 public abstract class MixinRenderArrow extends EntityRenderer {
     //#if MC>=11700
     protected MixinRenderArrow(Context context) {

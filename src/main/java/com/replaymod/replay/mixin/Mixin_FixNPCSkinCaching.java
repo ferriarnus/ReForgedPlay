@@ -1,9 +1,5 @@
 package com.replaymod.replay.mixin;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.AbstractClientPlayerEntity;
-import net.minecraft.client.network.OtherClientPlayerEntity;
-import net.minecraft.client.network.PlayerListEntry;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -11,10 +7,14 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import javax.annotation.Nullable;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.PlayerInfo;
+import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.client.player.RemotePlayer;
 
-@Mixin(AbstractClientPlayerEntity.class)
+@Mixin(AbstractClientPlayer.class)
 public abstract class Mixin_FixNPCSkinCaching {
-    @Shadow @Nullable protected abstract PlayerListEntry getPlayerListEntry();
+    @Shadow @Nullable protected abstract PlayerInfo getPlayerInfo();
 
     @Inject(method = "<init>", at = @At("RETURN"))
     private void forceCachePlayerListEntry(CallbackInfo ci) {
@@ -28,14 +28,14 @@ public abstract class Mixin_FixNPCSkinCaching {
 
         // To reduce the chance of incompatibility with custom player entities, we only do this for the vanilla MP one.
         //noinspection ConstantConditions
-        if (!(((Object) this) instanceof OtherClientPlayerEntity)) return;
+        if (!(((Object) this) instanceof RemotePlayer)) return;
 
         // To get the player list entry, we need to be connected (we usually are, but better be safe than sorry)
-        if (MinecraftClient.getInstance().getNetworkHandler() == null) return;
+        if (Minecraft.getInstance().getConnection() == null) return;
 
         // And we catch any exceptions, so if there is still something, it's hopefully not fatal
         try {
-            this.getPlayerListEntry();
+            this.getPlayerInfo();
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -12,19 +12,21 @@ import com.replaymod.replaystudio.protocol.PacketTypeRegistry;
 import com.replaymod.replaystudio.protocol.packets.PacketEnabledPacksData;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import net.minecraft.client.network.ClientConfigurationNetworkHandler;
+import net.minecraft.client.multiplayer.ClientConfigurationPacketListenerImpl;
+import net.minecraft.core.Registry;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.listener.ClientConfigurationPacketListener;
-import net.minecraft.network.packet.BrandCustomPayload;
-import net.minecraft.network.packet.s2c.common.CustomPayloadS2CPacket;
-import net.minecraft.network.packet.s2c.config.ReadyS2CPacket;
-import net.minecraft.network.state.ConfigurationStates;
-import net.minecraft.registry.DynamicRegistryManager;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.world.dimension.DimensionType;
+import net.minecraft.nbt.Tag;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
+import net.minecraft.network.protocol.common.custom.BrandPayload;
+import net.minecraft.network.protocol.configuration.ClientConfigurationPacketListener;
+import net.minecraft.network.protocol.configuration.ClientboundFinishConfigurationPacket;
+import net.minecraft.network.protocol.configuration.ConfigurationProtocols;
+import net.minecraft.resources.RegistryOps;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.dimension.DimensionType;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -33,25 +35,26 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.Map;
 
-@Mixin(ClientConfigurationNetworkHandler.class)
+@Mixin(ClientConfigurationPacketListenerImpl.class)
 public abstract class MixinNetHandlerConfigClient {
-    @Inject(method = "onReady", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/ClientConnection;transitionInbound(Lnet/minecraft/network/state/NetworkState;Lnet/minecraft/network/listener/PacketListener;)V"))
-    public void recordEnabledPackData(CallbackInfo ci, @Local DynamicRegistryManager.Immutable registryManager) {
+    @Inject(method = "handleConfigurationFinished", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/Connection;setupInboundProtocol(Lnet/minecraft/network/ProtocolInfo;Lnet/minecraft/network/PacketListener;)V"))
+    public void recordEnabledPackData(CallbackInfo ci, @Local RegistryAccess.Frozen registryManager) {
         PacketListener packetListener = ReplayModRecording.instance.getConnectionEventHandler().getPacketListener();
         if (packetListener == null) return;
 
         ByteBuf byteBuf = Unpooled.buffer();
-        PacketByteBuf buf = new PacketByteBuf(byteBuf);
-        buf.writeString(PacketEnabledPacksData.ID);
+        FriendlyByteBuf buf = new FriendlyByteBuf(byteBuf);
+        buf.writeUtf(PacketEnabledPacksData.ID);
+        RegistryOps<Tag> ops = registryManager.createSerializationContext(NbtOps.INSTANCE);
         buf.writeVarInt(1);
-        write(buf, registryManager.getOrThrow(RegistryKeys.DIMENSION_TYPE), DimensionType.CODEC);
+        write(buf, registryManager.lookupOrThrow(Registries.DIMENSION_TYPE), DimensionType.DIRECT_CODEC, ops);
 
         byte[] bytes = new byte[byteBuf.readableBytes()];
         byteBuf.readBytes(bytes);
         byteBuf.release();
 
-        int packetIdCustomPayload = getPacketId(new CustomPayloadS2CPacket(new BrandCustomPayload("")));
-        int packetIdFinish = getPacketId(ReadyS2CPacket.INSTANCE);
+        int packetIdCustomPayload = getPacketId(new ClientboundCustomPayloadPacket(new BrandPayload("")));
+        int packetIdFinish = getPacketId(ClientboundFinishConfigurationPacket.INSTANCE);
 
         PacketTypeRegistry registry = MCVer.getPacketTypeRegistry(State.CONFIGURATION);
         packetListener.save(new Packet(registry, packetIdCustomPayload, PacketType.ConfigCustomPayload, com.github.steveice10.netty.buffer.Unpooled.wrappedBuffer(bytes)));
@@ -59,25 +62,25 @@ public abstract class MixinNetHandlerConfigClient {
     }
 
     @Unique
-    private <T> void write(PacketByteBuf buf, Registry<T> registry, Codec<T> codec) {
-        buf.writeString(registry.getKey().getValue().toString());
+    private <T> void write(FriendlyByteBuf buf, Registry<T> registry, Codec<T> codec, RegistryOps<Tag> ops) {
+        buf.writeUtf(registry.key().identifier().toString());
         buf.writeVarInt(registry.size());
-        for (Map.Entry<RegistryKey<T>, T> entry : registry.getEntrySet()) {
-            buf.writeString(entry.getKey().getValue().toString());
-            buf.writeNbt(codec.encodeStart(NbtOps.INSTANCE, entry.getValue()).getOrThrow());
+        for (Map.Entry<ResourceKey<T>, T> entry : registry.entrySet()) {
+            buf.writeUtf(entry.getKey().identifier().toString());
+            buf.writeNbt(codec.encodeStart(ops, entry.getValue()).getOrThrow());
         }
     }
 
     @Unique
-    private int getPacketId(net.minecraft.network.packet.Packet<? super ClientConfigurationPacketListener> packet) {
+    private int getPacketId(net.minecraft.network.protocol.Packet<? super ClientConfigurationPacketListener> packet) {
         ByteBuf byteBuf = Unpooled.buffer();
         try {
             //#if MC>=12106
-            ConfigurationStates.S2C.codec().encode(byteBuf, packet);
+            ConfigurationProtocols.CLIENTBOUND.codec().encode(byteBuf, packet);
             //#else
             //$$ ConfigurationStates.S2C.codec().encode(byteBuf, packet);
             //#endif
-            return new PacketByteBuf(byteBuf).readVarInt();
+            return new FriendlyByteBuf(byteBuf).readVarInt();
         } finally {
             byteBuf.release();
         }

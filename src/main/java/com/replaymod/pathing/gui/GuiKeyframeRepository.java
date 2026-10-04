@@ -26,7 +26,10 @@ import de.johni0702.minecraft.gui.element.GuiButton;
 import de.johni0702.minecraft.gui.element.GuiElement;
 import de.johni0702.minecraft.gui.element.GuiLabel;
 import de.johni0702.minecraft.gui.element.GuiTextField;
+import de.johni0702.minecraft.gui.function.Click;
 import de.johni0702.minecraft.gui.function.Closeable;
+import de.johni0702.minecraft.gui.function.KeyHandler;
+import de.johni0702.minecraft.gui.function.KeyInput;
 import de.johni0702.minecraft.gui.function.Typeable;
 import de.johni0702.minecraft.gui.layout.CustomLayout;
 import de.johni0702.minecraft.gui.layout.GridLayout;
@@ -37,7 +40,6 @@ import de.johni0702.minecraft.gui.utils.Consumer;
 import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadablePoint;
-import net.minecraft.util.crash.CrashReport;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -49,6 +51,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import net.minecraft.CrashReport;
 
 import static de.johni0702.minecraft.gui.versions.MCVer.getClipboardString;
 import static de.johni0702.minecraft.gui.versions.MCVer.setClipboardString;
@@ -56,7 +59,7 @@ import static de.johni0702.minecraft.gui.versions.MCVer.setClipboardString;
 /**
  * Gui for loading and saving {@link Timeline Timelines}.
  */
-public class GuiKeyframeRepository extends GuiScreen implements Closeable, Typeable {
+public class GuiKeyframeRepository extends GuiScreen implements Closeable, KeyHandler {
     private static final Logger LOGGER = LogManager.getLogger();
 
     public final GuiPanel contentPanel = new GuiPanel(this).setBackgroundColor(Colors.DARK_TRANSPARENT);
@@ -90,7 +93,7 @@ public class GuiKeyframeRepository extends GuiScreen implements Closeable, Typea
                 @Override
                 public void run() {
                     if (popup.getYesButton().isEnabled()) {
-                        popup.getYesButton().onClick();
+                        popup.getYesButton().onClick(new Click(-1, -1, 0, 0));
                     }
                 }
             }).onTextChanged(new Consumer<String>() {
@@ -138,7 +141,7 @@ public class GuiKeyframeRepository extends GuiScreen implements Closeable, Typea
                 @Override
                 public void run() {
                     if (popup.getYesButton().isEnabled()) {
-                        popup.getYesButton().onClick();
+                        popup.getYesButton().onClick(new Click(-1, -1, 0, 0));
                     }
                 }
             }).onTextChanged(new Consumer<String>() {
@@ -187,7 +190,7 @@ public class GuiKeyframeRepository extends GuiScreen implements Closeable, Typea
                 setClipboardString(serialization.serialize(toBeSerialized));
             } catch (Throwable t) {
                 t.printStackTrace();
-                CrashReport report = CrashReport.create(t, "Copying timeline(s)");
+                CrashReport report = CrashReport.forThrowable(t, "Copying timeline(s)");
                 Utils.error(LOGGER, GuiKeyframeRepository.this, report, () -> {});
             }
         }
@@ -244,9 +247,9 @@ public class GuiKeyframeRepository extends GuiScreen implements Closeable, Typea
                     GuiRenderSettings settingsGui = queue.addJob(timeline);
                     settingsGui.buttonPanel.removeElement(settingsGui.renderButton);
                     settingsGui.setOutputFileBaseName(name);
-                    Runnable orgOnClick = settingsGui.queueButton.getOnClick();
-                    settingsGui.queueButton.onClick(() -> {
-                        orgOnClick.run();
+                    Consumer<Click> orgOnClick = settingsGui.queueButton.getOnClick();
+                    settingsGui.queueButton.onClick(click -> {
+                        orgOnClick.consume(click);
                         this.run();
                     });
                     settingsGui.open();
@@ -348,9 +351,9 @@ public class GuiKeyframeRepository extends GuiScreen implements Closeable, Typea
     }
 
     @Override
-    public boolean typeKey(ReadablePoint mousePosition, int keyCode, char keyChar, boolean ctrlDown, boolean shiftDown) {
-        if (MCVer.Keyboard.hasControlDown()) {
-            switch (keyCode) {
+    public boolean handleKey(KeyInput keyInput) {
+        if (keyInput.hasCtrl()) {
+            switch (keyInput.key) {
                 case MCVer.Keyboard.KEY_A:
                     if (selectedEntries.size() < timelines.size()) {
                         for (GuiElement<?> child : list.getListPanel().getChildren()) {
@@ -364,10 +367,10 @@ public class GuiKeyframeRepository extends GuiScreen implements Closeable, Typea
                     updateButtons();
                     return true;
                 case MCVer.Keyboard.KEY_C:
-                    copyButton.onClick();
+                    copyButton.onClick(new Click(-1, -1, 0, 0));
                     return true;
                 case MCVer.Keyboard.KEY_V:
-                    pasteButton.onClick();
+                    pasteButton.onClick(new Click(-1, -1, 0, 0));
                     return true;
             }
         }
@@ -396,8 +399,8 @@ public class GuiKeyframeRepository extends GuiScreen implements Closeable, Typea
         }
 
         @Override
-        protected void onClick() {
-            if (!MCVer.Keyboard.hasControlDown()) {
+        protected void onClick(Click click) {
+            if (!click.hasCtrl()) {
                 selectedEntries.clear();
             }
             if (selectedEntries.contains(this)) {

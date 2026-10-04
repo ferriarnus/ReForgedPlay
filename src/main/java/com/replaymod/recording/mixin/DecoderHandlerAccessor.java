@@ -1,16 +1,16 @@
 package com.replaymod.recording.mixin;
 
-import net.minecraft.network.state.NetworkState;
-import net.minecraft.network.handler.DecoderHandler;
-import net.minecraft.network.listener.PacketListener;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
 import javax.annotation.Nonnull;
+import net.minecraft.network.PacketDecoder;
+import net.minecraft.network.PacketListener;
+import net.minecraft.network.ProtocolInfo;
 
-@Mixin(DecoderHandler.class)
+@Mixin(PacketDecoder.class)
 public interface DecoderHandlerAccessor<T extends PacketListener> {
     @Accessor
     @Nonnull
-    NetworkState<T> getState();
+    ProtocolInfo<T> getProtocolInfo();
 }

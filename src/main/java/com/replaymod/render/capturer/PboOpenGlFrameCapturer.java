@@ -147,10 +147,10 @@ public abstract class PboOpenGlFrameCapturer<F extends Frame, D extends Enum<D> 
         //#if MC>=12105
         int offset = captureData.ordinal() * getFrameWidth() * getFrameHeight() * 4;
         CommandEncoder cmd = RenderSystem.getDevice().createCommandEncoder();
-        cmd.copyTextureToBuffer(frameBuffer().getColorAttachment(), pbo, offset, () -> {}, 0);
+        cmd.copyTextureToBuffer(frameBuffer().getColorTexture(), pbo, offset, () -> {}, 0);
         if (withDepth) {
             offset += data.length * getFrameWidth() * getFrameHeight() * 4;
-            cmd.copyTextureToBuffer(frameBuffer().getDepthAttachment(), pbo, offset, () -> {}, 0);
+            cmd.copyTextureToBuffer(frameBuffer().getDepthTexture(), pbo, offset, () -> {}, 0);
         }
         //#else
         //$$ pbo.bind();

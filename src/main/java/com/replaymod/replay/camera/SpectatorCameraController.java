@@ -1,9 +1,6 @@
 package com.replaymod.replay.camera;
 
 import com.replaymod.replay.ReplayModReplay;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.option.KeyBinding;
-import net.minecraft.entity.Entity;
 
 //#if MC>=11400
 //#else
@@ -11,6 +8,9 @@ import net.minecraft.entity.Entity;
 //#endif
 
 import java.util.Arrays;
+import net.minecraft.client.KeyMapping;
+import net.minecraft.client.Minecraft;
+import net.minecraft.world.entity.Entity;
 
 import static com.replaymod.core.versions.MCVer.*;
 
@@ -23,17 +23,17 @@ public class SpectatorCameraController implements CameraController {
 
     @Override
     public void update(float partialTicksPassed) {
-        MinecraftClient mc = getMinecraft();
-        if (mc.options.sneakKey.wasPressed()) {
+        Minecraft mc = getMinecraft();
+        if (mc.options.keyShift.consumeClick()) {
             ReplayModReplay.instance.getReplayHandler().spectateCamera();
         }
 
         // Soak up all remaining key presses
-        for (KeyBinding binding : Arrays.asList(mc.options.attackKey, mc.options.useKey,
-                mc.options.jumpKey, mc.options.sneakKey, mc.options.forwardKey,
-                mc.options.backKey, mc.options.leftKey, mc.options.rightKey)) {
+        for (KeyMapping binding : Arrays.asList(mc.options.keyAttack, mc.options.keyUse,
+                mc.options.keyJump, mc.options.keyShift, mc.options.keyUp,
+                mc.options.keyDown, mc.options.keyLeft, mc.options.keyRight)) {
             //noinspection StatementWithEmptyBody
-            while (binding.wasPressed());
+            while (binding.consumeClick());
         }
 
         // Prevent mouse movement

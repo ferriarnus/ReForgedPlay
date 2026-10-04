@@ -2,13 +2,13 @@ package com.replaymod.render.hooks;
 
 import com.replaymod.render.utils.EmbeddiumFlawlessFramesHelper;
 import com.replaymod.render.utils.SodiumFlawlessFramesHelper;
-import net.minecraft.client.render.WorldRenderer;
+import net.minecraft.client.renderer.LevelRenderer;
 
 public class ForceChunkLoadingHook {
 
-    private final WorldRenderer hooked;
+    private final LevelRenderer hooked;
 
-    public ForceChunkLoadingHook(WorldRenderer renderGlobal) {
+    public ForceChunkLoadingHook(LevelRenderer renderGlobal) {
         this.hooked = renderGlobal;
 
         if (EmbeddiumFlawlessFramesHelper.hasEmbeddium()) {

@@ -26,9 +26,8 @@ package de.johni0702.minecraft.gui.element;
 
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadablePoint;
-import net.minecraft.sound.SoundEvent;
-import net.minecraft.util.Identifier;
-//#endif
+import net.minecraft.resources.Identifier;
+import net.minecraft.sounds.SoundEvent;
 
 public interface IGuiTexturedButton<T extends IGuiTexturedButton<T>> extends IGuiClickable<T> {
     Identifier getTexture();

@@ -1,13 +1,13 @@
 package com.replaymod.pathing.player;
 
 import de.johni0702.minecraft.gui.utils.Event;
-import net.minecraft.client.render.RenderTickCounter;
+import net.minecraft.client.DeltaTracker;
 
 /**
  * A timer that does not advance by itself.
  */
 //#if MC>=12100
-public class ReplayTimer extends RenderTickCounter.Dynamic {
+public class ReplayTimer extends DeltaTracker.Timer {
 //#else
 //$$ public class ReplayTimer extends RenderTickCounter {
     //#endif
@@ -34,7 +34,7 @@ public class ReplayTimer extends RenderTickCounter.Dynamic {
     //#else
     //$$ void
     //#endif
-    beginRenderTick(
+    advanceGameTime(
             //#else
             //$$ public void updateTimer(
             //#endif
@@ -42,11 +42,11 @@ public class ReplayTimer extends RenderTickCounter.Dynamic {
             long sysClock
             //#endif
             //#if MC>=12100
-            , boolean tick
+            //, boolean tick
             //#endif
     ) {
         //#if MC>=12100
-        if (!tick) return 0;
+        //if (!tick) return 0;
         //#endif
         UpdatedCallback.EVENT.invoker().onUpdate();
         //#if MC>=11600
@@ -58,7 +58,7 @@ public class ReplayTimer extends RenderTickCounter.Dynamic {
     public float tickDelta;
 
     @Override
-    public float getTickProgress(boolean bl) {
+    public float getGameTimeDeltaPartialTick(boolean bl) {
         return tickDelta;
     }
     //#endif

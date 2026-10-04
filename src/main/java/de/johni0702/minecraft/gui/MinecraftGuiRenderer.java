@@ -29,40 +29,8 @@ import com.mojang.blaze3d.vertex.VertexFormat;
 import de.johni0702.minecraft.gui.utils.NonNull;
 import de.johni0702.minecraft.gui.utils.lwjgl.*;
 import de.johni0702.minecraft.gui.versions.MCVer;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.render.*;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.Identifier;
-import org.joml.Matrix4f;
-import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.render.Tessellator;
-import net.minecraft.client.render.VertexFormats;
-
-import static com.mojang.blaze3d.systems.RenderSystem.*;
-import static de.johni0702.minecraft.gui.versions.MCVer.getMinecraft;
-import static de.johni0702.minecraft.gui.versions.MCVer.newScaledResolution;
-import static org.lwjgl.opengl.GL11.GL_ONE_MINUS_SRC_ALPHA;
-import static org.lwjgl.opengl.GL11.GL_SRC_ALPHA;
-
-//#if MC>=12106
-import net.minecraft.client.texture.AbstractTexture;
-import org.joml.Matrix3x2fStack;
-//#endif
-
-//#if MC>=12105
-import com.mojang.blaze3d.buffers.GpuBuffer;
-import com.mojang.blaze3d.systems.RenderPass;
-import com.mojang.blaze3d.textures.GpuTexture;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.textures.TextureFormat;
-import net.minecraft.client.gl.Framebuffer;
-import net.minecraft.client.gl.RenderPipelines;
-import net.minecraft.client.texture.GlTexture;
-import java.util.OptionalDouble;
-import java.util.OptionalInt;
-//#endif
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
 
 //#if MC>=12102
 //#if MC<12105
@@ -71,18 +39,40 @@ import java.util.OptionalInt;
 //#endif
 
 //#if MC>=12100
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.VertexConsumer;
-import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.texture.AbstractTexture;
+import net.minecraft.resources.Identifier;
+import org.joml.Matrix4f;
+
+import static com.mojang.blaze3d.systems.RenderSystem.*;
+import static de.johni0702.minecraft.gui.versions.MCVer.getMinecraft;
+import static de.johni0702.minecraft.gui.versions.MCVer.newScaledResolution;
+import static org.lwjgl.opengl.GL11.GL_ONE_MINUS_SRC_ALPHA;
+import static org.lwjgl.opengl.GL11.GL_SRC_ALPHA;
+
+import org.joml.Matrix3x2fStack;
+//#endif
+
+//#if MC>=12105
+import com.mojang.blaze3d.buffers.GpuBuffer;
+import com.mojang.blaze3d.opengl.GlTexture;
+import com.mojang.blaze3d.systems.RenderPass;
+import com.mojang.blaze3d.textures.GpuTexture;
+import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.blaze3d.textures.TextureFormat;
+import java.util.OptionalDouble;
+import java.util.OptionalInt;
+//#endif
 import org.lwjgl.opengl.GL11;
 //#endif
 
 public class MinecraftGuiRenderer implements GuiRenderer {
 
-    private final MinecraftClient mc = getMinecraft();
+    private final Minecraft mc = getMinecraft();
 
     //#if MC>=12000
-    private final DrawContext context;
+    private final GuiGraphicsExtractor context;
     //#else
     //$$ private final DrawableHelper gui = new DrawableHelper(){};
     //#endif
@@ -95,9 +85,9 @@ public class MinecraftGuiRenderer implements GuiRenderer {
 
     @NonNull
     //#if MC>=11400
-    private final int scaledWidth = newScaledResolution(mc).getScaledWidth();
-    private final int scaledHeight = newScaledResolution(mc).getScaledHeight();
-    private final double scaleFactor = newScaledResolution(mc).getScaleFactor();
+    private final int scaledWidth = newScaledResolution(mc).getGuiScaledWidth();
+    private final int scaledHeight = newScaledResolution(mc).getGuiScaledHeight();
+    private final double scaleFactor = newScaledResolution(mc).getGuiScale();
     //#else
     //$$ private final int scaledWidth = newScaledResolution(mc).getScaledWidth();
     //$$ private final int scaledHeight = newScaledResolution(mc).getScaledHeight();
@@ -105,9 +95,9 @@ public class MinecraftGuiRenderer implements GuiRenderer {
     //#endif
 
     //#if MC>=12000
-    public MinecraftGuiRenderer(DrawContext context) {
+    public MinecraftGuiRenderer(GuiGraphicsExtractor context) {
         this.context = context;
-        this.matrixStack = context.getMatrices();
+        this.matrixStack = context.pose();
         //#if MC>=12102 && MC<12106
         //$$ context.draw();
         //#endif
@@ -125,7 +115,7 @@ public class MinecraftGuiRenderer implements GuiRenderer {
 
     //#if MC>=12000
     @Override
-    public DrawContext getContext() {
+    public GuiGraphicsExtractor getContext() {
         return context;
     }
     //#endif
@@ -192,9 +182,9 @@ public class MinecraftGuiRenderer implements GuiRenderer {
         //#else
         //$$ boundTextureGpu = new GlTexture(null, TextureFormat.RGBA8, 0, 0, 0, glId) {
         //#endif
-            {
-                this.needsReinit = false;
-            }
+            //$$    {
+            //$$            this.modesDirty = false;
+            //$$    }
         };
         //#else
         //$$ boundTextureGpu = glId;
@@ -251,17 +241,17 @@ public class MinecraftGuiRenderer implements GuiRenderer {
         if (boundTexture != null) {
             identifier = boundTexture;
         } else {
-            identifier = Identifier.of("jgui", "__tmp_texture__");
-            mc.getTextureManager().registerTexture(identifier, new AbstractTexture() {
-                { glTextureView = RenderSystem.getDevice().createTextureView(boundTextureGpu); }
+            identifier = Identifier.fromNamespaceAndPath("jgui", "__tmp_texture__");
+            mc.getTextureManager().register(identifier, new AbstractTexture() {
+                { textureView = RenderSystem.getDevice().createTextureView(boundTextureGpu); }
                 @Override public void close() {} // ignore later `destroyTexture` call
             });
         }
 
-        context.drawTexturedQuad(identifier, x1, y1, x2, y2, u1, u2, v1, v2);
+        context.blit(identifier, x1, y1, x2, y2, u1, u2, v1, v2);
 
         if (boundTexture == null) {
-            mc.getTextureManager().destroyTexture(identifier);
+            mc.getTextureManager().release(identifier);
         }
         //#else
         //#if MC<12105
@@ -447,11 +437,11 @@ public class MinecraftGuiRenderer implements GuiRenderer {
 
     @Override
     public int drawString(int x, int y, int color, String text, boolean shadow) {
-        TextRenderer fontRenderer = MCVer.getFontRenderer();
+        Font fontRenderer = MCVer.getFontRenderer();
         try {
             //#if MC>=12106
-            context.drawText(fontRenderer, text, x, y, color | 0xff000000, shadow);
-            return x + fontRenderer.getWidth(text);
+            context.text(fontRenderer, text, x, y, color | 0xff000000, shadow);
+            return x + fontRenderer.width(text);
             //#elseif MC>=12000
             //$$ int nx = context.drawText(fontRenderer, text, x, y, color, shadow);
             //#if MC>=12102
@@ -485,8 +475,8 @@ public class MinecraftGuiRenderer implements GuiRenderer {
 
     @Override
     public int drawCenteredString(int x, int y, int color, String text, boolean shadow) {
-        TextRenderer fontRenderer = MCVer.getFontRenderer();
-        x-=fontRenderer.getWidth(text) / 2;
+        Font fontRenderer = MCVer.getFontRenderer();
+        x-=fontRenderer.width(text) / 2;
         return drawString(x, y, color, text, shadow);
     }
 

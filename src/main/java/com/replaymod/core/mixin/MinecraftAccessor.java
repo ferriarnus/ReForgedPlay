@@ -1,9 +1,5 @@
 package com.replaymod.core.mixin;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.network.ClientConnection;
-import net.minecraft.util.crash.CrashReport;
-import net.minecraft.client.render.RenderTickCounter;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.gen.Accessor;
@@ -18,6 +14,10 @@ import java.util.Queue;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 //#endif
+import net.minecraft.CrashReport;
+import net.minecraft.client.DeltaTracker;
+import net.minecraft.client.Minecraft;
+import net.minecraft.network.Connection;
 
 //#if MC<11400
 //$$ import java.util.concurrent.FutureTask;
@@ -28,14 +28,14 @@ import java.util.function.Supplier;
 //$$ import java.util.List;
 //#endif
 
-@Mixin(MinecraftClient.class)
+@Mixin(Minecraft.class)
 public interface MinecraftAccessor {
     //#if MC>=12100
-    @Accessor("renderTickCounter")
-    RenderTickCounter.Dynamic getTimer();
-    @Accessor("renderTickCounter")
+    @Accessor("deltaTracker")
+    DeltaTracker.Timer getTimer();
+    @Accessor("deltaTracker")
     @Mutable
-    void setTimer(RenderTickCounter.Dynamic value);
+    void setTimer(DeltaTracker.Timer value);
     //#else
     //$$@Accessor("renderTickCounter")
     //$$RenderTickCounter getTimer();
@@ -48,22 +48,20 @@ public interface MinecraftAccessor {
 
     //#if MC>=11400
     @Accessor
-    CompletableFuture<Void> getResourceReloadFuture();
+    CompletableFuture<Void> getPendingReload();
     @Accessor
-    void setResourceReloadFuture(CompletableFuture<Void> value);
+    void setPendingReload(CompletableFuture<Void> value);
     //#endif
 
     //#if MC>=11400
-    @Accessor
-    Queue<Runnable> getRenderTaskQueue();
     //#else
     //$$ @Accessor
     //$$ Queue<FutureTask<?>> getScheduledTasks();
     //#endif
 
-    @Accessor("crashReportSupplier")
+    //$$@Accessor("delayCrash")
         //#if MC>=11800
-    Supplier<CrashReport> getCrashReporter();
+    //$$Supplier<CrashReport> getCrashReporter();
         //#else
     //$$ CrashReport getCrashReporter();
     //#endif
@@ -74,7 +72,7 @@ public interface MinecraftAccessor {
     //#endif
 
     //#if MC>=11400
-    @Accessor("integratedServerConnection")
-    void setConnection(ClientConnection connection);
+    @Accessor("pendingConnection")
+    void setConnection(Connection connection);
     //#endif
 }

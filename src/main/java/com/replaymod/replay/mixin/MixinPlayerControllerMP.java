@@ -2,56 +2,29 @@ package com.replaymod.replay.mixin;
 
 import com.replaymod.replay.ReplayModReplay;
 import com.replaymod.replay.camera.CameraEntity;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayerInteractionManager;
-import net.minecraft.client.network.ClientPlayNetworkHandler;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-//#if MC>=11400
-import net.minecraft.client.world.ClientWorld;
-//#else
-//$$ import net.minecraft.world.World;
-//#endif
-
-//#if MC>=11200
-//#if MC>=11400
-import net.minecraft.client.recipebook.ClientRecipeBook;
-//#else
-//$$ import net.minecraft.stats.RecipeBook;
-//#endif
-//#endif
-//#if MC>=10904
-import net.minecraft.stat.StatHandler;
-//#else
-//$$ import net.minecraft.stats.StatFileWriter;
-//#endif
-
-//#if MC>=10800
-import net.minecraft.client.network.ClientPlayerEntity;
-//#else
-//$$ import net.minecraft.client.entity.EntityClientPlayerMP;
-//$$ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-//#endif
-
-@Mixin(ClientPlayerInteractionManager.class)
+@Mixin(MultiPlayerGameMode.class)
 public abstract class MixinPlayerControllerMP {
 
     @Shadow
-    private MinecraftClient client;
+    private Minecraft minecraft;
 
     //#if MC>=10800
     //#if MC>=11400
-    @Inject(method = "isFlyingLocked", at=@At("HEAD"), cancellable = true)
+    @Inject(method = "isAlwaysFlying", at=@At("HEAD"), cancellable = true)
     //#else
     //$$ @Inject(method = "isSpectator", at=@At("HEAD"), cancellable = true)
     //#endif
     private void replayModReplay_isSpectator(CallbackInfoReturnable<Boolean> ci) {
-        if (this.client.player instanceof CameraEntity) { // this check should in theory not be required
-            ci.setReturnValue(this.client.player.isSpectator());
+        if (this.minecraft.player instanceof CameraEntity) { // this check should in theory not be required
+            ci.setReturnValue(this.minecraft.player.isSpectator());
         }
     }
     //#endif

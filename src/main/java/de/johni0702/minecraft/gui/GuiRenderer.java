@@ -27,11 +27,8 @@ package de.johni0702.minecraft.gui;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableColor;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadablePoint;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.Identifier;
-//#endif
-
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.resources.Identifier;
 //#if MC>=12105
 import com.mojang.blaze3d.textures.GpuTexture;
 //#endif
@@ -41,7 +38,7 @@ public interface GuiRenderer {
     ReadablePoint getOpenGlOffset();
 
     //#if MC>=12000
-    DrawContext getContext();
+    GuiGraphicsExtractor getContext();
     //#endif
 
     //#if MC<12106

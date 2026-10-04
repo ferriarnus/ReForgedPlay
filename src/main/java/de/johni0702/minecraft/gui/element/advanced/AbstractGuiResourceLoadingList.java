@@ -41,13 +41,12 @@ import de.johni0702.minecraft.gui.utils.lwjgl.Point;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadablePoint;
 import de.johni0702.minecraft.gui.versions.MCVer.Keyboard;
-import net.minecraft.client.gui.screen.Screen;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Supplier;
+import net.minecraft.client.gui.screens.Screen;
 
 import static de.johni0702.minecraft.gui.utils.Utils.DOUBLE_CLICK_INTERVAL;
 //#else
@@ -56,7 +55,7 @@ import static de.johni0702.minecraft.gui.utils.Utils.DOUBLE_CLICK_INTERVAL;
 
 public abstract class AbstractGuiResourceLoadingList
         <T extends AbstractGuiResourceLoadingList<T, U>, U extends GuiElement<U> & Comparable<U>>
-        extends AbstractGuiVerticalList<T> implements Tickable, Loadable, Closeable, Typeable {
+        extends AbstractGuiVerticalList<T> implements Tickable, Loadable, Closeable, KeyHandler {
     private static final String[] LOADING_TEXT = {"Ooo", "oOo", "ooO", "oOo"};
     private final GuiLabel loadingElement = new GuiLabel();
     private final GuiPanel resourcesPanel = new GuiPanel(getListPanel()).setLayout(new VerticalLayout());
@@ -181,8 +180,8 @@ public abstract class AbstractGuiResourceLoadingList
     }
 
     @Override
-    public boolean typeKey(ReadablePoint mousePosition, int keyCode, char keyChar, boolean ctrlDown, boolean shiftDown) {
-        if (Screen.hasControlDown() && keyCode == Keyboard.KEY_A) {
+    public boolean handleKey(KeyInput keyInput) {
+        if (keyInput.hasCtrl() && keyInput.key == Keyboard.KEY_A) {
             List<Element> all = new ArrayList<>();
             for (GuiElement<?> child : getListPanel().getChildren()) {
                 if (child instanceof AbstractGuiResourceLoadingList.Element) {
@@ -241,12 +240,12 @@ public abstract class AbstractGuiResourceLoadingList
         }
 
         @Override
-        public boolean mouseClick(ReadablePoint position, int button) {
-            Point point = new Point(position);
+        public boolean mouseClick(Click click) {
+            Point point = new Point(click);
             getContainer().convertFor(this, point);
             if (point.getX() > 0 && point.getX() < getLastSize().getWidth()
                     && point.getY() > 0 && point.getY() < getLastSize().getHeight()) {
-                if (Screen.hasControlDown()) {
+                if (click.hasCtrl()) {
                     if (selected.contains(this)) {
                         selected.remove(this);
                     } else {

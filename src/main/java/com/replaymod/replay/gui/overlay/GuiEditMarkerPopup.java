@@ -4,6 +4,9 @@ import com.google.common.base.Strings;
 import de.johni0702.minecraft.gui.container.GuiContainer;
 import de.johni0702.minecraft.gui.container.GuiPanel;
 import de.johni0702.minecraft.gui.element.*;
+import de.johni0702.minecraft.gui.function.Click;
+import de.johni0702.minecraft.gui.function.KeyHandler;
+import de.johni0702.minecraft.gui.function.KeyInput;
 import de.johni0702.minecraft.gui.function.Typeable;
 import de.johni0702.minecraft.gui.layout.GridLayout;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
@@ -16,7 +19,7 @@ import de.johni0702.minecraft.gui.utils.lwjgl.ReadablePoint;
 
 import java.util.function.Consumer;
 
-public class GuiEditMarkerPopup extends AbstractGuiPopup<GuiEditMarkerPopup> implements Typeable {
+public class GuiEditMarkerPopup extends AbstractGuiPopup<GuiEditMarkerPopup> implements KeyHandler {
     private static GuiNumberField newGuiNumberField() {
         return new GuiNumberField().setSize(150, 20).setValidateOnFocusChange(true);
     }
@@ -116,9 +119,9 @@ public class GuiEditMarkerPopup extends AbstractGuiPopup<GuiEditMarkerPopup> imp
     }
 
     @Override
-    public boolean typeKey(ReadablePoint mousePosition, int keyCode, char keyChar, boolean ctrlDown, boolean shiftDown) {
-        if (keyCode == Keyboard.KEY_ESCAPE) {
-            cancelButton.onClick();
+    public boolean handleKey(KeyInput keyInput) {
+        if (keyInput.isEscape()) {
+            cancelButton.onClick(new Click(-1, -1, 0, keyInput.modifiers));
             return true;
         }
         return false;

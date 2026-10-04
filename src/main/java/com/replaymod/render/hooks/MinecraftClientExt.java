@@ -1,15 +1,15 @@
 package com.replaymod.render.hooks;
 
+import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.replaymod.render.gui.progress.VirtualWindow;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gl.Framebuffer;
+import net.minecraft.client.Minecraft;
 
 public interface MinecraftClientExt {
     void setWindowDelegate(VirtualWindow window);
 
-    static MinecraftClientExt get(MinecraftClient mc) {
+    static MinecraftClientExt get(Minecraft mc) {
         return (MinecraftClientExt) mc;
     }
 
-    void setFramebufferDelegate(Framebuffer framebuffer);
+    void setFramebufferDelegate(RenderTarget framebuffer);
 }

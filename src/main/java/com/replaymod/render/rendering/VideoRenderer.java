@@ -1,10 +1,11 @@
 package com.replaymod.render.rendering;
 
-import com.mojang.blaze3d.systems.ProjectionType;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.replaymod.core.mixin.BlockableEventLoopAccessor;
 import com.replaymod.core.mixin.MinecraftAccessor;
 import com.replaymod.core.mixin.TimerAccessor;
 import com.replaymod.core.versions.MCVer;
+import com.replaymod.core.versions.MCVer.MinecraftMethodAccessor;
 import com.replaymod.pathing.player.AbstractTimelinePlayer;
 import com.replaymod.pathing.player.ReplayTimer;
 import com.replaymod.pathing.properties.TimestampProperty;
@@ -32,51 +33,34 @@ import com.replaymod.replaystudio.pathing.path.Path;
 import com.replaymod.replaystudio.pathing.path.Timeline;
 import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
-import net.minecraft.client.MinecraftClient;
 import com.mojang.blaze3d.platform.GLX;
-import net.minecraft.client.sound.PositionedSoundInstance;
-import net.minecraft.client.util.Window;
-import net.minecraft.sound.SoundEvent;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.crash.CrashException;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.client.render.RenderTickCounter;
+import com.mojang.blaze3d.platform.Window;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.screens.Overlay;
+import net.minecraft.client.renderer.state.WindowRenderState;
+import net.minecraft.client.renderer.state.gui.GuiRenderState;
+import net.minecraft.resources.Identifier;
 import net.neoforged.fml.loading.LoadingModList;
 import org.lwjgl.glfw.GLFW;
 
 //#if MC>=12106
 import com.replaymod.render.mixin.GameRendererAccessor;
+import net.minecraft.ReportedException;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.render.GuiRenderer;
-import net.minecraft.client.gui.render.state.GuiRenderState;
-import net.minecraft.client.render.fog.FogRenderer;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.renderer.fog.FogRenderer;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundSource;
 import java.util.Collections;
 //#endif
-
-//#if MC>=12102
-//$$ import com.mojang.blaze3d.systems.ProjectionType;
-//#endif
-
-//#if MC>=12000
-import com.mojang.blaze3d.systems.VertexSorter;
-import net.minecraft.client.gui.DrawContext;
-//#endif
-
-//#if MC>=11700
-import net.minecraft.client.render.DiffuseLighting;
 import org.joml.Matrix4f;
 //#endif
-
-//#if MC>=11600
-import net.minecraft.client.util.math.MatrixStack;
-//#endif
-
 //#if MC>=11500
 import com.mojang.blaze3d.systems.RenderSystem;
 import org.lwjgl.opengl.GL11;
 //#endif
-
-//#if MC>=11400
-import net.minecraft.client.gui.screen.Screen;
 import java.util.concurrent.CompletableFuture;
 //#else
 //$$ import org.lwjgl.input.Mouse;
@@ -107,8 +91,8 @@ import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
 
 public class VideoRenderer implements RenderInfo {
-    private static final Identifier SOUND_RENDER_SUCCESS = Identifier.of("replaymod", "render_success");
-    private final MinecraftClient mc = MCVer.getMinecraft();
+    private static final Identifier SOUND_RENDER_SUCCESS = Identifier.fromNamespaceAndPath("replaymod", "render_success");
+    private final Minecraft mc = MCVer.getMinecraft();
     private final RenderSettings settings;
     private final ReplayHandler replayHandler;
     private final Timeline timeline;
@@ -119,7 +103,7 @@ public class VideoRenderer implements RenderInfo {
     private int fps;
     private boolean mouseWasGrabbed;
     private boolean debugInfoWasShown;
-    private Map<SoundCategory, Float> originalSoundLevels;
+    private Map<SoundSource, Float> originalSoundLevels;
 
     private TimelinePlayer timelinePlayer;
     private Future<Void> timelinePlayerFuture;
@@ -245,8 +229,8 @@ public class VideoRenderer implements RenderInfo {
 
         renderingPipeline.run();
 
-        if (((MinecraftAccessor) mc).getCrashReporter() != null) {
-            throw new CrashException(((MinecraftAccessor) mc).getCrashReporter().get());
+        if (((BlockableEventLoopAccessor) mc).getDelayedCrash() != null) {
+            throw new ReportedException(((BlockableEventLoopAccessor) mc).getDelayedCrash().get());
         }
 
         if (settings.isInjectSphericalMetadata()) {
@@ -288,12 +272,15 @@ public class VideoRenderer implements RenderInfo {
         //#if MC>=11600
         int elapsedTicks =
         //#endif
-        timer.beginRenderTick(
+        //#if MC >= 26.1
+        timer.advanceGameTime(
+        //#else
+        // $$ timer.advanceTime(
                 //#if MC>=11400
                 MCVer.milliTime()
                 //#endif
                 //#if MC>=12100
-                , true
+                //, true
                 //#endif
         );
         //#if MC<11600
@@ -338,19 +325,23 @@ public class VideoRenderer implements RenderInfo {
         //$$     Display.setResizable(false);
         //$$ }
         //#endif
-        if (mc.getDebugHud().shouldShowDebugHud()) {
-            debugInfoWasShown = true;
-            //#if MC>=12002
-            mc.getDebugHud().toggleDebugHud();
+        //#if MC>=12109
+        if (mc.debugEntries.isOverlayVisible()) {
+            mc.debugEntries.setOverlayVisible(false);
+        //#else
+            //$$if (mc.getDebugOverlay().showDebugScreen()) {
+            //$$    //#if MC>=12002
+            //$$     mc.getDebugOverlay().toggleOverlay();
             //#else
             //$$ mc.options.debugEnabled = false;
             //#endif
+               debugInfoWasShown = true;
         }
         //#if MC>=11400
-        if (mc.mouse.isCursorLocked()) {
+        if (mc.mouseHandler.isMouseGrabbed()) {
             mouseWasGrabbed = true;
         }
-        mc.mouse.unlockCursor();
+        mc.mouseHandler.releaseMouse();
         //#else
         //$$ if (Mouse.isGrabbed()) {
         //$$     mouseWasGrabbed = true;
@@ -359,11 +350,11 @@ public class VideoRenderer implements RenderInfo {
         //#endif
 
         // Mute all sounds except GUI sounds (buttons, etc.)
-        originalSoundLevels = new EnumMap<>(SoundCategory.class);
-        for (SoundCategory category : SoundCategory.values()) {
-            if (category != SoundCategory.MASTER) {
-                originalSoundLevels.put(category, mc.options.getSoundVolume(category));
-                mc.options.getSoundVolumeOption(category).setValue((double) 0);
+        originalSoundLevels = new EnumMap<>(SoundSource.class);
+        for (SoundSource category : SoundSource.values()) {
+            if (category != SoundSource.MASTER) {
+                originalSoundLevels.put(category, mc.options.getFinalSoundSourceVolume(category));
+                mc.options.getSoundSourceOptionInstance(category).set((double) 0);
             }
         }
 
@@ -387,10 +378,13 @@ public class VideoRenderer implements RenderInfo {
         if (cameraPathExporter != null) {
             cameraPathExporter.setup(totalFrames);
         }
+        //#if MC>=12111
+        gui.toMinecraft().init(mc.getWindow().getGuiScaledWidth(), mc.getWindow().getGuiScaledHeight());
+        //#else
+        //$$ gui.toMinecraft().init(mc, mc.getWindow().getGuiScaledWidth(), mc.getWindow().getGuiScaledHeight());
+        //#endif
 
-        gui.toMinecraft().init(mc, mc.getWindow().getScaledWidth(), mc.getWindow().getScaledHeight());
-
-        forceChunkLoadingHook = new ForceChunkLoadingHook(mc.worldRenderer);
+        forceChunkLoadingHook = new ForceChunkLoadingHook(mc.levelRenderer);
     }
 
     private void finish() {
@@ -409,21 +403,23 @@ public class VideoRenderer implements RenderInfo {
         //$$ }
         //#endif
         if (debugInfoWasShown) {
-            //#if MC>=12002
-            mc.getDebugHud().toggleDebugHud();
+            //#if MC>=12109
+            mc.debugEntries.setOverlayVisible(true);
+            //#elseif MC>=12002
+            //$$ mc.getDebugOverlay().toggleOverlay();
             //#else
             //$$ mc.options.debugEnabled = true;
             //#endif
         }
         if (mouseWasGrabbed) {
             //#if MC>=11400
-            mc.mouse.lockCursor();
+            mc.mouseHandler.grabMouse();
             //#else
             //$$ mc.mouseHelper.grabMouseCursor();
             //#endif
         }
-        for (Map.Entry<SoundCategory, Float> entry : originalSoundLevels.entrySet()) {
-            mc.options.getSoundVolumeOption(entry.getKey()).setValue((double) entry.getValue());
+        for (Map.Entry<SoundSource, Float> entry : originalSoundLevels.entrySet()) {
+            mc.options.getSoundSourceOptionInstance(entry.getKey()).set((double) entry.getValue());
         }
         mc.setScreen(null);
         forceChunkLoadingHook.uninstall();
@@ -436,7 +432,7 @@ public class VideoRenderer implements RenderInfo {
             }
         }
 
-        mc.getSoundManager().play(PositionedSoundInstance.master(SoundEvent.of(SOUND_RENDER_SUCCESS), 1));
+        mc.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvent.createVariableRangeEvent(SOUND_RENDER_SUCCESS), 1));
 
         try {
             if (!hasFailed() && ffmpegWriter != null) {
@@ -456,17 +452,25 @@ public class VideoRenderer implements RenderInfo {
             while (mc.getOverlay() != null) {
                 drawGui();
                 ((MinecraftMethodAccessor) mc).replayModExecuteTaskQueue();
+                //#if MC>=12109
+                //$$ // The SplashOverlay now only closes on `tick`, but there are no ticks while we're waiting,
+                //$$ // so we need to manually tick it to not get stuck.
+                Overlay overlay = mc.getOverlay();
+                if (overlay != null) {
+                    overlay.tick();
+                }
+                //#endif
             }
 
-            CompletableFuture<Void> resourceReloadFuture = ((MinecraftAccessor) mc).getResourceReloadFuture();
+            CompletableFuture<Void> resourceReloadFuture = ((MinecraftAccessor) mc).getPendingReload();
             if (resourceReloadFuture != null) {
-                ((MinecraftAccessor) mc).setResourceReloadFuture(null);
-                mc.reloadResources().thenRun(() -> resourceReloadFuture.complete(null));
+                ((MinecraftAccessor) mc).setPendingReload(null);
+                mc.reloadResourcePacks().thenRun(() -> resourceReloadFuture.complete(null));
                 continue;
             }
             break;
         }
-        ((MCVer.MinecraftMethodAccessor) mc).replayModExecuteTaskQueue();
+        ((MinecraftMethodAccessor) mc).replayModExecuteTaskQueue();
         //#else
         //$$ Queue<FutureTask<?>> scheduledTasks = ((MinecraftAccessor) mc).getScheduledTasks();
         //$$ //noinspection SynchronizationOnLocalVariableOrMethodParameter
@@ -483,10 +487,14 @@ public class VideoRenderer implements RenderInfo {
         //$$ }
         //#endif
 
-        mc.currentScreen = gui.toMinecraft();
+        mc.screen = gui.toMinecraft();
     }
 
     private void tick() {
+        //#if MC >= 1.21.11
+        mc.getTextureManager().tick();
+        //#endif
+
         //#if MC>=10800 && MC<11400
         //$$ try {
         //$$     mc.runTick();
@@ -501,15 +509,18 @@ public class VideoRenderer implements RenderInfo {
     public boolean drawGui() {
         Window window = mc.getWindow();
         do {
-            if (GLFW.glfwWindowShouldClose(window.getHandle()) || ((MinecraftAccessor) mc).getCrashReporter() != null) {
+            if (GLFW.glfwWindowShouldClose(window.handle()) || ((BlockableEventLoopAccessor) mc).getDelayedCrash() != null) {
                 return false;
             }
+            //#if MC >= 26.1
+            //$$ RenderSystem.pollEvents();
+            //#endif
 
             pushMatrix();
             //#if MC>=12105
             RenderSystem.getDevice()
                     .createCommandEncoder()
-                    .clearColorAndDepthTextures(mc.getFramebuffer().getColorAttachment(), 0, mc.getFramebuffer().getDepthAttachment(), 1);
+                    .clearColorAndDepthTextures(mc.getMainRenderTarget().getColorTexture(), 0, mc.getMainRenderTarget().getDepthTexture(), 1);
             //#else
             //$$ RenderSystem.clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
             //$$         //#if MC>=11400 && MC<12102
@@ -526,7 +537,7 @@ public class VideoRenderer implements RenderInfo {
             //#if MC>=12105
             RenderSystem.getDevice()
                     .createCommandEncoder()
-                    .clearColorAndDepthTextures(mc.getFramebuffer().getColorAttachment(), 0, mc.getFramebuffer().getDepthAttachment(), 1);
+                    .clearColorAndDepthTextures(mc.getMainRenderTarget().getColorTexture(), 0, mc.getMainRenderTarget().getDepthTexture(), 1);
             //#else
             //#if MC>=12102
             //$$ RenderSystem.clear(256);
@@ -575,7 +586,10 @@ public class VideoRenderer implements RenderInfo {
             //#endif
             //#endif
 
-            gui.toMinecraft().init(mc, window.getScaledWidth(), window.getScaledHeight());
+            //#if MC>=12111
+            gui.toMinecraft().init(window.getGuiScaledWidth(), window.getGuiScaledHeight());
+            //#else
+            //$$ gui.toMinecraft().init(mc, window.getGuiScaledWidth(), window.getGuiScaledHeight());
 
             // Events are polled on 1.13+ in mainWindow.update which is called later
             //#if MC<11400
@@ -593,23 +607,39 @@ public class VideoRenderer implements RenderInfo {
             //#endif
 
             //#if MC>=11400
-            int mouseX = (int) mc.mouse.getX() * window.getScaledWidth() / Math.max(window.getWidth(), 1);
-            int mouseY = (int) mc.mouse.getY() * window.getScaledHeight() / Math.max(window.getHeight(), 1);
+            int mouseX = (int) mc.mouseHandler.xpos() * window.getGuiScaledWidth() / Math.max(window.getScreenWidth(), 1);
+            int mouseY = (int) mc.mouseHandler.ypos() * window.getGuiScaledHeight() / Math.max(window.getScreenHeight(), 1);
 
             //#if MC>=12106
             GameRendererAccessor gameRenderer = (GameRendererAccessor) mc.gameRenderer;
-            GuiRenderState guiRenderState = gameRenderer.getGuiState();
-            guiRenderState.clear();
-            DrawContext drawContext = new DrawContext(mc, guiRenderState);
+            //#if MC >= 26.1
+            GuiRenderState guiRenderState = gameRenderer.getGameRenderState().guiRenderState;
+            //#else
+            //$$ GuiRenderState guiRenderState = gameRenderer.getGuiRenderState();
+            guiRenderState.reset();
+            //#if MC>=12111
+            GuiGraphicsExtractor drawContext = new GuiGraphicsExtractor(mc, guiRenderState, mouseX, mouseY);
+            //#else
+            //$$ GuiGraphics drawContext = new GuiGraphics(mc, guiRenderState);
             //#elseif MC>=12000
             //$$ DrawContext drawContext = new DrawContext(mc, mc.getBufferBuilders().getEntityVertexConsumers());
             //#endif
 
+            //#if MC >= 26.1
+            WindowRenderState windowRenderState = gameRenderer.getGameRenderState().windowRenderState;
+            windowRenderState.width = window.getWidth();
+            windowRenderState.height = window.getHeight();
+            windowRenderState.guiScale = window.getGuiScale();
+            windowRenderState.appropriateLineWidth = window.getAppropriateLineWidth();
+            windowRenderState.isMinimized = window.isMinimized();
+            windowRenderState.isResized = false;
+            //#endif
+
             if (mc.getOverlay() != null) {
-                Screen orgScreen = mc.currentScreen;
+                Screen orgScreen = mc.screen;
                 try {
-                    mc.currentScreen = gui.toMinecraft();
-                    mc.getOverlay().render(
+                    mc.screen = gui.toMinecraft();
+                    mc.getOverlay().extractRenderState(
                             //#if MC>=12000
                             drawContext,
                             //#elseif MC>=11600
@@ -617,12 +647,12 @@ public class VideoRenderer implements RenderInfo {
                             //#endif
                             mouseX, mouseY, 0);
                 } finally {
-                    mc.currentScreen = orgScreen;
+                    mc.screen = orgScreen;
                 }
             } else {
                 gui.toMinecraft().tick();
                 //#if MC>=12106
-                gui.toMinecraft().renderWithTooltip(
+                gui.toMinecraft().extractRenderStateWithTooltipAndSubtitles(
                 //#else
                 //$$ gui.toMinecraft().render(
                 //#endif
@@ -637,7 +667,7 @@ public class VideoRenderer implements RenderInfo {
             var orgFog = RenderSystem.getShaderFog();
             var orgProjBuf = RenderSystem.getProjectionMatrixBuffer();
             var orgProjType = RenderSystem.getProjectionType();
-            gameRenderer.getGuiRenderer().render(gameRenderer.getFogRenderer().getFogBuffer(FogRenderer.FogType.NONE));
+            gameRenderer.getGuiRenderer().render(gameRenderer.getFogRenderer().getBuffer(FogRenderer.FogMode.NONE));
             RenderSystem.setShaderFog(orgFog);
             RenderSystem.setProjectionMatrix(orgProjBuf, orgProjType);
             //#elseif MC>=12000
@@ -658,8 +688,8 @@ public class VideoRenderer implements RenderInfo {
             popMatrix();
 
             //#if MC>=11400
-            if (mc.mouse.isCursorLocked()) {
-                mc.mouse.unlockCursor();
+            if (mc.mouseHandler.isMouseGrabbed()) {
+                mc.mouseHandler.releaseMouse();
             }
             //#else
             //$$ if (Mouse.isGrabbed()) {

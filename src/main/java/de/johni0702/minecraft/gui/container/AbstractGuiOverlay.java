@@ -40,18 +40,21 @@ import de.johni0702.minecraft.gui.versions.MCVer;
 import de.johni0702.minecraft.gui.versions.ScreenExt;
 import de.johni0702.minecraft.gui.versions.callbacks.PreTickCallback;
 import de.johni0702.minecraft.gui.versions.callbacks.RenderHudCallback;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.util.Window;
-import net.minecraft.util.crash.CrashException;
-import net.minecraft.util.crash.CrashReport;
-import net.minecraft.util.crash.CrashReportSection;
+import net.minecraft.CrashReport;
+import net.minecraft.CrashReportCategory;
+import net.minecraft.ReportedException;
+import net.minecraft.client.Minecraft;
 
 import static de.johni0702.minecraft.gui.versions.MCVer.literalText;
 //#else
 //$$ import org.lwjgl.input.Mouse;
 //$$ import net.minecraft.client.gui.ScaledResolution;
 //#endif
+
+import com.mojang.blaze3d.platform.Window;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 
 //#if MC>=10800 && MC<11400
 //$$ import java.io.IOException;
@@ -120,14 +123,14 @@ public abstract class AbstractGuiOverlay<T extends AbstractGuiOverlay<T>> extend
     }
 
     private void updateUserInputGui() {
-        MinecraftClient mc = getMinecraft();
+        Minecraft mc = getMinecraft();
         if (visible) {
             if (mouseVisible) {
-                if (mc.currentScreen == null) {
+                if (mc.screen == null) {
                     mc.setScreen(userInputGuiScreen);
                 }
             } else {
-                if (mc.currentScreen == userInputGuiScreen) {
+                if (mc.screen == userInputGuiScreen) {
                     mc.setScreen(null);
                 }
             }
@@ -171,17 +174,17 @@ public abstract class AbstractGuiOverlay<T extends AbstractGuiOverlay<T>> extend
                     OffsetGuiRenderer eRenderer = new OffsetGuiRenderer(renderer, position, tooltipSize);
                     tooltip.draw(eRenderer, tooltipSize, renderInfo);
                 } catch (Exception ex) {
-                    CrashReport crashReport = CrashReport.create(ex, "Rendering Gui Tooltip");
+                    CrashReport crashReport = CrashReport.forThrowable(ex, "Rendering Gui Tooltip");
                     renderInfo.addTo(crashReport);
-                    CrashReportSection category = crashReport.addElement("Gui container details");
+                    CrashReportCategory category = crashReport.addCategory("Gui container details");
                     MCVer.addDetail(category, "Container", this::toString);
                     MCVer.addDetail(category, "Width", () -> "" + size.getWidth());
                     MCVer.addDetail(category, "Height", () -> "" + size.getHeight());
-                    category = crashReport.addElement("Tooltip details");
+                    category = crashReport.addCategory("Tooltip details");
                     MCVer.addDetail(category, "Element", tooltip::toString);
                     MCVer.addDetail(category, "Position", position::toString);
                     MCVer.addDetail(category, "Size", tooltipSize::toString);
-                    throw new CrashException(crashReport);
+                    throw new ReportedException(crashReport);
                 }
             }
         }
@@ -202,7 +205,7 @@ public abstract class AbstractGuiOverlay<T extends AbstractGuiOverlay<T>> extend
 
         { on(RenderHudCallback.EVENT, this::renderOverlay); }
         //#if MC>=12000
-        private void renderOverlay(DrawContext stack, float partialTicks) {
+        private void renderOverlay(GuiGraphicsExtractor stack, float partialTicks) {
         //#else
         //$$ private void renderOverlay(MatrixStack stack, float partialTicks) {
         //#endif
@@ -228,7 +231,7 @@ public abstract class AbstractGuiOverlay<T extends AbstractGuiOverlay<T>> extend
         { on(PreTickCallback.EVENT, () -> invokeAll(Tickable.class, Tickable::tick)); }
 
         private void updateRenderer() {
-            MinecraftClient mc = getMinecraft();
+            Minecraft mc = getMinecraft();
             //#if MC>=11400
             Window
             //#else
@@ -236,14 +239,14 @@ public abstract class AbstractGuiOverlay<T extends AbstractGuiOverlay<T>> extend
             //#endif
                     res = MCVer.newScaledResolution(mc);
             if (screenSize == null
-                    || screenSize.getWidth() != res.getScaledWidth()
-                    || screenSize.getHeight() != res.getScaledHeight()) {
-                screenSize = new Dimension(res.getScaledWidth(), res.getScaledHeight());
+                    || screenSize.getWidth() != res.getGuiScaledWidth()
+                    || screenSize.getHeight() != res.getGuiScaledHeight()) {
+                screenSize = new Dimension(res.getGuiScaledWidth(), res.getGuiScaledHeight());
             }
         }
     }
 
-    protected class UserInputGuiScreen extends net.minecraft.client.gui.screen.Screen {
+    protected class UserInputGuiScreen extends net.minecraft.client.gui.screens.Screen {
 
         //#if MC>=11400
         UserInputGuiScreen() {
@@ -257,23 +260,37 @@ public abstract class AbstractGuiOverlay<T extends AbstractGuiOverlay<T>> extend
 
         //#if MC>=11400
         @Override
-        public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-            Point mousePos = MouseUtils.getMousePos();
-            boolean controlDown = hasControlDown();
-            boolean shiftDown = hasShiftDown();
-            if (!invokeHandlers(Typeable.class, e -> e.typeKey(mousePos, keyCode, '\0', controlDown, shiftDown))) {
-                return super.keyPressed(keyCode, scanCode, modifiers);
+        //#if MC>=12109
+        public boolean keyPressed(net.minecraft.client.input.KeyEvent mcKeyInput) {
+            KeyInput keyInput = new KeyInput(mcKeyInput);
+        //#else
+            //$$ public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+            //$$ KeyInput keyInput = new KeyInput(keyCode, scanCode, modifiers);
+            //#endif
+            if (!invokeHandlers(KeyHandler.class, e -> e.handleKey(keyInput))) {
+                //#if MC>=12109
+                return super.keyPressed(mcKeyInput);
+                //#else
+                //$$ return super.keyPressed(keyCode, scanCode, modifiers);
+                //#endif
             }
             return true;
         }
 
         @Override
-        public boolean charTyped(char keyChar, int modifiers) {
-            Point mousePos = MouseUtils.getMousePos();
-            boolean controlDown = hasControlDown();
-            boolean shiftDown = hasShiftDown();
-            if (!invokeHandlers(Typeable.class, e -> e.typeKey(mousePos, 0, keyChar, controlDown, shiftDown))) {
-                return super.charTyped(keyChar, modifiers);
+        //#if MC>=12109
+        public boolean charTyped(net.minecraft.client.input.CharacterEvent mcCharInput) {
+            CharInput charInput = new CharInput(mcCharInput);
+        //#else
+        //$$ public boolean charTyped(char keyChar, int modifiers) {
+        //$$     CharInput charInput = new CharInput(keyChar, modifiers);
+            //#endif
+            if (!invokeHandlers(CharHandler.class, e -> e.handleChar(charInput))) {
+                //#if MC>=12109
+                return super.charTyped(mcCharInput);
+                //#else
+                //$$ return super.charTyped(keyChar, modifiers);
+                //#endif
             }
             return true;
         }
@@ -295,10 +312,14 @@ public abstract class AbstractGuiOverlay<T extends AbstractGuiOverlay<T>> extend
         //#endif
 
         @Override
-        //#if MC>=11400
-        public boolean mouseClicked(double mouseXD, double mouseYD, int mouseButton) {
-            int mouseX = (int) Math.round(mouseXD), mouseY = (int) Math.round(mouseYD);
+        //#if MC>=12109
+        public boolean mouseClicked(MouseButtonEvent mcClick, boolean doubled) {
+            Click click = new Click(mcClick);
             return
+        //#elseif MC>=11400
+        //$$ public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
+        //$$ Click click = new Click(mouseX, mouseY, mouseButton);
+
         //#else
         //$$ protected void mouseClicked(int mouseX, int mouseY, int mouseButton)
                 //#if MC>=10800
@@ -306,30 +327,35 @@ public abstract class AbstractGuiOverlay<T extends AbstractGuiOverlay<T>> extend
                 //#endif
         //$$ {
         //#endif
-            invokeHandlers(Clickable.class, e -> e.mouseClick(new Point(mouseX, mouseY), mouseButton));
+            invokeHandlers(Clickable.class, e -> e.mouseClick(click));
         }
 
         @Override
-        //#if MC>=11400
-        public boolean mouseReleased(double mouseXD, double mouseYD, int mouseButton) {
-            int mouseX = (int) Math.round(mouseXD), mouseY = (int) Math.round(mouseYD);
+        //#if MC>=12109
+        public boolean mouseReleased(MouseButtonEvent mcClick) {
+            Click click = new Click(mcClick);
             return
+        //#elseif MC>=11400
+        //$$ public boolean mouseReleased(double mouseX, double mouseY, int mouseButton) {
+        //$$ Click click = new Click(mouseX, mouseY, mouseButton);
+        //$$ return
         //#else
         //$$ protected void mouseReleased(int mouseX, int mouseY, int mouseButton) {
         //#endif
-            invokeHandlers(Draggable.class, e -> e.mouseRelease(new Point(mouseX, mouseY), mouseButton));
+            invokeHandlers(Draggable.class, e -> e.mouseRelease(click));
         }
 
         @Override
-        //#if MC>=11400
-        public boolean mouseDragged(double mouseXD, double mouseYD, int mouseButton, double deltaX, double deltaY) {
-            int mouseX = (int) Math.round(mouseXD), mouseY = (int) Math.round(mouseYD);
-            long timeSinceLastClick = 0;
+        //#if MC>=12109
+        public boolean mouseDragged(MouseButtonEvent mcClick, double deltaX, double deltaY) {
+            Click click = new Click(mcClick);
             return
+        //#elseif MC>=11400
+        //$$      return
         //#else
         //$$ protected void mouseClickMove(int mouseX, int mouseY, int mouseButton, long timeSinceLastClick) {
         //#endif
-            invokeHandlers(Draggable.class, e -> e.mouseDrag(new Point(mouseX, mouseY), mouseButton, timeSinceLastClick));
+            invokeHandlers(Draggable.class, e -> e.mouseDrag(click));
         }
 
         @Override
@@ -382,9 +408,9 @@ public abstract class AbstractGuiOverlay<T extends AbstractGuiOverlay<T>> extend
 
         //#if MC>=11400
         @Override
-        public void close() {
+        public void onClose() {
             if (closeable) {
-                super.close();
+                super.onClose();
             }
         }
         //#endif
@@ -402,7 +428,7 @@ public abstract class AbstractGuiOverlay<T extends AbstractGuiOverlay<T>> extend
 
         //#if MC>=12002
         @Override
-        public void renderBackground(DrawContext context, int mouseX, int mouseY, float delta) {
+        public void extractBackground(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
         }
         //#endif
 

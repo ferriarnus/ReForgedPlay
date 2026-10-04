@@ -2,23 +2,24 @@
 package de.johni0702.minecraft.gui.versions.mixin;
 
 import de.johni0702.minecraft.gui.versions.callbacks.PostRenderScreenCallback;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.render.GameRenderer;
+import net.minecraft.client.DeltaTracker;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.renderer.GameRenderer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-//#if MC>=12100
-import net.minecraft.client.render.RenderTickCounter;
-//#endif
-//#else
-//$$ import net.minecraft.client.util.math.MatrixStack;
-//#endif
 
 @Mixin(GameRenderer.class)
 public class MixinGameRenderer {
+    //#if MC >= 26.1
+    private static final String EXTRACT_GUI = "extractGui";
+    //#else
+    //$$ private static final String EXTRACT_GUI = "render";
+    //#endif
+
     //#if MC>=12000
     private static final String RENDER = "Lnet/minecraft/client/gui/screen/Screen;renderWithTooltip(Lnet/minecraft/client/gui/DrawContext;IIF)V";
     //#elseif MC>=11903
@@ -32,14 +33,14 @@ public class MixinGameRenderer {
     //#if MC>=11600
     @Unique
     //#if MC>=12000
-    private DrawContext context;
+    private GuiGraphicsExtractor context;
     //#else
     //$$ private MatrixStack context;
     //#endif
 
-    @ModifyArg(method = "render", at = @At(value = "INVOKE", target = "Lnet/neoforged/neoforge/client/ClientHooks;drawScreen(Lnet/minecraft/client/gui/screen/Screen;Lnet/minecraft/client/gui/DrawContext;IIF)V"))
+    @ModifyArg(method = "extractGui", at = @At(value = "INVOKE", target = "Lnet/neoforged/neoforge/client/ClientHooks;drawScreen(Lnet/minecraft/client/gui/screens/Screen;Lnet/minecraft/client/gui/GuiGraphicsExtractor;IIF)V"))
     //#if MC>=12000
-    private DrawContext captureContext(DrawContext context) {
+    private GuiGraphicsExtractor captureContext(GuiGraphicsExtractor context) {
     //#else
     //$$ private MatrixStack captureContext(MatrixStack context) {
     //#endif
@@ -48,18 +49,21 @@ public class MixinGameRenderer {
     }
     //#endif
 
-    @Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/neoforged/neoforge/client/ClientHooks;drawScreen(Lnet/minecraft/client/gui/screen/Screen;Lnet/minecraft/client/gui/DrawContext;IIF)V", shift = At.Shift.AFTER))
+    @Inject(method = EXTRACT_GUI, at = @At(value = "INVOKE", target = "Lnet/neoforged/neoforge/client/ClientHooks;drawScreen(Lnet/minecraft/client/gui/screens/Screen;Lnet/minecraft/client/gui/GuiGraphicsExtractor;IIF)V", shift = At.Shift.AFTER))
     private void postRenderScreen(
             //#if MC>=12100
-            RenderTickCounter tickCounter,
+            DeltaTracker tickCounter,
             //#else
             //$$ float partialTicks, long nanoTime,
             //#endif
             boolean renderWorld,
+            //#if MC >= 26.1
+            boolean resourcesLoaded,
+            //#endif
             CallbackInfo ci
     ) {
         //#if MC>=12100
-        float partialTicks = tickCounter.getTickProgress(true);
+        float partialTicks = tickCounter.getGameTimeDeltaPartialTick(true);
         //#endif
         //#if MC<11600
         //$$ MatrixStack context = new MatrixStack();

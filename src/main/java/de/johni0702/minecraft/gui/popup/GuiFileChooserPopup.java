@@ -34,6 +34,9 @@ import de.johni0702.minecraft.gui.element.GuiButton;
 import de.johni0702.minecraft.gui.element.GuiElement;
 import de.johni0702.minecraft.gui.element.GuiTextField;
 import de.johni0702.minecraft.gui.element.advanced.GuiDropdownMenu;
+import de.johni0702.minecraft.gui.function.Click;
+import de.johni0702.minecraft.gui.function.KeyHandler;
+import de.johni0702.minecraft.gui.function.KeyInput;
 import de.johni0702.minecraft.gui.function.Typeable;
 import de.johni0702.minecraft.gui.layout.CustomLayout;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
@@ -54,7 +57,7 @@ import java.util.*;
 //$$ import org.lwjgl.input.Keyboard;
 //#endif
 
-public class GuiFileChooserPopup extends AbstractGuiPopup<GuiFileChooserPopup> implements Typeable {
+public class GuiFileChooserPopup extends AbstractGuiPopup<GuiFileChooserPopup> implements KeyHandler {
     public static GuiFileChooserPopup openSaveGui(GuiContainer container, String buttonLabel, String...fileExtensions) {
         GuiFileChooserPopup popup = new GuiFileChooserPopup(container, fileExtensions, false).setBackgroundColor(Colors.DARK_TRANSPARENT);
         popup.acceptButton.setI18nLabel(buttonLabel);
@@ -85,7 +88,7 @@ public class GuiFileChooserPopup extends AbstractGuiPopup<GuiFileChooserPopup> i
         @Override
         public void run() {
             if (acceptButton.isEnabled()) {
-                acceptButton.onClick();
+                acceptButton.onClick(new Click(-1, -1, 0, 0));
             }
         }
     }).onTextChanged(new Consumer<String>() {
@@ -240,7 +243,7 @@ public class GuiFileChooserPopup extends AbstractGuiPopup<GuiFileChooserPopup> i
                 @Override
                 protected ReadableDimension calcMinSize() {
                     ReadableDimension dim = super.calcMinSize();
-                    return new Dimension(dim.getWidth() - 5 - MCVer.getFontRenderer().fontHeight,
+                    return new Dimension(dim.getWidth() - 5 - MCVer.getFontRenderer().lineHeight,
                             dim.getHeight());
                 }
 
@@ -330,9 +333,9 @@ public class GuiFileChooserPopup extends AbstractGuiPopup<GuiFileChooserPopup> i
     }
 
     @Override
-    public boolean typeKey(ReadablePoint mousePosition, int keyCode, char keyChar, boolean ctrlDown, boolean shiftDown) {
-        if (keyCode == Keyboard.KEY_ESCAPE) {
-            cancelButton.onClick();
+    public boolean handleKey(KeyInput keyInput) {
+        if (keyInput.isEscape()) {
+            cancelButton.onClick(new Click(-1, -1, 0, keyInput.modifiers));
             return true;
         }
         return false;

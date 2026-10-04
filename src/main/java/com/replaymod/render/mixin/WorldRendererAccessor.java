@@ -1,22 +1,12 @@
 package com.replaymod.render.mixin;
 
-import net.minecraft.client.render.WorldRenderer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
 import java.util.Set;
+import net.minecraft.client.renderer.LevelRenderer;
 
-//#if MC>=10800
-import net.minecraft.client.render.chunk.ChunkBuilder;
-
-//#if MC>=11500
-import net.minecraft.client.render.chunk.ChunkBuilder.BuiltChunk;
-//#else
-//$$ import net.minecraft.client.render.chunk.ChunkRenderer;
-//#endif
-//#endif
-
-@Mixin(WorldRenderer.class)
+@Mixin(LevelRenderer.class)
 public interface WorldRendererAccessor {
     //#if MC<11500
     //$$ @Accessor("field_4076")

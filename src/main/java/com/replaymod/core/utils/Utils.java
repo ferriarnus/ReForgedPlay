@@ -24,8 +24,6 @@ import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import de.johni0702.minecraft.gui.versions.Image;
 import de.johni0702.minecraft.gui.versions.MCVer;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.util.crash.CrashReport;
 import org.apache.commons.io.Charsets;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.LogManager;
@@ -41,6 +39,9 @@ import javax.annotation.Nullable;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManagerFactory;
+import net.minecraft.CrashReport;
+import net.minecraft.ReportType;
+import net.minecraft.client.gui.screens.Screen;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -65,10 +66,6 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.UUID;
 import java.util.function.Consumer;
-
-//#if MC>=12100
-import net.minecraft.util.crash.ReportType;
-//#endif
 
 import static com.replaymod.core.versions.MCVer.getMinecraft;
 
@@ -229,8 +226,10 @@ public class Utils {
     }
 
     public static boolean isCtrlDown() {
-        //#if MC>=11400
-        return Screen.hasControlDown();
+        //#if MC>=12109
+        return com.replaymod.core.versions.MCVer.Keyboard.isKeyDown(com.replaymod.core.versions.MCVer.Keyboard.LEFT_CTRL) || com.replaymod.core.versions.MCVer.Keyboard.isKeyDown(com.replaymod.core.versions.MCVer.Keyboard.RIGHT_CTRL);
+        //#elseif MC>=11400
+        //$$ return Screen.hasControlDown();
         //#else
         //$$ return Keyboard.isKeyDown(Keyboard.KEY_LCONTROL) || Keyboard.isKeyDown(Keyboard.KEY_RCONTROL);
         //#endif
@@ -252,9 +251,9 @@ public class Utils {
 
     public static GuiInfoPopup error(Logger logger, GuiContainer container, CrashReport crashReport, Runnable onClose) {
         // Convert crash report to string
-        String crashReportStr = crashReport.asString(
+        String crashReportStr = crashReport.getFriendlyReport(
                 //#if MC>=12100
-                ReportType.MINECRAFT_CRASH_REPORT
+                ReportType.CRASH
                 //#endif
         );
 
@@ -262,13 +261,13 @@ public class Utils {
         logger.error(crashReportStr);
 
         // Try to save the crash report
-        if (crashReport.getFile() == null) {
+        if (crashReport.getSaveFile() == null) {
             try {
-                File folder = new File(getMinecraft().runDirectory, "crash-reports");
+                File folder = new File(getMinecraft().gameDirectory, "crash-reports");
                 File file = new File(folder, "crash-" + (new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss")).format(new Date()) + "-client.txt");
                 logger.debug("Saving crash report to file: {}", file);
                 //#if MC>=12100
-                crashReport.writeToFile(file.toPath(), ReportType.MINECRAFT_CRASH_REPORT);
+                crashReport.saveToFile(file.toPath(), ReportType.CRASH);
                 //#else
                 //$$ crashReport.writeToFile(file);
                 //#endif
@@ -276,7 +275,7 @@ public class Utils {
                 logger.error("Saving crash report file:", t);
             }
         } else {
-            logger.debug("Not saving crash report as file already exists: {}", crashReport.getFile());
+            logger.debug("Not saving crash report as file already exists: {}", crashReport.getSaveFile());
         }
 
         logger.trace("Opening crash report popup GUI");

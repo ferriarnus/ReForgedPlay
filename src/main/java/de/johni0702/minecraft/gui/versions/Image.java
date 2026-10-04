@@ -1,9 +1,8 @@
 package de.johni0702.minecraft.gui.versions;
 
-import net.minecraft.client.texture.NativeImage;
-import net.minecraft.client.texture.NativeImageBackedTexture;
-
 import javax.imageio.ImageIO;
+import net.minecraft.client.renderer.texture.DynamicTexture;
+import com.mojang.blaze3d.platform.NativeImage;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.file.Files;
@@ -60,7 +59,7 @@ public class Image implements AutoCloseable {
 
     public void setRGBA(int x, int y, int r, int g, int b, int a) {
         //#if MC>=12102
-        inner.setColorArgb(x, y, ((a & 0xff) << 24) | ((r & 0xff) << 16) | ((g & 0xff) << 8) | (b & 0xff));
+        inner.setPixel(x, y, ((a & 0xff) << 24) | ((r & 0xff) << 16) | ((g & 0xff) << 8) | (b & 0xff));
         //#else
         // actually takes ABGR, not RGBA
         //$$ inner.setPixelColor(x, y, ((a & 0xff) << 24) | ((b & 0xff) << 16) | ((g & 0xff) << 8) | (r & 0xff));
@@ -92,13 +91,13 @@ public class Image implements AutoCloseable {
     }
 
     public void writePNG(File file) throws IOException {
-        inner.writeTo(file);
+        inner.writeToFile(file);
     }
 
     public void writePNG(OutputStream outputStream) throws IOException {
         Path tmp = Files.createTempFile("tmp", ".png");
         try {
-            inner.writeTo(tmp);
+            inner.writeToFile(tmp);
             Files.copy(tmp, outputStream);
         } finally {
             Files.delete(tmp);
@@ -106,7 +105,7 @@ public class Image implements AutoCloseable {
     }
 
     public Image scaledSubRect(int x, int y, int width, int height, int scaledWidth, int scaledHeight) {
-        NativeImage dst = new NativeImage(inner.getFormat(), scaledWidth, scaledHeight, false);
+        NativeImage dst = new NativeImage(inner.format(), scaledWidth, scaledHeight, false);
         inner.resizeSubRectTo(x, y, width, height, dst);
         return new Image(dst);
     }
@@ -123,9 +122,9 @@ public class Image implements AutoCloseable {
         }
     }
 
-    public NativeImageBackedTexture toTexture() {
+    public DynamicTexture toTexture() {
         //#if MC>=12105
-        return new NativeImageBackedTexture(null, inner);
+        return new DynamicTexture(null, inner);
         //#else
         //$$ return new NativeImageBackedTexture(inner);
         //#endif

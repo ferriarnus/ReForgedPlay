@@ -25,10 +25,9 @@
 package de.johni0702.minecraft.gui;
 
 import de.johni0702.minecraft.gui.versions.MCVer;
-import net.minecraft.util.crash.CrashReport;
-import net.minecraft.util.crash.CrashReportSection;
-
 import java.util.Objects;
+import net.minecraft.CrashReport;
+import net.minecraft.CrashReportCategory;
 
 public class RenderInfo {
     public final float partialTick;
@@ -52,7 +51,7 @@ public class RenderInfo {
     }
 
     public void addTo(CrashReport crashReport) {
-        CrashReportSection category = crashReport.addElement("Render info details");
+        CrashReportCategory category = crashReport.addCategory("Render info details");
         MCVer.addDetail(category, "Partial Tick", () -> "" + partialTick);
         MCVer.addDetail(category, "Mouse X", () -> "" + mouseX);
         MCVer.addDetail(category, "Mouse Y", () -> "" + mouseY);

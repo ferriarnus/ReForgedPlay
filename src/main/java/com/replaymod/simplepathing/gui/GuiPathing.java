@@ -8,6 +8,7 @@ import com.google.common.util.concurrent.SettableFuture;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.core.utils.Result;
 import com.replaymod.core.utils.Utils;
+import com.replaymod.core.versions.MCVer.Keyboard;
 import com.replaymod.pathing.gui.GuiKeyframeRepository;
 import com.replaymod.pathing.player.RealtimeTimelinePlayer;
 import com.replaymod.pathing.properties.CameraProperties;
@@ -49,8 +50,6 @@ import de.johni0702.minecraft.gui.utils.Colors;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadablePoint;
 import de.johni0702.minecraft.gui.utils.lwjgl.WritablePoint;
-import net.minecraft.client.resource.language.I18n;
-import net.minecraft.util.crash.CrashReport;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -66,6 +65,8 @@ import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import net.minecraft.CrashReport;
+import net.minecraft.client.resources.language.I18n;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.concurrent.CancellationException;
@@ -135,7 +136,7 @@ public class GuiPathing {
                         label = "replaymod.gui.ingame.menu.removespeckeyframe";
                     }
                 }
-                tooltip.setText(I18n.translate(label) + " (" + mod.keyPositionKeyframe.getBoundKey() + ")");
+                tooltip.setText(I18n.get(label) + " (" + mod.keyPositionKeyframe.getBoundKey() + ")");
             }
             return tooltip;
         }
@@ -152,7 +153,7 @@ public class GuiPathing {
                 } else { // Remove time keyframe
                     label = "replaymod.gui.ingame.menu.removetimekeyframe";
                 }
-                tooltip.setText(I18n.translate(label) + " (" + mod.keyTimeKeyframe.getBoundKey() + ")");
+                tooltip.setText(I18n.get(label) + " (" + mod.keyTimeKeyframe.getBoundKey() + ")");
             }
             return tooltip;
         }
@@ -570,7 +571,7 @@ public class GuiPathing {
             timeline.getPaths().forEach(Path::updateAll);
             return Result.ok(timeline);
         } catch (Throwable t) {
-            error(LOGGER, replayHandler.getOverlay(), CrashReport.create(t, "Cloning timeline"), () -> {});
+            error(LOGGER, replayHandler.getOverlay(), CrashReport.forThrowable(t, "Cloning timeline"), () -> {});
             return Result.err(null);
         }
     }
@@ -634,7 +635,7 @@ public class GuiPathing {
                     if (!errorShown) {
                         String message = "Failed to load entity tracker, spectator keyframes will be broken.";
                         GuiReplayOverlay overlay = replayHandler.getOverlay();
-                        Utils.error(LOGGER, overlay, CrashReport.create(t, message), () -> {
+                        Utils.error(LOGGER, overlay, CrashReport.forThrowable(t, message), () -> {
                             popup.close();
                             thenRun.run();
                         });
@@ -667,7 +668,7 @@ public class GuiPathing {
         if (timeline.getPositionPath().getKeyframes().isEmpty() &&
                 timeline.getTimePath().getKeyframes().isEmpty() &&
                 time > 1000) {
-            String text = I18n.translate("replaymod.gui.ingame.first_keyframe_not_at_start_warning");
+            String text = I18n.get("replaymod.gui.ingame.first_keyframe_not_at_start_warning");
             GuiInfoPopup.open(overlay, text.split("\\\\n"));
         }
 
@@ -704,7 +705,7 @@ public class GuiPathing {
                         spectatedId = replayHandler.getOverlay().getMinecraft().getCameraEntity().getId();
                     }
                     timeline.addPositionKeyframe(time, camera.getX(), camera.getY(), camera.getZ(),
-                            camera.getYaw(), camera.getPitch(), camera.roll, spectatedId);
+                            camera.getYRot(), camera.getXRot(), camera.roll, spectatedId);
                     mod.setSelected(path, time);
                 }
                 break;

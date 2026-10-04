@@ -15,11 +15,11 @@ import de.johni0702.minecraft.gui.layout.CustomLayout;
 import de.johni0702.minecraft.gui.popup.GuiInfoPopup;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import de.johni0702.minecraft.gui.versions.callbacks.InitScreenCallback;
-import net.minecraft.client.gui.screen.multiplayer.AddServerScreen;
-import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
-import net.minecraft.client.gui.screen.world.SelectWorldScreen;
-import net.minecraft.client.network.ServerInfo;
-import net.minecraft.client.resource.language.I18n;
+import net.minecraft.client.gui.screens.ManageServerScreen;
+import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
+import net.minecraft.client.gui.screens.worldselection.SelectWorldScreen;
+import net.minecraft.client.multiplayer.ServerData;
+import net.minecraft.client.resources.language.I18n;
 
 public class GuiHandler extends EventRegistrations {
 
@@ -30,8 +30,8 @@ public class GuiHandler extends EventRegistrations {
     }
 
     { on(InitScreenCallback.EVENT, (screen, buttons) -> onGuiInit(screen)); }
-    private void onGuiInit(net.minecraft.client.gui.screen.Screen gui) {
-        if (gui instanceof SelectWorldScreen || gui instanceof MultiplayerScreen) {
+    private void onGuiInit(net.minecraft.client.gui.screens.Screen gui) {
+        if (gui instanceof SelectWorldScreen || gui instanceof JoinMultiplayerScreen) {
             boolean sp = gui instanceof SelectWorldScreen;
             SettingsRegistry settingsRegistry = mod.getSettingsRegistry();
             Setting<Boolean> setting = sp ? Setting.RECORD_SINGLEPLAYER : Setting.RECORD_SERVER;
@@ -54,18 +54,18 @@ public class GuiHandler extends EventRegistrations {
             }).addElements(null, recordingCheckbox);
         }
 
-        if (gui instanceof AddServerScreen) {
+        if (gui instanceof ManageServerScreen) {
             VanillaGuiScreen vanillaGui = VanillaGuiScreen.wrap(gui);
             GuiButton replayButton = new GuiReplayButton().onClick(() -> {
-                ServerInfo serverInfo = ((AddServerScreenAccessor) gui).getServer();
+                ServerData serverInfo = ((AddServerScreenAccessor) gui).getServerData();
                 ServerInfoExt serverInfoExt = ServerInfoExt.from(serverInfo);
                 Boolean state = serverInfoExt.getAutoRecording();
                 GuiToggleButton<String> autoRecording = new GuiToggleButton<String>()
                         .setI18nLabel("replaymod.gui.settings.autostartrecording")
                         .setValues(
-                                I18n.translate("replaymod.gui.settings.default"),
-                                I18n.translate("options.off"),
-                                I18n.translate("options.on")
+                                I18n.get("replaymod.gui.settings.default"),
+                                I18n.get("options.off"),
+                                I18n.get("options.on")
                         )
                         .setSelected(state == null ? 0 : state ? 2 : 1);
                 autoRecording.onClick(() -> {

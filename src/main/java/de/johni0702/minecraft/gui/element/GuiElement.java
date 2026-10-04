@@ -28,11 +28,11 @@ import de.johni0702.minecraft.gui.GuiRenderer;
 import de.johni0702.minecraft.gui.RenderInfo;
 import de.johni0702.minecraft.gui.container.GuiContainer;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
-import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.Minecraft;
 
 public interface GuiElement<T extends GuiElement<T>> {
 
-    MinecraftClient getMinecraft();
+    Minecraft getMinecraft();
 
     GuiContainer getContainer();
     T setContainer(GuiContainer container);

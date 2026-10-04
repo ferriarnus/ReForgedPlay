@@ -6,7 +6,6 @@ import com.replaymod.core.utils.FileTypeAdapter;
 import com.replaymod.core.versions.MCVer;
 import de.johni0702.minecraft.gui.utils.lwjgl.Color;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableColor;
-import net.minecraft.client.resource.language.I18n;
 import net.minecraft.util.Util;
 import org.apache.maven.artifact.versioning.ComparableVersion;
 
@@ -20,6 +19,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Optional;
+import net.minecraft.client.resources.language.I18n;
 
 import static com.replaymod.render.ReplayModRender.LOGGER;
 
@@ -29,11 +29,11 @@ public class RenderSettings {
 
         @Override
         public String toString() {
-            return I18n.translate("replaymod.gui.rendersettings.renderer." + name().toLowerCase());
+            return I18n.get("replaymod.gui.rendersettings.renderer." + name().toLowerCase());
         }
 
         public String getDescription() {
-            return I18n.translate("replaymod.gui.rendersettings.renderer." + name().toLowerCase() + ".description");
+            return I18n.get("replaymod.gui.rendersettings.renderer." + name().toLowerCase() + ".description");
         }
 
         public boolean isSpherical() {
@@ -99,7 +99,7 @@ public class RenderSettings {
 
         @Override
         public String toString() {
-            return I18n.translate("replaymod.gui.rendersettings.presets." + name().replace('_', '.').toLowerCase());
+            return I18n.get("replaymod.gui.rendersettings.presets." + name().replace('_', '.').toLowerCase());
         }
 
         public boolean isSupported() {
@@ -130,7 +130,7 @@ public class RenderSettings {
 
         @Override
         public String toString() {
-            return I18n.translate("replaymod.gui.rendersettings.antialiasing." + name().toLowerCase());
+            return I18n.get("replaymod.gui.rendersettings.antialiasing." + name().toLowerCase());
         }
     }
 
@@ -170,8 +170,8 @@ public class RenderSettings {
 
     public RenderSettings() {
         this(
-                RenderSettings.RenderMethod.DEFAULT,
-                RenderSettings.EncodingPreset.MP4_CUSTOM,
+                RenderMethod.DEFAULT,
+                EncodingPreset.MP4_CUSTOM,
                 1920,
                 1080,
                 60,
@@ -188,9 +188,9 @@ public class RenderSettings {
                 false,
                 false,
                 false,
-                RenderSettings.AntiAliasing.NONE,
+                AntiAliasing.NONE,
                 "",
-                RenderSettings.EncodingPreset.MP4_CUSTOM.getValue(),
+                EncodingPreset.MP4_CUSTOM.getValue(),
                 false
         );
     }
@@ -314,10 +314,10 @@ public class RenderSettings {
     }
 
     private static String findFFmpeg() {
-        switch (Util.getOperatingSystem()) {
+        switch (Util.getPlatform()) {
             case WINDOWS:
                 // Allow windows users to unpack the ffmpeg archive into a sub-folder of their .minecraft folder
-                File dotMinecraft = MCVer.getMinecraft().runDirectory;
+                File dotMinecraft = MCVer.getMinecraft().gameDirectory;
                 File inDotMinecraft = new File(dotMinecraft, "ffmpeg/bin/ffmpeg.exe");
                 if (inDotMinecraft.exists()) {
                     LOGGER.debug("FFmpeg found in .minecraft/ffmpeg");

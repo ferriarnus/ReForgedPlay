@@ -1,23 +1,19 @@
 package com.replaymod.compat.shaders.mixin;
 
-import net.minecraft.client.render.GameRenderer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Pseudo;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-
-//#if MC>=11600
-import net.minecraft.client.render.Camera;
-import net.minecraft.client.util.math.MatrixStack;
-//#endif
-
+import com.mojang.blaze3d.vertex.PoseStack;
 //#if MC>=11400
 import com.replaymod.core.events.PreRenderHandCallback;
 //#else
 //$$ import com.replaymod.core.versions.MCVer;
 //$$ import net.minecraftforge.client.ForgeHooksClient;
 //#endif
+import net.minecraft.client.Camera;
+import net.minecraft.client.renderer.GameRenderer;
 
 @Pseudo
 @Mixin(targets = {
@@ -30,7 +26,7 @@ public abstract class MixinShadersRender {
     private static void replayModCompat_disableRenderHand0(
             GameRenderer er,
             //#if MC>=11600
-            MatrixStack stack,
+            PoseStack stack,
             Camera camera,
             //#endif
             float partialTicks,

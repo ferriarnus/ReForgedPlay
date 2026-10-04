@@ -6,29 +6,24 @@ import de.johni0702.minecraft.gui.GuiRenderer;
 import de.johni0702.minecraft.gui.MinecraftGuiRenderer;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import de.johni0702.minecraft.gui.versions.callbacks.RenderHudCallback;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.resource.language.I18n;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.resources.language.I18n;
 
 import static com.replaymod.core.ReplayMod.TEXTURE;
 import static com.replaymod.core.ReplayMod.TEXTURE_SIZE;
 import static com.mojang.blaze3d.systems.RenderSystem.*;
 
-//#if MC>=12000
-import net.minecraft.client.gui.DrawContext;
-//#else
-//$$ import net.minecraft.client.util.math.MatrixStack;
-//#endif
-
 /**
  * Renders overlay during recording.
  */
 public class GuiRecordingOverlay extends EventRegistrations {
-    private final MinecraftClient mc;
+    private final Minecraft mc;
     private final SettingsRegistry settingsRegistry;
     private final GuiRecordingControls guiControls;
 
-    public GuiRecordingOverlay(MinecraftClient mc, SettingsRegistry settingsRegistry, GuiRecordingControls guiControls) {
+    public GuiRecordingOverlay(Minecraft mc, SettingsRegistry settingsRegistry, GuiRecordingControls guiControls) {
         this.mc = mc;
         this.settingsRegistry = settingsRegistry;
         this.guiControls = guiControls;
@@ -39,16 +34,16 @@ public class GuiRecordingOverlay extends EventRegistrations {
      */
     { on(RenderHudCallback.EVENT, (stack, partialTicks) -> renderRecordingIndicator(stack)); }
     //#if MC>=12000
-    private void renderRecordingIndicator(DrawContext stack) {
+    private void renderRecordingIndicator(GuiGraphicsExtractor stack) {
     //#else
     //$$ private void renderRecordingIndicator(MatrixStack stack) {
     //#endif
         if (guiControls.isStopped()) return;
         if (settingsRegistry.get(Setting.INDICATOR)) {
-            TextRenderer fontRenderer = mc.textRenderer;
-            String text = guiControls.isPaused() ? I18n.translate("replaymod.gui.paused") : I18n.translate("replaymod.gui.recording");
+            Font fontRenderer = mc.font;
+            String text = guiControls.isPaused() ? I18n.get("replaymod.gui.paused") : I18n.get("replaymod.gui.recording");
             MinecraftGuiRenderer renderer = new MinecraftGuiRenderer(stack);
-            renderer.drawString(30, 18 - (fontRenderer.fontHeight / 2), 0xffffffff, text.toUpperCase());
+            renderer.drawString(30, 18 - (fontRenderer.lineHeight / 2), 0xffffffff, text.toUpperCase());
             renderer.bindTexture(TEXTURE);
             //#if MC<11700
             //$$ enableAlphaTest();

@@ -27,11 +27,12 @@ package de.johni0702.minecraft.gui.element;
 import de.johni0702.minecraft.gui.GuiRenderer;
 import de.johni0702.minecraft.gui.RenderInfo;
 import de.johni0702.minecraft.gui.container.GuiContainer;
+import de.johni0702.minecraft.gui.function.Click;
 import de.johni0702.minecraft.gui.function.Clickable;
 import de.johni0702.minecraft.gui.utils.lwjgl.*;
-import net.minecraft.sound.SoundEvent;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.Identifier;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
 
 import static com.mojang.blaze3d.systems.RenderSystem.*;
 import static org.lwjgl.opengl.GL11.GL_ONE_MINUS_SRC_ALPHA;
@@ -117,13 +118,13 @@ public abstract class AbstractGuiTexturedButton<T extends AbstractGuiTexturedBut
     }
 
     @Override
-    public void onClick() {
+    public void onClick(Click click) {
         //#if MC>=10904
         AbstractGuiButton.playClickSound(getMinecraft(), sound);
         //#else
         //$$ AbstractGuiButton.playClickSound(getMinecraft());
         //#endif
-        super.onClick();
+        super.onClick(click);
     }
 
     @Override

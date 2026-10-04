@@ -26,6 +26,9 @@ import de.johni0702.minecraft.gui.element.GuiTooltip;
 import de.johni0702.minecraft.gui.element.IGuiClickable;
 import de.johni0702.minecraft.gui.element.IGuiLabel;
 import de.johni0702.minecraft.gui.element.advanced.GuiDropdownMenu;
+import de.johni0702.minecraft.gui.function.Click;
+import de.johni0702.minecraft.gui.function.KeyHandler;
+import de.johni0702.minecraft.gui.function.KeyInput;
 import de.johni0702.minecraft.gui.function.Typeable;
 import de.johni0702.minecraft.gui.layout.GridLayout;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
@@ -34,13 +37,12 @@ import de.johni0702.minecraft.gui.popup.AbstractGuiPopup;
 import de.johni0702.minecraft.gui.utils.Colors;
 import de.johni0702.minecraft.gui.utils.Consumer;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadablePoint;
-import net.minecraft.client.resource.language.I18n;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.Map;
 import java.util.Optional;
-
+import net.minecraft.client.resources.language.I18n;
 //#if MC>=11400
 import com.replaymod.core.versions.MCVer.Keyboard;
 //#else
@@ -49,7 +51,7 @@ import com.replaymod.core.versions.MCVer.Keyboard;
 
 import static de.johni0702.minecraft.gui.utils.Utils.link;
 
-public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends AbstractGuiPopup<T> implements Typeable {
+public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends AbstractGuiPopup<T> implements KeyHandler {
     private static GuiNumberField newGuiNumberField() {
         return new GuiNumberField().setPrecision(0).setValidateOnFocusChange(true);
     }
@@ -134,9 +136,9 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
     }
 
     @Override
-    public boolean typeKey(ReadablePoint mousePosition, int keyCode, char keyChar, boolean ctrlDown, boolean shiftDown) {
-        if (keyCode == Keyboard.KEY_ESCAPE) {
-            cancelButton.onClick();
+    public boolean handleKey(KeyInput keyInput) {
+        if (keyInput.isEscape()) {
+            cancelButton.onClick(new Click(-1, -1, 0, keyInput.modifiers));
             return true;
         }
         return false;
@@ -290,7 +292,7 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
                 setLayout(new VerticalLayout());
 
                 dropdown = new GuiDropdownMenu<InterpolatorType>()
-                        .setToString(s -> I18n.translate(s.getI18nName()))
+                        .setToString(s -> I18n.get(s.getI18nName()))
                         .setValues(InterpolatorType.values()).setHeight(20)
                         .onSelection(i -> setSettingsPanel(dropdown.getSelectedValue()));
 

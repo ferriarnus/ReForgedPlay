@@ -29,24 +29,30 @@ import com.google.common.base.Strings;
 import de.johni0702.minecraft.gui.GuiRenderer;
 import de.johni0702.minecraft.gui.RenderInfo;
 import de.johni0702.minecraft.gui.container.GuiContainer;
+import de.johni0702.minecraft.gui.function.CharHandler;
+import de.johni0702.minecraft.gui.function.CharInput;
+import de.johni0702.minecraft.gui.function.Click;
 import de.johni0702.minecraft.gui.function.Clickable;
 import de.johni0702.minecraft.gui.function.Focusable;
+import de.johni0702.minecraft.gui.function.KeyHandler;
+import de.johni0702.minecraft.gui.function.KeyInput;
 import de.johni0702.minecraft.gui.function.Tickable;
 import de.johni0702.minecraft.gui.function.Typeable;
 import de.johni0702.minecraft.gui.utils.Consumer;
 import de.johni0702.minecraft.gui.utils.lwjgl.*;
 import de.johni0702.minecraft.gui.versions.MCVer;
+import de.johni0702.minecraft.gui.versions.MCVer.Keyboard;
 import net.minecraft.SharedConstants;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.resource.language.I18n;
-import net.minecraft.util.StringHelper;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.resources.language.I18n;
+import net.minecraft.util.StringUtil;
 
 import static de.johni0702.minecraft.gui.utils.Utils.clamp;
 import static de.johni0702.minecraft.gui.versions.MCVer.Keyboard;
 
 public abstract class AbstractGuiTextField<T extends AbstractGuiTextField<T>>
-        extends AbstractGuiElement<T> implements Clickable, Tickable, Typeable, IGuiTextField<T> {
+        extends AbstractGuiElement<T> implements Clickable, Tickable, KeyHandler, CharHandler, IGuiTextField<T> {
     private static final ReadableColor BORDER_COLOR = new Color(160, 160, 160);
     private static final ReadableColor CURSOR_COLOR = new Color(240, 240, 240);
     private static final int BORDER = 4;
@@ -95,7 +101,7 @@ public abstract class AbstractGuiTextField<T extends AbstractGuiTextField<T>>
 
     @Override
     public T setI18nText(String text, Object... args) {
-        return setText(I18n.translate(text, args));
+        return setText(I18n.get(text, args));
     }
 
     @Override
@@ -151,10 +157,10 @@ public abstract class AbstractGuiTextField<T extends AbstractGuiTextField<T>>
     private void updateCurrentOffset() {
         currentOffset = Math.min(currentOffset, cursorPos);
         String line = text.substring(currentOffset, cursorPos);
-        TextRenderer fontRenderer = MCVer.getFontRenderer();
-        int currentWidth = fontRenderer.getWidth(line);
+        Font fontRenderer = MCVer.getFontRenderer();
+        int currentWidth = fontRenderer.width(line);
         if (currentWidth > size.getWidth() - 2*BORDER) {
-            currentOffset = cursorPos - fontRenderer.trimToWidth(line, size.getWidth() - 2*BORDER, true).length();
+            currentOffset = cursorPos - fontRenderer.plainSubstrByWidth(line, size.getWidth() - 2*BORDER, true).length();
         }
     }
 
@@ -168,13 +174,7 @@ public abstract class AbstractGuiTextField<T extends AbstractGuiTextField<T>>
 
     @Override
     public T writeChar(char c) {
-        //#if MC>=12006
-        if (!StringHelper.isValidChar(c)) {
-        //#elseif MC>=11400
-        //$$ if (!SharedConstants.isValidChar(c)) {
-        //#else
-        //$$ if (!ChatAllowedCharacters.isAllowedCharacter(c)) {
-        //#endif
+        if (!CharInput.isValidChar(c)) {
             return getThis();
         }
 
@@ -289,18 +289,19 @@ public abstract class AbstractGuiTextField<T extends AbstractGuiTextField<T>>
     }
 
     @Override
-    public boolean mouseClick(ReadablePoint position, int button) {
+    public boolean mouseClick(Click click) {
+        ReadablePoint position = click;
         if (getContainer() != null) {
             getContainer().convertFor(this, (Point) (position = new Point(position)));
         }
         boolean hovering = isMouseHovering(position);
 
-        if (hovering && isFocused() && button == 0) {
+        if (hovering && isFocused() && click.button == 0) {
             updateCurrentOffset();
             int mouseX = position.getX() - BORDER;
-            TextRenderer fontRenderer = MCVer.getFontRenderer();
+            Font fontRenderer = MCVer.getFontRenderer();
             String text = this.text.substring(currentOffset);
-            int textX = fontRenderer.trimToWidth(text, mouseX).length() + currentOffset;
+            int textX = fontRenderer.plainSubstrByWidth(text, mouseX).length() + currentOffset;
             setCursorPosition(textX);
             return true;
         }
@@ -346,8 +347,8 @@ public abstract class AbstractGuiTextField<T extends AbstractGuiTextField<T>>
         super.draw(renderer, size, renderInfo);
 
         int width = size.getWidth(), height = size.getHeight();
-        TextRenderer fontRenderer = MCVer.getFontRenderer();
-        int posY = height / 2 - fontRenderer.fontHeight / 2;
+        Font fontRenderer = MCVer.getFontRenderer();
+        int posY = height / 2 - fontRenderer.lineHeight / 2;
 
         // Draw black rect once pixel smaller than gray rect
         renderer.drawRect(0, 0, width, height, isFocused() ? ReadableColor.WHITE : BORDER_COLOR);
@@ -355,45 +356,47 @@ public abstract class AbstractGuiTextField<T extends AbstractGuiTextField<T>>
 
         if (text.isEmpty() && !isFocused() && !Strings.isNullOrEmpty(hint)) {
             // Draw hint
-            String text = fontRenderer.trimToWidth(hint, width - 2*BORDER);
+            String text = fontRenderer.plainSubstrByWidth(hint, width - 2*BORDER);
             renderer.drawString(BORDER, posY, textColorDisabled, text);
         } else {
             // Draw text
             String renderText = text.substring(currentOffset);
-            renderText = fontRenderer.trimToWidth(renderText, width - 2*BORDER);
+            renderText = fontRenderer.plainSubstrByWidth(renderText, width - 2*BORDER);
             ReadableColor color = isEnabled() ? textColorEnabled : textColorDisabled;
-            int lineEnd = renderer.drawString(BORDER, height / 2 - fontRenderer.fontHeight / 2, color, renderText);
+            int lineEnd = renderer.drawString(BORDER, height / 2 - fontRenderer.lineHeight / 2, color, renderText);
 
             // Draw selection
             int from = getSelectionFrom();
             int to = getSelectionTo();
             String leftStr = renderText.substring(0, clamp(from - currentOffset, 0, renderText.length()));
             String rightStr = renderText.substring(clamp(to - currentOffset, 0, renderText.length()));
-            int left = BORDER + fontRenderer.getWidth(leftStr);
-            int right = lineEnd - fontRenderer.getWidth(rightStr) - 1;
+            int left = BORDER + fontRenderer.width(leftStr);
+            int right = lineEnd - fontRenderer.width(rightStr) - 1;
             renderer.invertColors(right, height - 2, left, 2);
 
             // Draw cursor
             if (blinkCursorTick / 6 % 2 == 0 && focused) {
                 String beforeCursor = renderText.substring(0, cursorPos - currentOffset);
-                int posX = BORDER + fontRenderer.getWidth(beforeCursor);
+                int posX = BORDER + fontRenderer.width(beforeCursor);
                 if (cursorPos == text.length()) {
                     renderer.drawString(posX, posY, CURSOR_COLOR, "_", true);
                 } else {
-                    renderer.drawRect(posX, posY - 1, 1, 1 + fontRenderer.fontHeight, CURSOR_COLOR);
+                    renderer.drawRect(posX, posY - 1, 1, 1 + fontRenderer.lineHeight, CURSOR_COLOR);
                 }
             }
         }
     }
 
     @Override
-    public boolean typeKey(ReadablePoint mousePosition, int keyCode, char keyChar, boolean ctrlDown, boolean shiftDown) {
+    public boolean handleKey(KeyInput keyInput) {
         if (!this.focused) {
             return false;
         }
 
+        int keyCode = keyInput.key;
+
         if (keyCode == Keyboard.KEY_TAB) {
-            Focusable other = shiftDown ? previous : next;
+            Focusable other = keyInput.hasShift() ? previous : next;
             if (other != null) {
                 setFocused(false);
                 other.setFocused(true);
@@ -414,7 +417,7 @@ public abstract class AbstractGuiTextField<T extends AbstractGuiTextField<T>>
 
         String textBefore = text;
         try {
-            if (Screen.hasControlDown()) {
+            if (keyInput.hasCtrl()) {
                 switch (keyCode) {
                     case Keyboard.KEY_A: // Select all
                         cursorPos = 0;
@@ -436,8 +439,8 @@ public abstract class AbstractGuiTextField<T extends AbstractGuiTextField<T>>
                 }
             }
 
-            boolean words = Screen.hasControlDown();
-            boolean select = Screen.hasShiftDown();
+            boolean words = keyInput.hasCtrl();
+            boolean select = keyInput.hasShift();
             switch (keyCode) {
                 case Keyboard.KEY_HOME:
                     cursorPos = 0;
@@ -486,18 +489,37 @@ public abstract class AbstractGuiTextField<T extends AbstractGuiTextField<T>>
                     }
                     return true;
                 default:
-                    if (isEnabled()) {
-                        if (keyChar == '\r') {
-                            keyChar = '\n';
-                        }
-                        writeChar(keyChar);
-                    }
                     return true;
             }
 
             if (!select) {
                 selectionPos = cursorPos;
             }
+            return true;
+        } finally {
+            if (!textBefore.equals(text)) {
+                onTextChanged(textBefore);
+            }
+        }
+    }
+
+    @Override
+    public boolean handleChar(CharInput charInput) {
+        if (!this.focused) {
+            return false;
+        }
+
+        if (!isEnabled() || !charInput.isValidChar()) {
+            return true;
+        }
+
+        String textBefore = text;
+        try {
+            String inputText = charInput.asString();
+            if (inputText.equals("\r")) {
+                inputText = "\n";
+            }
+            writeText(inputText);
             return true;
         } finally {
             if (!textBefore.equals(text)) {
@@ -564,7 +586,7 @@ public abstract class AbstractGuiTextField<T extends AbstractGuiTextField<T>>
 
     @Override
     public T setI18nHint(String hint, Object... args) {
-        return setHint(I18n.translate(hint));
+        return setHint(I18n.get(hint));
     }
 
     @Override

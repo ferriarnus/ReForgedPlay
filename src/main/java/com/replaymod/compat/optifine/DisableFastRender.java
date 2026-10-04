@@ -1,13 +1,13 @@
 package com.replaymod.compat.optifine;
 
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
+import net.minecraft.client.Minecraft;
 import com.replaymod.core.versions.MCVer;
 import com.replaymod.render.events.ReplayRenderCallback;
-import net.minecraft.client.MinecraftClient;
 
 public class DisableFastRender extends EventRegistrations {
 
-    private final MinecraftClient mc = MinecraftClient.getInstance();
+    private final Minecraft mc = Minecraft.getInstance();
 
     private boolean wasFastRender = false;
 

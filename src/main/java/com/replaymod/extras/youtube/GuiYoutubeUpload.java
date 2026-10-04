@@ -22,15 +22,8 @@ import de.johni0702.minecraft.gui.popup.GuiFileChooserPopup;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import de.johni0702.minecraft.gui.versions.Image;
 import joptsimple.internal.Strings;
-import net.minecraft.client.resource.language.I18n;
+import net.minecraft.client.resources.language.I18n;
 import org.apache.commons.io.IOUtils;
-
-//#if MC>=11400
-import net.minecraft.util.Util;
-//#else
-//$$ import org.lwjgl.Sys;
-//#endif
-
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
@@ -81,7 +74,7 @@ public class GuiYoutubeUpload extends GuiScreen {
     public final GuiTextArea descriptionField = new GuiTextArea().setMaxCharCount(Integer.MAX_VALUE)
             .setMaxTextWidth(Integer.MAX_VALUE).setMaxTextHeight(Integer.MAX_VALUE);
     {
-        descriptionField.setText(new String[]{I18n.translate("replaymod.gui.videodescription")});
+        descriptionField.setText(new String[]{I18n.get("replaymod.gui.videodescription")});
     }
 
     public final GuiTextField tagsField = new GuiTextField().setI18nHint("replaymod.gui.videotags");
@@ -217,7 +210,7 @@ public class GuiYoutubeUpload extends GuiScreen {
                                 LOGGER.error("Failed to open video URL \"{}\":", url, throwable);
                             }
                             upload = null;
-                            progressBar.setLabel(I18n.translate("replaymod.gui.ytuploadprogress.done", url));
+                            progressBar.setLabel(I18n.get("replaymod.gui.ytuploadprogress.done", url));
                             setState(false);
                         }
 

@@ -19,27 +19,22 @@ import de.javagl.jgltf.model.io.v2.GltfAssetV2;
 import de.javagl.jgltf.model.io.v2.GltfAssetWriterV2;
 import de.johni0702.minecraft.gui.utils.lwjgl.vector.Quaternion;
 import de.johni0702.minecraft.gui.utils.lwjgl.vector.Vector4f;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.entity.Entity;
 import org.apache.commons.io.FilenameUtils;
 import org.lwjgl.opengl.GL11;
-
-//#if MC>=11400
-import net.minecraft.util.math.Vec3d;
-//#else
-//#endif
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.file.Files;
+import net.minecraft.client.Minecraft;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.Vec3;
 
 import static com.replaymod.core.utils.Utils.configure;
 
 public class CameraPathExporter {
 
-    private final MinecraftClient mc = MCVer.getMinecraft();
+    private final Minecraft mc = MCVer.getMinecraft();
     private final RenderSettings settings;
     private int framesDone;
     private ByteBuffer timeBuffer;
@@ -64,13 +59,13 @@ public class CameraPathExporter {
         //#endif
 
         //#if MC>=11400
-        net.minecraft.client.render.Camera camera = mc.gameRenderer.getCamera();
-        Vec3d vec = camera.getPos();
-        float x = (float) vec.getX();
-        float y = (float) vec.getY();
-        float z = (float) vec.getZ();
-        float yaw = camera.getYaw() + 180;
-        float pitch = camera.getPitch();
+        net.minecraft.client.Camera camera = mc.gameRenderer.getMainCamera();
+        Vec3 vec = camera.position();
+        float x = (float) vec.x();
+        float y = (float) vec.y();
+        float z = (float) vec.z();
+        float yaw = camera.yRot() + 180;
+        float pitch = camera.xRot();
         //#else
         //#if MC>=10800
         //$$ float eyeHeight = entity.getEyeHeight();
@@ -166,9 +161,9 @@ public class CameraPathExporter {
             camera.setPerspective(configure(new CameraPerspective(), perspective -> {
                 float aspectRatio = (float) settings.getVideoWidth() / (float) settings.getVideoHeight();
                 perspective.setAspectRatio(aspectRatio);
-                perspective.setYfov((float) Math.toRadians(mc.options.getFov().getValue()));
+                perspective.setYfov((float) Math.toRadians(mc.options.fov().get()));
                 perspective.setZnear(0.05f);
-                perspective.setZfar((float) mc.options.getViewDistance().getValue() * 16 * 4);
+                perspective.setZfar((float) mc.options.renderDistance().get() * 16 * 4);
             }));
         }));
         glTF.addNodes(configure(new Node(), node -> node.setCamera(0)));

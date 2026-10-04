@@ -12,17 +12,13 @@ import de.johni0702.minecraft.gui.layout.CustomLayout;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import de.johni0702.minecraft.gui.versions.callbacks.InitScreenCallback;
-import net.minecraft.client.gui.screen.GameMenuScreen;
-import net.minecraft.client.gui.screen.Screen;
-
-//#if MC>=11400
-import net.minecraft.client.gui.widget.ClickableWidget;
-//#endif
-
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.screens.PauseScreen;
+import net.minecraft.client.gui.screens.Screen;
 
 public class GuiRecordingControls extends EventRegistrations {
     private ReplayMod core;
@@ -79,12 +75,12 @@ public class GuiRecordingControls extends EventRegistrations {
     { on(InitScreenCallback.EVENT, this::injectIntoIngameMenu); }
     private void injectIntoIngameMenu(Screen guiScreen,
                                       //#if MC>=11400
-                                      Collection<ClickableWidget> buttonList
+                                      Collection<AbstractWidget> buttonList
                                       //#else
                                       //$$ Collection<net.minecraft.client.gui.GuiButton> buttonList
                                       //#endif
     ) {
-        if (!(guiScreen instanceof GameMenuScreen)) {
+        if (!(guiScreen instanceof PauseScreen)) {
             return;
         }
         if (buttonList.isEmpty()) {

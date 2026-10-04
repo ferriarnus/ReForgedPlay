@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 //#if MC>=11400
 // FIXME: preprocessor should be able to remap between fabric and forge
 //#if FABRIC
-@Mixin(targets = "net.minecraft.world.border.WorldBorder$MovingArea")
+@Mixin(targets = "net.minecraft.world.level.border.WorldBorder$MovingBorderExtent")
 //#else
 //$$ @Mixin(targets = "net.minecraft.world.border.WorldBorder.MovingBorderInfo")
 //#endif
@@ -24,7 +24,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 public class Mixin_UseReplayTime_ForMovement {
 
     //#if MC>=11400
-    @Redirect(method = "*", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Util;getMeasuringTimeMs()J"))
+    @Redirect(method = "*", at = @At(value = "INVOKE", target = "Lnet/minecraft/Util;getMillis()J"))
     //#else
     //$$ @Redirect(method = "*", at = @At(value = "INVOKE", target = "Ljava/lang/System;currentTimeMillis()J"))
     //#endif

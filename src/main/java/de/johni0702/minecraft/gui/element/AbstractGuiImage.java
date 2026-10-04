@@ -31,12 +31,12 @@ import de.johni0702.minecraft.gui.container.GuiContainer;
 import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import de.johni0702.minecraft.gui.versions.Image;
-import net.minecraft.client.texture.NativeImageBackedTexture;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.renderer.texture.DynamicTexture;
+import net.minecraft.resources.Identifier;
 
 public abstract class AbstractGuiImage<T extends AbstractGuiImage<T>>
         extends AbstractGuiElement<T> implements IGuiImage<T> {
-    private NativeImageBackedTexture texture;
+    private DynamicTexture texture;
     private Identifier resourceLocation;
     private int u, v;
     private int uWidth, vHeight;
@@ -72,7 +72,7 @@ public abstract class AbstractGuiImage<T extends AbstractGuiImage<T>>
         super.draw(renderer, size, renderInfo);
         if (texture != null) {
             //#if MC>=12105
-            renderer.bindTexture(texture.getGlTexture());
+            renderer.bindTexture(texture.getTexture());
             //#else
             //$$ renderer.bindTexture(texture.getGlId());
             //#endif
@@ -183,9 +183,9 @@ public abstract class AbstractGuiImage<T extends AbstractGuiImage<T>>
      * alive after finalization when still unloading the texture.
      */
     private static final class Finalizer implements Runnable {
-        private final NativeImageBackedTexture texture;
+        private final DynamicTexture texture;
 
-        public Finalizer(NativeImageBackedTexture texture) {
+        public Finalizer(DynamicTexture texture) {
             this.texture = texture;
         }
 

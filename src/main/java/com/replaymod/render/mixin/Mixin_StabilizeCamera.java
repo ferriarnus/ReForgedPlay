@@ -1,11 +1,15 @@
 package com.replaymod.render.mixin;
 
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.replaymod.render.RenderSettings;
 import com.replaymod.render.hooks.EntityRendererHandler;
 import com.replaymod.replay.camera.CameraEntity;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -13,125 +17,34 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import static com.replaymod.core.versions.MCVer.*;
 
 //#if MC>=11400
-import net.minecraft.client.render.Camera;
-import net.minecraft.world.BlockView;
+import net.minecraft.client.Camera;
 //#else
 //$$ import net.minecraft.client.renderer.EntityRenderer;
 //#endif
 
-//#if MC>=11400
 @Mixin(value = Camera.class)
-//#else
-//$$ @Mixin(value = EntityRenderer.class)
-//#endif
 public abstract class Mixin_StabilizeCamera {
+    @WrapOperation(method = "alignWithEntity", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Camera;setRotation(FF)V"))
+    private void replayModRender_stabilizeCamera(Camera instance, float yRot, float xRot, Operation<Void> original) {
+        if (getHandler() != null) {
+            RenderSettings settings = getHandler().getSettings();
+
+            if (settings.isStabilizeYaw()) {
+                yRot = 0f;
+            }
+
+            if (settings.isStabilizePitch()) {
+                xRot = 0f;
+            }
+
+            // Roll handled in MixinCamera
+        }
+
+        original.call(instance, yRot, xRot);
+    }
+
+    @Unique
     private EntityRendererHandler getHandler() {
         return ((EntityRendererHandler.IEntityRenderer) getMinecraft().gameRenderer).replayModRender_getHandler();
-    }
-
-    private float orgYaw;
-    private float orgPitch;
-    private float orgPrevYaw;
-    private float orgPrevPitch;
-    private float orgRoll;
-
-    // Only relevant on 1.13+ (previously MC always used the non-head yaw) and only for LivingEntity view entities.
-    private float orgHeadYaw;
-    private float orgPrevHeadYaw;
-
-    //#if MC>=11400
-    @Inject(method = "update", at = @At("HEAD"))
-    //#else
-    //$$ @Inject(method = "setupCameraTransform", at = @At("HEAD"))
-    //#endif
-    private void replayModRender_beforeSetupCameraTransform(
-            //#if MC>=11400
-            BlockView blockView,
-            Entity entity,
-            boolean thirdPerson,
-            boolean inverseView,
-            //#endif
-            float partialTicks,
-            //#if MC<11400
-            //$$ int renderPass,
-            //#endif
-            CallbackInfo ci
-    ) {
-        if (getHandler() != null) {
-            //#if MC<11400
-            //$$ Entity entity = getMinecraft().getRenderViewEntity();
-            //#endif
-            orgYaw = entity.getYaw();
-            orgPitch = entity.getPitch();
-            orgPrevYaw = entity.lastYaw;
-            orgPrevPitch = entity.lastPitch;
-            orgRoll = entity instanceof CameraEntity ? ((CameraEntity) entity).roll : 0;
-            if (entity instanceof LivingEntity) {
-                orgHeadYaw = ((LivingEntity) entity).headYaw;
-                orgPrevHeadYaw = ((LivingEntity) entity).lastHeadYaw;
-            }
-        }
-    //#if MC<11400
-    //$$ }
-    //$$
-    //$$ @Inject(method = "orientCamera", at = @At("HEAD"))
-    //$$ private void replayModRender_resetRotationIfNeeded(float partialTicks, CallbackInfo ci) {
-    //#endif
-        if (getHandler() != null) {
-            //#if MC<11400
-            //$$ Entity entity = getMinecraft().getRenderViewEntity();
-            //#endif
-            RenderSettings settings = getHandler().getSettings();
-            if (settings.isStabilizeYaw()) {
-                entity.lastYaw = 0;
-                entity.setYaw(0);
-                if (entity instanceof LivingEntity) {
-                    ((LivingEntity) entity).lastHeadYaw = ((LivingEntity) entity).headYaw = 0;
-                }
-            }
-            if (settings.isStabilizePitch()) {
-                entity.lastPitch = 0;
-                entity.setPitch(0);
-            }
-            if (settings.isStabilizeRoll() && entity instanceof CameraEntity) {
-                ((CameraEntity) entity).roll = 0;
-            }
-        }
-    }
-
-    //#if MC>=11400
-    @Inject(method = "update", at = @At("RETURN"))
-    //#else
-    //$$ @Inject(method = "setupCameraTransform", at = @At("RETURN"))
-    //#endif
-    private void replayModRender_afterSetupCameraTransform(
-            //#if MC>=11400
-            BlockView blockView,
-            Entity entity,
-            boolean thirdPerson,
-            boolean inverseView,
-            //#endif
-            float partialTicks,
-            //#if MC<11400
-            //$$ int renderPass,
-            //#endif
-            CallbackInfo ci
-    ) {
-        if (getHandler() != null) {
-            //#if MC<11400
-            //$$ Entity entity = getMinecraft().getRenderViewEntity();
-            //#endif
-            entity.setYaw(orgYaw);
-            entity.setPitch(orgPitch);
-            entity.lastYaw = orgPrevYaw;
-            entity.lastPitch = orgPrevPitch;
-            if (entity instanceof CameraEntity) {
-                ((CameraEntity) entity).roll = orgRoll;
-            }
-            if (entity instanceof LivingEntity) {
-                ((LivingEntity) entity).headYaw = orgHeadYaw;
-                ((LivingEntity) entity).lastHeadYaw = orgPrevHeadYaw;
-            }
-        }
     }
 }

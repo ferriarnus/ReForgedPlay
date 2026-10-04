@@ -2,117 +2,98 @@ package com.replaymod.render.mixin;
 
 import com.replaymod.render.capturer.CubicOpenGlFrameCapturer;
 import com.replaymod.render.hooks.EntityRendererHandler;
+import net.minecraft.client.Camera;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
 //#if MC>=12005
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import org.joml.Matrix4f;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 //#endif
 
 //#if MC>=11500
-import net.minecraft.client.util.math.MatrixStack;
-import org.joml.Vector3f;
 //#else
 //$$ import org.lwjgl.opengl.GL11;
 //#endif
 
 import static com.replaymod.core.versions.MCVer.getMinecraft;
+import static org.joml.Math.PI_OVER_2_f;
+import static org.joml.Math.PI_f;
 
-//#if MC>=11500
-@Mixin(value = net.minecraft.client.render.GameRenderer.class)
-//#else
-//#if MC>=11400
-//$$ @Mixin(value = net.minecraft.client.render.Camera.class)
-//#else
-//$$ @Mixin(value = net.minecraft.client.renderer.EntityRenderer.class)
-//#endif
-//#endif
+@Mixin(Camera.class)
 public abstract class Mixin_Omnidirectional_Rotation {
-    private EntityRendererHandler getHandler() {
-        return ((EntityRendererHandler.IEntityRenderer) getMinecraft().gameRenderer).replayModRender_getHandler();
+    @Shadow
+    @Final
+    private static Vector3f FORWARDS;
+
+    @Shadow
+    @Final
+    private static Vector3f UP;
+
+    @Shadow
+    @Final
+    private static Vector3f LEFT;
+
+    @Shadow
+    @Final
+    private Quaternionf rotation;
+
+    @Shadow
+    @Final
+    private Vector3f forwards;
+
+    @Shadow
+    @Final
+    private Vector3f up;
+
+    @Shadow
+    @Final
+    private Vector3f left;
+
+    @Shadow
+    private int matrixPropertiesDirty;
+
+    @Inject(method = "update", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Camera;alignWithEntity(F)V", shift = At.Shift.AFTER))
+    private void replayModRender_setupCubicFrameRotation(CallbackInfo ci) {
+        if (getHandler() == null || !(getHandler().data instanceof CubicOpenGlFrameCapturer.Data)) return;
+        CubicOpenGlFrameCapturer.Data data = (CubicOpenGlFrameCapturer.Data) getHandler().data;
+
+        switch (data) {
+            case FRONT:
+                break;
+            case RIGHT:
+                this.rotation.rotateY(-PI_OVER_2_f);
+                break;
+            case BACK:
+                this.rotation.rotateY(PI_f);
+                break;
+            case LEFT:
+                this.rotation.rotateY(PI_OVER_2_f);
+                break;
+            case TOP:
+                this.rotation.rotateX(PI_OVER_2_f);
+                break;
+            case BOTTOM:
+                this.rotation.rotateX(-PI_OVER_2_f);
+                break;
+        }
+
+        // From setRotation
+        FORWARDS.rotate(this.rotation, this.forwards);
+        UP.rotate(this.rotation, this.up);
+        LEFT.rotate(this.rotation, this.left);
+        this.matrixPropertiesDirty |= 3;
     }
 
-    //#if MC>=12005
-    //#if MC>=12100
-    @ModifyExpressionValue(method = "renderWorld", at = @At(value = "INVOKE", target = "Lorg/joml/Matrix4f;rotation(Lorg/joml/Quaternionfc;)Lorg/joml/Matrix4f;"))
-    //#else
-    //$$ @ModifyExpressionValue(method = "renderWorld", at = @At(value = "INVOKE", target = "Lorg/joml/Matrix4f;rotationXYZ(FFF)Lorg/joml/Matrix4f;"))
-    //#endif
-    private Matrix4f replayModRender_setupCubicFrameRotation(Matrix4f matrix) {
-    //#else
-    //#if MC>=11500
-    //$$ @Inject(method = "renderWorld", at = @At("HEAD"))
-    //#else
-    //#if MC>=11400
-    //$$ @Inject(method = "update", at = @At("HEAD"))
-    //#else
-    //$$ @Inject(method = "orientCamera", at = @At("HEAD"))
-    //#endif
-    //#endif
-    //$$ private void replayModRender_setupCubicFrameRotation(
-    //$$         //#if MC>=11500
-    //$$         float partialTicks,
-    //$$         long frameStartNano,
-    //$$         MatrixStack matrixStack,
-    //$$        //#endif
-    //$$         CallbackInfo ci
-    //$$) {
-    //#endif
-        if (getHandler() != null && getHandler().data instanceof CubicOpenGlFrameCapturer.Data) {
-            CubicOpenGlFrameCapturer.Data data = (CubicOpenGlFrameCapturer.Data) getHandler().data;
-            float angle = 0;
-            float x = 0;
-            float y = 0;
-            switch (data) {
-                case FRONT:
-                    angle = 0;
-                    y = 1;
-                    break;
-                case RIGHT:
-                    angle = 90;
-                    y = 1;
-                    break;
-                case BACK:
-                    angle = 180;
-                    y = 1;
-                    break;
-                case LEFT:
-                    angle = -90;
-                    y = 1;
-                    break;
-                case TOP:
-                    angle = -90;
-                    x = 1;
-                    break;
-                case BOTTOM:
-                    angle = 90;
-                    x = 1;
-                    break;
-            }
-            //#if MC>=12005
-            matrix.rotateLocal(angle * (float) Math.PI / 180f, x, y, 0);
-            //#elseif MC>=11500
-            //$$ matrixStack.multiply(new org.joml.Quaternionf().fromAxisAngleDeg(new Vector3f(x, y, 0), angle));
-            //#else
-            //$$ GL11.glRotatef(angle, x, y, 0);
-            //#endif
-
-            getMinecraft().worldRenderer.scheduleTerrainUpdate();
-        }
-        //#if MC<11500
-        //$$ if (getHandler() != null && getHandler().omnidirectional) {
-        //$$     // Minecraft goes back a little so we have to revert that
-            //#if MC>=11400
-            //$$ GL11.glTranslatef(0.0F, 0.0F, -0.05F);
-            //#else
-            //$$ GL11.glTranslatef(0.0F, 0.0F, 0.1F);
-            //#endif
-        //$$ }
-        //#endif
-        //#if MC>=12005
-        return matrix;
-        //#endif
+    @Unique
+    private EntityRendererHandler getHandler() {
+        return ((EntityRendererHandler.IEntityRenderer) getMinecraft().gameRenderer).replayModRender_getHandler();
     }
 }

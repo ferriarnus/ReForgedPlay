@@ -1,6 +1,10 @@
 package com.replaymod.core.versions;
 
+import com.mojang.blaze3d.platform.InputConstants;
+import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.replaymod.core.mixin.GuiScreenAccessor;
 import com.replaymod.replaystudio.lib.viaversion.api.protocol.packet.State;
@@ -8,60 +12,14 @@ import com.replaymod.replaystudio.lib.viaversion.api.protocol.version.ProtocolVe
 import com.replaymod.replaystudio.protocol.PacketTypeRegistry;
 import de.johni0702.minecraft.gui.utils.lwjgl.vector.Vector2f;
 import de.johni0702.minecraft.gui.utils.lwjgl.vector.Vector3f;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.network.NetworkPhase;
-import net.minecraft.network.state.NetworkState;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.Util;
-import net.minecraft.util.math.Vec3d;
-
-//#if MC>=12105
-import net.minecraft.client.render.VertexConsumer;
-//#endif
-
 //#if MC>=11700
+import net.minecraft.util.Util;
 import org.joml.Matrix4f;
 //#endif
-
-//#if MC>=11604
-//#else
-//$$ import net.minecraft.entity.Entity;
-//#endif
-
-//#if MC>=11600
-import net.minecraft.resource.ResourcePackSource;
-//#endif
-
 //#if MC>=11400
 import com.replaymod.render.mixin.MainWindowAccessor;
 import net.minecraft.SharedConstants;
-import net.minecraft.client.gui.Element;
-import net.minecraft.client.gui.ParentElement;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.gui.widget.ClickableWidget;
-import net.minecraft.client.util.Window;
-
 import java.util.concurrent.CompletableFuture;
-
-//#if MC>=11600
-import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableTextContent;
-//#else
-//$$ import net.minecraft.client.resource.language.I18n;
-//#endif
-//#else
-//$$ import com.google.common.util.concurrent.FutureCallback;
-//$$ import com.google.common.util.concurrent.Futures;
-//$$ import com.google.common.util.concurrent.ListenableFuture;
-//$$ import net.minecraft.client.gui.GuiButton;
-//$$ import net.minecraft.realms.RealmsSharedConstants;
-//#endif
-
-//#if MC>=11400
-import net.minecraft.client.util.InputUtil;
 import org.lwjgl.glfw.GLFW;
 //#else
 //$$ import net.minecraft.client.resources.ResourcePackRepository;
@@ -74,9 +32,17 @@ import org.lwjgl.glfw.GLFW;
 
 //#if MC>=10904
 import com.replaymod.render.blend.mixin.ParticleAccessor;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.events.ContainerEventHandler;
+import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.particle.Particle;
 //#endif
-
+import net.minecraft.network.ConnectionProtocol;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.phys.Vec3;
 //#if MC>=10800
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormatElement;
@@ -114,20 +80,20 @@ public class MCVer {
         //#endif
     }
 
-    public static NetworkPhase asMc(State state) {
+    public static ConnectionProtocol asMc(State state) {
         switch (state) {
-            case HANDSHAKE: return NetworkPhase.HANDSHAKING;
-            case STATUS: return NetworkPhase.STATUS;
-            case LOGIN: return NetworkPhase.LOGIN;
+            case HANDSHAKE: return ConnectionProtocol.HANDSHAKING;
+            case STATUS: return ConnectionProtocol.STATUS;
+            case LOGIN: return ConnectionProtocol.LOGIN;
             //#if MC>=12002
-            case CONFIGURATION: return NetworkPhase.CONFIGURATION;
+            case CONFIGURATION: return ConnectionProtocol.CONFIGURATION;
             //#endif
-            case PLAY: return NetworkPhase.PLAY;
+            case PLAY: return ConnectionProtocol.PLAY;
         }
         throw new IllegalArgumentException("Unexpected value: " + state);
     }
 
-    public static State fromMc(NetworkPhase mcState) {
+    public static State fromMc(ConnectionProtocol mcState) {
         switch (mcState) {
             case HANDSHAKING: return State.HANDSHAKE;
             case STATUS: return State.STATUS;
@@ -140,7 +106,7 @@ public class MCVer {
         throw new IllegalArgumentException("Unexpected value: " + mcState);
     }
 
-    public static PacketTypeRegistry getPacketTypeRegistry(NetworkPhase state) {
+    public static PacketTypeRegistry getPacketTypeRegistry(ConnectionProtocol state) {
         return getPacketTypeRegistry(fromMc(state));
     }
 
@@ -155,12 +121,12 @@ public class MCVer {
         );
     }
 
-    public static void resizeMainWindow(MinecraftClient mc, int width, int height) {
+    public static void resizeMainWindow(Minecraft mc, int width, int height) {
         //#if MC>=11400
         Window window = mc.getWindow();
         MainWindowAccessor mainWindow = (MainWindowAccessor) (Object) window;
         //noinspection ConstantConditions
-        mainWindow.invokeOnFramebufferSizeChanged(window.getHandle(), width, height);
+        mainWindow.invokeOnFramebufferResize(window.handle(), width, height);
         //#else
         //$$ if (width != mc.displayWidth || height != mc.displayHeight) {
         //$$     mc.resize(width, height);
@@ -250,14 +216,14 @@ public class MCVer {
     //$$ }
     //#endif
 
-    public static MinecraftClient getMinecraft() {
-        return MinecraftClient.getInstance();
+    public static Minecraft getMinecraft() {
+        return Minecraft.getInstance();
     }
 
     public static void addButton(
             Screen screen,
             //#if MC>=11400
-            ButtonWidget button
+            Button button
             //#else
             //$$ GuiButton button
             //#endif
@@ -271,29 +237,29 @@ public class MCVer {
     }
 
     //#if MC>=11400
-    public static Optional<ClickableWidget> findButton(Iterable<? extends Element> buttonList, @SuppressWarnings("unused") String text, @SuppressWarnings("unused") int id) {
+    public static Optional<AbstractWidget> findButton(Iterable<? extends GuiEventListener> buttonList, @SuppressWarnings("unused") String text, @SuppressWarnings("unused") int id) {
         //#if MC>=11600
-        final Text message = net.minecraft.text.Text.translatable(text);
+        final Component message = net.minecraft.network.chat.Component.translatable(text);
         //#else
         //$$ final String message = I18n.translate(text);
         //#endif
-        for (Element e : buttonList) {
-            if (e instanceof ParentElement) {
-                Optional<ClickableWidget> button = findButton(((ParentElement) e).children(), text, id);
+        for (GuiEventListener e : buttonList) {
+            if (e instanceof ContainerEventHandler) {
+                Optional<AbstractWidget> button = findButton(((ContainerEventHandler) e).children(), text, id);
                 if (button.isPresent()) {
                     return button;
                 }
             }
-            if (!(e instanceof ClickableWidget)) {
+            if (!(e instanceof AbstractWidget)) {
                 continue;
             }
-            ClickableWidget b = (ClickableWidget) e;
+            AbstractWidget b = (AbstractWidget) e;
             if (message.equals(b.getMessage())) {
                 return Optional.of(b);
             }
             //#if MC>=11600
             // Fuzzy match (copy does not include children)
-            if (b.getMessage() != null && b.getMessage().copyContentOnly().equals(message)) {
+            if (b.getMessage() != null && b.getMessage().plainCopy().equals(message)) {
                 return Optional.of(b);
             }
             //#endif
@@ -341,7 +307,7 @@ public class MCVer {
 
     public static long milliTime() {
         //#if MC>=11400
-        return Util.getMeasuringTimeMs();
+        return Util.getMillis();
         //#else
         //$$ return Minecraft.getSystemTime();
         //#endif
@@ -349,12 +315,12 @@ public class MCVer {
 
     //#if MC>=10904
     // TODO: this can be inlined once https://github.com/SpongePowered/Mixin/issues/305 is fixed
-    public static Vec3d getPosition(Particle particle, float partialTicks) {
+    public static Vec3 getPosition(Particle particle, float partialTicks) {
         ParticleAccessor acc = (ParticleAccessor) particle;
-        double x = acc.getLastX() + (acc.getPosX() - acc.getLastX()) * partialTicks;
-        double y = acc.getLastY() + (acc.getPosY() - acc.getLastY()) * partialTicks;
-        double z = acc.getLastZ() + (acc.getPosZ() - acc.getLastZ()) * partialTicks;
-        return new Vec3d(x, y, z);
+        double x = acc.getXo() + (acc.getPosX() - acc.getXo()) * partialTicks;
+        double y = acc.getYo() + (acc.getPosY() - acc.getYo()) * partialTicks;
+        double z = acc.getZo() + (acc.getPosZ() - acc.getZo()) * partialTicks;
+        return new Vec3(x, y, z);
     }
     //#endif
 
@@ -366,7 +332,7 @@ public class MCVer {
 
     public static void openFile(File file) {
         //#if MC>=11400
-        Util.getOperatingSystem().open(file);
+        Util.getPlatform().openFile(file);
         //#else
         //$$ String path = file.getAbsolutePath();
         //$$
@@ -396,7 +362,7 @@ public class MCVer {
 
     public static void openURL(URI url) {
         //#if MC>=11400
-        Util.getOperatingSystem().open(url);
+        Util.getPlatform().openUri(url);
         //#else
         //$$ try {
         //$$     Desktop.getDesktop().browse(url);
@@ -450,15 +416,15 @@ public class MCVer {
     //#endif
 
     //#if MC>=12105
-    public static void emitLine(MatrixStack matrixStack, VertexConsumer buffer, Vector2f p1, Vector2f p2, int color) {
+    public static void emitLine(PoseStack matrixStack, VertexConsumer buffer, Vector2f p1, Vector2f p2, int color, float lineWidth) {
     //#else
     // $$ public static void emitLine(MatrixStack matrixStack, BufferBuilder buffer, Vector2f p1, Vector2f p2, int color) {
     // #endif
-        emitLine(matrixStack, buffer, new Vector3f(p1.x, p1.y, 0), new Vector3f(p2.x, p2.y, 0), color);
+        emitLine(matrixStack, buffer, new Vector3f(p1.x, p1.y, 0), new Vector3f(p2.x, p2.y, 0), color, lineWidth);
     }
 
     //#if MC>=12105
-    public static void emitLine(MatrixStack matrixStack, VertexConsumer buffer, Vector3f p1, Vector3f p2, int color) {
+    public static void emitLine(PoseStack matrixStack, VertexConsumer buffer, Vector3f p1, Vector3f p2, int color, float lineWidth) {
     //#else
     //$$ public static void emitLine(MatrixStack matrixStack, BufferBuilder buffer, Vector3f p1, Vector3f p2, int color) {
     //#endif
@@ -470,23 +436,29 @@ public class MCVer {
         Vector3f n = Vector3f.sub(p2, p1, null);
         //#endif
         //#if MC>=11600
-        buffer.vertex(matrixStack.peek().getPositionMatrix(), p1.x, p1.y, p1.z)
+        buffer.addVertex(matrixStack.last().pose(), p1.x, p1.y, p1.z)
                 //#else
                 //$$ buffer.vertex(p1.x, p1.y, p1.z)
         //#endif
-                .color(r, g, b, a)
+                //#if MC>=12111
+                .setLineWidth(lineWidth)
+                //#endif
+                .setColor(r, g, b, a)
                 //#if MC>=11700
-                .normal(n.x, n.y, n.z)
+                .setNormal(n.x, n.y, n.z)
                 //#endif
         ;
         //#if MC>=11600
-        buffer.vertex(matrixStack.peek().getPositionMatrix(), p2.x, p2.y, p2.z)
+        buffer.addVertex(matrixStack.last().pose(), p2.x, p2.y, p2.z)
         //#else
         //$$ buffer.vertex(p2.x, p2.y, p2.z)
         //#endif
-                .color(r, g, b, a)
+                //#if MC>=12111
+                .setLineWidth(lineWidth)
+                //#endif
+                .setColor(r, g, b, a)
                 //#if MC>=11700
-                .normal(n.x, n.y, n.z)
+                .setNormal(n.x, n.y, n.z)
                 //#endif
         ;
     }
@@ -541,6 +513,11 @@ public class MCVer {
     public static abstract class Keyboard {
         //#if MC>=11400
         public static final int KEY_LCONTROL = GLFW.GLFW_KEY_LEFT_CONTROL;
+        public static final int KEY_RCONTROL = GLFW.GLFW_KEY_RIGHT_CONTROL;
+        public static final int KEY_LSUPER = GLFW.GLFW_KEY_LEFT_SUPER;
+        public static final int KEY_RSUPER = GLFW.GLFW_KEY_RIGHT_SUPER;
+        public static final int LEFT_CTRL = Util.getPlatform() == Util.OS.OSX ? KEY_LSUPER : KEY_LCONTROL;
+        public static final int RIGHT_CTRL = Util.getPlatform() == Util.OS.OSX ? KEY_RSUPER : KEY_RCONTROL;
         public static final int KEY_LSHIFT = GLFW.GLFW_KEY_LEFT_SHIFT;
         public static final int KEY_ESCAPE = GLFW.GLFW_KEY_ESCAPE;
         public static final int KEY_HOME = GLFW.GLFW_KEY_HOME;
@@ -623,13 +600,11 @@ public class MCVer {
         //$$ public static final int KEY_Z = org.lwjgl.input.Keyboard.KEY_Z;
         //#endif
 
-        public static boolean hasControlDown() {
-            return Screen.hasControlDown();
-        }
-
         public static boolean isKeyDown(int keyCode) {
-            //#if MC>=11500
-            return InputUtil.isKeyPressed(getMinecraft().getWindow().getHandle(), keyCode);
+            //#if MC>=12109
+            return InputConstants.isKeyDown(getMinecraft().getWindow(), keyCode);
+            //#elseif MC>=11500
+            //$$ return InputConstants.isKeyDown(getMinecraft().getWindow().getWindow(), keyCode);
             //#else
             //#if MC>=11400
             //$$ return InputUtil.isKeyPressed(getMinecraft().window.getHandle(), keyCode);

@@ -1,87 +1,53 @@
 package com.replaymod.render.mixin;
 
+import com.llamalad7.mixinextras.sugar.Local;
+import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import com.replaymod.core.versions.MCVer;
 import com.replaymod.render.hooks.EntityRendererHandler;
-import net.minecraft.client.render.entity.EntityRenderDispatcher;
-import net.minecraft.entity.Entity;
+import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-
-//#if MC>=12102
-import net.minecraft.client.render.entity.EntityRenderer;
-//#endif
-
-//#if MC>=11500
-import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.util.math.MatrixStack;
-import org.joml.Vector3f;
-import org.joml.Quaternionf;
-//#endif
-
-//#if MC>=10904
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-//#else
-//$$ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-//#endif
 
 @Mixin(EntityRenderDispatcher.class)
 public abstract class MixinRenderManager {
-    //#if MC>=11500
-    @Shadow private Quaternionf rotation;
-    //#else
-    //$$ @Shadow private float cameraPitch;
-    //$$ @Shadow private float cameraYaw;
-    //#endif
-
-    //#if MC>=12102
-    @Inject(method = "render(Lnet/minecraft/entity/Entity;DDDFLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;ILnet/minecraft/client/render/entity/EntityRenderer;)V", at = @At("HEAD"))
-    //#elseif MC>=11500
-    //$$ @Inject(method = "render", at = @At("HEAD"))
-    //#else
-    //#if MC>=11400 && FABRIC>=1
-    //$$ @Inject(method = "render(Lnet/minecraft/entity/Entity;DDDFFZ)V", at = @At("HEAD"))
-    //#else
-    //#if MC>=11400
-    //$$ @Inject(method = "renderEntity", at = @At("HEAD"))
-    //#else
-    //$$ @Inject(method = "doRenderEntity", at = @At("HEAD"))
-    //#endif
-    //#endif
-    //#endif
-    //#if MC>=10904
-    private void replayModRender_reorientForCubicRendering(Entity entity, double dx, double dy, double dz,
-                                                           //#if MC<12102
-                                                           //$$ float iDoNotKnow,
-                                                           //#endif
-                                                           float partialTicks,
-                                                           //#if MC>=11500
-                                                           MatrixStack matrixStack,
-                                                           VertexConsumerProvider vertexConsumerProvider,
-                                                           int int_1,
-                                                           //#else
-                                                           //$$ boolean iDoNotCare,
-                                                           //#endif
-                                                           //#if MC>=12102
-                                                           EntityRenderer<?, ?> renderer,
-                                                           //#endif
-                                                           CallbackInfo ci) {
-    //#else
-    //$$ private void replayModRender_reorientForCubicRendering(Entity entity, double dx, double dy, double dz, float iDoNotKnow, float partialTicks, boolean iDoNotCare, CallbackInfoReturnable<Boolean> ci) {
-    //#endif
+    @Inject(method = "submit", at = @At("HEAD"))
+    private void replayModRender_reorientForCubicRendering(
+            CallbackInfo ci,
+            @Local(argsOnly = true, ordinal = 0) double dx,
+            @Local(argsOnly = true, ordinal = 1) double dy,
+            @Local(argsOnly = true, ordinal = 2) double dz,
+            @Local(argsOnly = true) LocalRef<CameraRenderState> cameraRenderStateRef
+    ) {
         EntityRendererHandler handler = ((EntityRendererHandler.IEntityRenderer) MCVer.getMinecraft().gameRenderer).replayModRender_getHandler();
-        if (handler != null && handler.omnidirectional) {
-            double pitch = -Math.atan2(dy, Math.sqrt(dx * dx + dz * dz));
-            double yaw = -Math.atan2(dx, dz);
-            //#if MC>=11500
-            this.rotation = new Quaternionf(0.0F, 0.0F, 0.0F, 1.0F);
-            this.rotation.mul(new org.joml.Quaternionf().fromAxisAngleDeg(new org.joml.Vector3f(0, 1, 0), (float) -yaw));
-            this.rotation.mul(new org.joml.Quaternionf().fromAxisAngleDeg(new org.joml.Vector3f(1, 0, 0), (float) pitch));
-            //#else
-            //$$ this.cameraPitch = (float) Math.toDegrees(pitch);
-            //$$ this.cameraYaw = (float) Math.toDegrees(yaw);
-            //#endif
+        if (handler == null || !handler.omnidirectional) {
+            return;
         }
+
+        CameraRenderState org = cameraRenderStateRef.get();
+        CameraRenderState copy = new CameraRenderState();
+        copy.blockPos = org.blockPos;
+        copy.pos = org.pos;
+        copy.initialized = org.initialized;
+        //#if MC < 26.1
+        //$$ copy.entityPos = org.entityPos;
+        //#endif
+        copy.orientation.lookAlong((float) dx, (float) dy, (float) dz, 0f, 1f, 0f);
+        //#if MC >= 26.1
+        copy.xRot = org.xRot;
+        copy.yRot = org.yRot;
+        copy.isPanoramicMode = org.isPanoramicMode;
+        copy.cullFrustum.set(org.cullFrustum);
+        copy.fogType = org.fogType;
+        copy.fogData = org.fogData;
+        copy.hudFov = org.hudFov;
+        copy.depthFar = org.depthFar;
+        copy.projectionMatrix.set(org.projectionMatrix);
+        copy.viewRotationMatrix.set(org.viewRotationMatrix);
+        copy.entityRenderState = org.entityRenderState;
+        //#endif
+        cameraRenderStateRef.set(copy);
     }
 }

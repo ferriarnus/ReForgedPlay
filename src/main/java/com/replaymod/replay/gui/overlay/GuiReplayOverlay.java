@@ -16,14 +16,15 @@ import de.johni0702.minecraft.gui.element.GuiElement;
 import de.johni0702.minecraft.gui.element.GuiSlider;
 import de.johni0702.minecraft.gui.element.GuiTooltip;
 import de.johni0702.minecraft.gui.element.advanced.IGuiTimeline;
+import de.johni0702.minecraft.gui.function.KeyInput;
 import de.johni0702.minecraft.gui.layout.CustomLayout;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadablePoint;
 import de.johni0702.minecraft.gui.utils.lwjgl.WritablePoint;
-import net.minecraft.client.option.GameOptions;
-import net.minecraft.client.resource.language.I18n;
+import net.minecraft.client.Options;
+import net.minecraft.client.resources.language.I18n;
 
 import static com.replaymod.core.ReplayMod.TEXTURE_SIZE;
 
@@ -44,7 +45,7 @@ public class GuiReplayOverlay extends AbstractGuiOverlay<GuiReplayOverlay> {
                 } else { // Pause button
                     label = "replaymod.gui.ingame.menu.pause";
                 }
-                tooltip.setText(I18n.translate(label) + " (" + mod.keyPlayPause.getBoundKey() + ")");
+                tooltip.setText(I18n.get(label) + " (" + mod.keyPlayPause.getBoundKey() + ")");
             }
             return tooltip;
         }
@@ -117,7 +118,7 @@ public class GuiReplayOverlay extends AbstractGuiOverlay<GuiReplayOverlay> {
             @Override
             public void run() {
                 double speed = getSpeedSliderValue();
-                speedSlider.setText(I18n.translate("replaymod.gui.speed") + ": " + speed + "x");
+                speedSlider.setText(I18n.get("replaymod.gui.speed") + ": " + speed + "x");
                 ReplaySender replaySender = replayHandler.getReplaySender();
                 if (!replaySender.paused()) {
                     replaySender.setReplaySpeed(speed);
@@ -157,7 +158,7 @@ public class GuiReplayOverlay extends AbstractGuiOverlay<GuiReplayOverlay> {
     @Override
     public void draw(GuiRenderer renderer, ReadableDimension size, RenderInfo renderInfo) {
         // Do not render overlay if all hud, or this one specifically, is hidden and we're not in some popup
-        if ((getMinecraft().options.hudHidden || hidden) && isAllowUserInput()) {
+        if ((getMinecraft().options.hideGui || hidden) && isAllowUserInput()) {
             // Note that this only applies to when the mouse is visible, otherwise
             // the draw method isn't called in the first place
             return;
@@ -173,21 +174,23 @@ public class GuiReplayOverlay extends AbstractGuiOverlay<GuiReplayOverlay> {
     private class EventHandler extends EventRegistrations {
         { on(KeyBindingEventCallback.EVENT, this::onKeyBindingEvent); }
         private void onKeyBindingEvent() {
-            GameOptions gameSettings = getMinecraft().options;
-            while (gameSettings.chatKey.wasPressed() || gameSettings.commandKey.wasPressed()) {
+            Options gameSettings = getMinecraft().options;
+            while (gameSettings.keyChat.consumeClick() || gameSettings.keyCommand.consumeClick()) {
                 if (!isMouseVisible()) {
                     setMouseVisible(true);
                 }
             }
         }
 
-        { on(KeyEventCallback.EVENT, (int key, int scanCode, int action, int modifiers) -> { onKeyInput(key, action); return false; }); }
-        private void onKeyInput(int key, int action) {
-            if (action != KeyEventCallback.ACTION_PRESS) return;
+        { on(KeyEventCallback.EVENT, this::onKeyInput); }
+        private boolean onKeyInput(KeyInput keyInput, int action) {
+            if (action != KeyEventCallback.ACTION_PRESS) return false;
             // Allow F1 to be used to hide the replay gui (e.g. for recording with OBS)
-            if (isMouseVisible() && key == Keyboard.KEY_F1) {
+            if (isMouseVisible() && keyInput.key == Keyboard.KEY_F1) {
                 hidden = !hidden;
+                return true;
             }
+            return false;
         }
     }
 }

@@ -2,9 +2,9 @@
 package com.replaymod.replay.mixin;
 
 import com.replaymod.replay.camera.CameraEntity;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.client.network.ClientPlayerInteractionManager;
-import net.minecraft.world.GameMode;
+import net.minecraft.client.multiplayer.MultiPlayerGameMode;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.world.level.GameType;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Pseudo;
 import org.spongepowered.asm.mixin.injection.At;
@@ -19,17 +19,17 @@ public abstract class Mixin_ShowSpectatedHand_Iris {
             method = "*",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/client/network/ClientPlayerInteractionManager;getCurrentGameMode()Lnet/minecraft/world/GameMode;",
+                    target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;getPlayerMode()Lnet/minecraft/world/level/GameType;",
                     remap = true
             )
     )
-    private GameMode getGameMode(ClientPlayerInteractionManager interactionManager) {
-        ClientPlayerEntity camera = getMinecraft().player;
+    private GameType getGameMode(MultiPlayerGameMode interactionManager) {
+        LocalPlayer camera = getMinecraft().player;
         if (camera instanceof CameraEntity) {
             // alternative doesn't really matter, the caller only checks for equality to SPECTATOR
-            return camera.isSpectator() ? GameMode.SPECTATOR : GameMode.SURVIVAL;
+            return camera.isSpectator() ? GameType.SPECTATOR : GameType.SURVIVAL;
         }
-        return interactionManager.getCurrentGameMode();
+        return interactionManager.getPlayerMode();
     }
 }
 //#endif

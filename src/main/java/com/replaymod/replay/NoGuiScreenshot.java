@@ -4,10 +4,9 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 import com.replaymod.core.ReplayMod;
 import de.johni0702.minecraft.gui.versions.Image;
-import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.DeltaTracker;
+import net.minecraft.client.Minecraft;
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.render.RenderTickCounter;
-import net.minecraft.client.util.ScreenshotRecorder;
 
 import static com.replaymod.core.versions.MCVer.popMatrix;
 import static com.replaymod.core.versions.MCVer.pushMatrix;
@@ -18,10 +17,9 @@ import static com.replaymod.core.versions.MCVer.pushMatrix;
 //$$ import com.mojang.blaze3d.buffers.BufferUsage;
 //#endif
 import com.mojang.blaze3d.buffers.GpuBuffer;
+import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.CommandEncoder;
 import com.mojang.blaze3d.systems.GpuDevice;
-import net.minecraft.client.texture.NativeImage;
-//#endif
 
 public class NoGuiScreenshot {
     private final Image image;
@@ -46,7 +44,7 @@ public class NoGuiScreenshot {
         return height;
     }
 
-    public static ListenableFuture<NoGuiScreenshot> take(final MinecraftClient mc, final int width, final int height) {
+    public static ListenableFuture<NoGuiScreenshot> take(final Minecraft mc, final int width, final int height) {
         final SettableFuture<NoGuiScreenshot> future = SettableFuture.create();
         Runnable runnable = new Runnable() {
             @Override
@@ -55,19 +53,19 @@ public class NoGuiScreenshot {
                     return;
                 }
 
-                int frameWidth = mc.getWindow().getFramebufferWidth();
-                int frameHeight = mc.getWindow().getFramebufferHeight();
+                int frameWidth = mc.getWindow().getWidth();
+                int frameHeight = mc.getWindow().getHeight();
 
-                final boolean guiHidden = mc.options.hudHidden;
+                final boolean guiHidden = mc.options.hideGui;
                 try {
-                    mc.options.hudHidden = true;
+                    mc.options.hideGui = true;
 
                     // Render frame without GUI
                     pushMatrix();
                     //#if MC>=12105
                     RenderSystem.getDevice()
                             .createCommandEncoder()
-                            .clearColorAndDepthTextures(mc.getFramebuffer().getColorAttachment(), 0, mc.getFramebuffer().getDepthAttachment(), 1);
+                            .clearColorAndDepthTextures(mc.getMainRenderTarget().getColorTexture(), 0, mc.getMainRenderTarget().getDepthTexture(), 1);
                     //#else
                     //$$ RenderSystem.clear(
                             //$$         16640
@@ -82,7 +80,7 @@ public class NoGuiScreenshot {
                     //#endif
 
                     //#if MC>=12100
-                    mc.gameRenderer.renderWorld(RenderTickCounter.ONE);
+                    mc.gameRenderer.renderLevel(DeltaTracker.ONE);
                     //#else
                     //$$ float tickDelta = mc.getTickDelta();
                     //#if MC>=12006
@@ -116,7 +114,7 @@ public class NoGuiScreenshot {
                     return;
                 } finally {
                     // Reset GUI settings
-                    mc.options.hudHidden = guiHidden;
+                    mc.options.hideGui = guiHidden;
                 }
 
                 // The frame without GUI has been rendered
@@ -131,7 +129,7 @@ public class NoGuiScreenshot {
                     //$$ try (GpuBuffer gpuBuffer = device.createBuffer(null, BufferType.PIXEL_PACK, BufferUsage.STATIC_READ, frameWidth * frameHeight * 4)) {
                     //#endif
                         CommandEncoder cmd = device.createCommandEncoder();
-                        cmd.copyTextureToBuffer(mc.getFramebuffer().getColorAttachment(), gpuBuffer, 0, () -> {}, 0);
+                        cmd.copyTextureToBuffer(mc.getMainRenderTarget().getColorTexture(), gpuBuffer, 0, () -> {}, 0);
                     //#if MC>=12106
                         try (GpuBuffer.MappedView readView = cmd.mapBuffer(gpuBuffer, true, false)) {
                     //#else
@@ -141,7 +139,7 @@ public class NoGuiScreenshot {
                             for (int y = 0; y < frameHeight; ++y) {
                                 for (int x = 0; x < frameWidth; ++x) {
                                     int color = readView.data().getInt((x + y * frameWidth) * 4);
-                                    nativeImage.setColor(x, frameHeight - y - 1, 0xff000000 | color);
+                                    nativeImage.setPixelABGR(x, frameHeight - y - 1, 0xff000000 | color);
                                 }
                             }
                             image = new Image(nativeImage);

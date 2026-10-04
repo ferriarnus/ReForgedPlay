@@ -10,8 +10,6 @@ import com.replaymod.replay.events.ReplayOpenedCallback;
 import com.replaymod.replaystudio.replay.ReplayFile;
 import de.johni0702.minecraft.gui.container.VanillaGuiScreen;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
-import net.minecraft.util.crash.CrashReport;
-import net.minecraft.util.crash.CrashException;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -21,6 +19,8 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import net.minecraft.CrashReport;
+import net.minecraft.ReportedException;
 
 public class ReplayModRender extends EventRegistrations implements Module {
     { instance = this; }
@@ -50,17 +50,17 @@ public class ReplayModRender extends EventRegistrations implements Module {
 
     public File getVideoFolder() {
         String path = core.getSettingsRegistry().get(Setting.RENDER_PATH);
-        File folder = new File(path.startsWith("./") ? core.getMinecraft().runDirectory : null, path);
+        File folder = new File(path.startsWith("./") ? core.getMinecraft().gameDirectory : null, path);
         try {
             FileUtils.forceMkdir(folder);
         } catch (IOException e) {
-            throw new CrashException(CrashReport.create(e, "Cannot create video folder."));
+            throw new ReportedException(CrashReport.forThrowable(e, "Cannot create video folder."));
         }
         return folder;
     }
 
     public Path getRenderSettingsPath() {
-        return core.getMinecraft().runDirectory.toPath().resolve("config/replaymod-rendersettings.json");
+        return core.getMinecraft().gameDirectory.toPath().resolve("config/replaymod-rendersettings.json");
     }
 
     public List<RenderJob> getRenderQueue() {
@@ -73,7 +73,7 @@ public class ReplayModRender extends EventRegistrations implements Module {
         try {
             renderQueue.addAll(RenderJob.readQueue(replayFile));
         } catch (IOException e) {
-            throw new CrashException(CrashReport.create(e, "Reading timeline"));
+            throw new ReportedException(CrashReport.forThrowable(e, "Reading timeline"));
         }
     }
 
@@ -88,8 +88,8 @@ public class ReplayModRender extends EventRegistrations implements Module {
             RenderJob.writeQueue(replayFile, renderQueue);
         } catch (IOException e) {
             e.printStackTrace();
-            VanillaGuiScreen screen = VanillaGuiScreen.wrap(getCore().getMinecraft().currentScreen);
-            CrashReport report = CrashReport.create(e, "Reading timeline");
+            VanillaGuiScreen screen = VanillaGuiScreen.wrap(getCore().getMinecraft().screen);
+            CrashReport report = CrashReport.forThrowable(e, "Reading timeline");
             Utils.error(LOGGER, screen, report, () -> {});
         }
     }

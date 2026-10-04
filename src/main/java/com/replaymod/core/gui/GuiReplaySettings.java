@@ -14,13 +14,12 @@ import de.johni0702.minecraft.gui.layout.VerticalLayout;
 import de.johni0702.minecraft.gui.utils.Consumer;
 import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
-import net.minecraft.client.resource.language.I18n;
-
 import java.util.List;
+import net.minecraft.client.resources.language.I18n;
 
 public class GuiReplaySettings extends AbstractGuiScreen<GuiReplaySettings> {
 
-    public GuiReplaySettings(final net.minecraft.client.gui.screen.Screen parent, final SettingsRegistry settingsRegistry) {
+    public GuiReplaySettings(final net.minecraft.client.gui.screens.Screen parent, final SettingsRegistry settingsRegistry) {
         final GuiButton doneButton = new GuiButton(this).setI18nLabel("gui.done").setSize(200, 20).onClick(new Runnable() {
             @Override
             public void run() {
@@ -43,7 +42,7 @@ public class GuiReplaySettings extends AbstractGuiScreen<GuiReplaySettings> {
                     final SettingsRegistry.SettingKey<Boolean> booleanKey = (SettingsRegistry.SettingKey<Boolean>) key;
                     final GuiToggleButton button = new GuiToggleButton<>().setSize(150, 20)
                             .setI18nLabel(key.getDisplayString()).setSelected(settingsRegistry.get(booleanKey) ? 0 : 1)
-                            .setValues(I18n.translate("options.on"), I18n.translate("options.off"));
+                            .setValues(I18n.get("options.on"), I18n.get("options.off"));
                     element = button.onClick(new Runnable() {
                         @Override
                         public void run() {
@@ -61,7 +60,7 @@ public class GuiReplaySettings extends AbstractGuiScreen<GuiReplaySettings> {
                     for (int j = 0; j < entries.length; j++) {
                         Object value = values.get(j);
                         entries[j] = new MultipleChoiceDropdownEntry(value,
-                                I18n.translate(multipleChoiceKey.getDisplayString()) + ": " + I18n.translate(value.toString()));
+                                I18n.get(multipleChoiceKey.getDisplayString()) + ": " + I18n.get(value.toString()));
                         if (currentValue.equals(value)) {
                             selected = j;
                         }

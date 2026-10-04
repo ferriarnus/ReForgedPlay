@@ -3,12 +3,13 @@ package com.replaymod.core.versions;
 
 import com.google.gson.Gson;
 import com.replaymod.core.ReplayMod;
-import net.minecraft.resource.AbstractFileResourcePack;
-import net.minecraft.resource.ResourcePackInfo;
-import net.minecraft.resource.ResourcePackSource;
-import net.minecraft.resource.ResourceType;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.packs.AbstractPackResources;
+import net.minecraft.server.packs.PackLocationInfo;
+import net.minecraft.server.packs.PackType;
+import net.minecraft.server.packs.repository.PackSource;
+import net.minecraft.server.packs.resources.IoSupplier;
 import net.neoforged.fml.loading.LoadingModList;
 import net.neoforged.fml.loading.moddiscovery.ModFileInfo;
 import org.apache.commons.io.IOUtils;
@@ -33,22 +34,11 @@ import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
-
-//#if FABRIC>=1
-//#else
-//#endif
-
-//#if MC>=12006
-import net.minecraft.resource.ResourcePackInfo;
-import net.minecraft.resource.ResourcePackSource;
-import net.minecraft.text.Text;
 import java.util.Optional;
 //#endif
 
 //#if MC>=11903
 import java.util.Objects;
-import net.minecraft.resource.InputSupplier;
-//#endif
 
 //#if MC>=11400
 //#else
@@ -63,7 +53,7 @@ import net.minecraft.resource.InputSupplier;
  * Resource pack which on-the-fly converts pre-1.13 language files into 1.13 json format.
  * Also duplicates `replaymod.input.*` bindings to `key.replaymod.*` as convention on Fabric.
  */
-public class LangResourcePack extends AbstractFileResourcePack {
+public class LangResourcePack extends AbstractPackResources {
     private static final Gson GSON = new Gson();
     public static final String NAME = "replaymod_lang";
     private static final Pattern JSON_FILE_PATTERN = Pattern.compile("^assets/" + ReplayMod.MOD_ID + "/lang/([a-z][a-z])_([a-z][a-z]).json$");
@@ -76,7 +66,7 @@ public class LangResourcePack extends AbstractFileResourcePack {
     private final Path basePath;
     public LangResourcePack() {
         //#if MC>=12006
-        super(new ResourcePackInfo(NAME, Text.literal("ReplayMod Translations"), ResourcePackSource.NONE, Optional.empty()));
+        super(new PackLocationInfo(NAME, Component.literal("ReplayMod Translations"), PackSource.DEFAULT, Optional.empty()));
         //#elseif MC>=11903
         //$$ super(NAME, true);
         //#else
@@ -88,7 +78,7 @@ public class LangResourcePack extends AbstractFileResourcePack {
         if (container == null) {
             throw new IllegalStateException("Could not find ReplayMod container for " + ReplayMod.MOD_ID);
         }
-        this.basePath = container.getFile().getSecureJar().getRootPath();
+        this.basePath = container.getFile().getFilePath().getRoot();
         //#else
         //$$ this.basePath = null; // stub
         //#endif
@@ -138,7 +128,7 @@ public class LangResourcePack extends AbstractFileResourcePack {
 
     //#if MC>=11903
     @Override
-    public InputSupplier<InputStream> openRoot(String... segments) {
+    public IoSupplier<InputStream> getRootResource(String... segments) {
         byte[] bytes;
         try {
             bytes = readFile(String.join("/", segments));
@@ -154,8 +144,8 @@ public class LangResourcePack extends AbstractFileResourcePack {
 
     //#if MC>=11903
     @Override
-    public InputSupplier<InputStream> open(ResourceType type, Identifier id) {
-        return openRoot(type.getDirectory(), id.getNamespace(), id.getPath());
+    public IoSupplier<InputStream> getResource(PackType type, Identifier id) {
+        return getRootResource(type.getDirectory(), id.getNamespace(), id.getPath());
     }
     //#else
     //$$ @Override
@@ -195,6 +185,11 @@ public class LangResourcePack extends AbstractFileResourcePack {
                 key = String.format(FABRIC_KEY_FORMAT, key.substring(LEGACY_KEY_PREFIX.length()));
             }
             //#endif
+            //#if MC>=12109
+            if (key.equals("replaymod.title")) {
+                properties.put("key.category.replaymod.general", value);
+            }
+            //#endif
             properties.put(key, value);
         }
 
@@ -213,7 +208,7 @@ public class LangResourcePack extends AbstractFileResourcePack {
 
     //#if MC>=11903
     @Override
-    public void findResources(ResourceType type, String namespace, String prefix, ResultConsumer consumer) {
+    public void listResources(PackType type, String namespace, String prefix, ResourceOutput consumer) {
         findResources(type, prefix, id -> consumer.accept(id, () -> new ByteArrayInputStream(Objects.requireNonNull(readFile(id.getPath())))));
     }
     //#else
@@ -245,8 +240,8 @@ public class LangResourcePack extends AbstractFileResourcePack {
     //$$ }
     //#endif
 
-    private void findResources(ResourceType type, String path, Consumer<Identifier> consumer) {
-        if (type != ResourceType.CLIENT_RESOURCES) return;
+    private void findResources(PackType type, String path, Consumer<Identifier> consumer) {
+        if (type != PackType.CLIENT_RESOURCES) return;
         if (!"lang".equals(path)) return;
         Path base = baseLangPath();
         //#if MC<11400
@@ -260,7 +255,7 @@ public class LangResourcePack extends AbstractFileResourcePack {
                     .map(LANG_FILE_NAME_PATTERN::matcher)
                     .filter(Matcher::matches)
                     .map(matcher -> String.format("%s_%s.json", matcher.group(1), matcher.group(1)))
-                    .map(name -> Identifier.of(ReplayMod.MOD_ID, "lang/" + name))
+                    .map(name -> Identifier.fromNamespaceAndPath(ReplayMod.MOD_ID, "lang/" + name))
                     .forEach(consumer);
         } catch (IOException e) {
             e.printStackTrace();
@@ -268,8 +263,8 @@ public class LangResourcePack extends AbstractFileResourcePack {
     }
 
     @Override
-    public Set<String> getNamespaces(ResourceType resourcePackType) {
-        if (resourcePackType == ResourceType.CLIENT_RESOURCES) {
+    public Set<String> getNamespaces(PackType resourcePackType) {
+        if (resourcePackType == PackType.CLIENT_RESOURCES) {
             return Collections.singleton("replaymod");
         } else {
             return Collections.emptySet();

@@ -25,7 +25,7 @@
 package de.johni0702.minecraft.gui.element;
 
 import de.johni0702.minecraft.gui.versions.Image;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.Identifier;
 
 public interface IGuiImage<T extends IGuiImage<T>> extends GuiElement<T> {
     T setTexture(Image img);

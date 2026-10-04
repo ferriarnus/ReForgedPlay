@@ -29,14 +29,13 @@ import de.johni0702.minecraft.gui.utils.lwjgl.Point;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableColor;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadablePoint;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.Identifier;
 
 import static de.johni0702.minecraft.gui.versions.MCVer.popScissorState;
 import static de.johni0702.minecraft.gui.versions.MCVer.pushScissorState;
 //#if MC>=12105
 import com.mojang.blaze3d.textures.GpuTexture;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.resources.Identifier;
 //#endif
 
 public class OffsetGuiRenderer implements GuiRenderer {
@@ -98,7 +97,7 @@ public class OffsetGuiRenderer implements GuiRenderer {
 
     //#if MC>=12000
     @Override
-    public DrawContext getContext() {
+    public GuiGraphicsExtractor getContext() {
         return renderer.getContext();
     }
     //#endif

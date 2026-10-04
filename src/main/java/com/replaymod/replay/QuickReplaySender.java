@@ -18,13 +18,9 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.network.state.NetworkState;
-import net.minecraft.network.NetworkSide;
-import net.minecraft.network.packet.Packet;
-import net.minecraft.network.PacketByteBuf;
-
 import javax.annotation.Nullable;
+import net.minecraft.client.Minecraft;
+import net.minecraft.network.FriendlyByteBuf;
 import java.io.IOException;
 import java.util.function.Consumer;
 
@@ -41,7 +37,7 @@ import static com.replaymod.replay.ReplayModReplay.LOGGER;
  */
 @ChannelHandler.Sharable
 public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySender {
-    private final MinecraftClient mc = getMinecraft();
+    private final Minecraft mc = getMinecraft();
 
     private final ReplayModReplay mod;
     private final RandomAccessReplay replay;
@@ -80,7 +76,7 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
 
                 // Combine id + payload
                 ByteBuf bufWithId = channel.alloc().heapBuffer(2 + wrappedBuf.readableBytes());
-                new PacketByteBuf(bufWithId).writeVarInt(packet.getId());
+                new FriendlyByteBuf(bufWithId).writeVarInt(packet.getId());
                 bufWithId.writeBytes(wrappedBuf);
 
                 channel.pipeline().fireChannelRead(bufWithId);

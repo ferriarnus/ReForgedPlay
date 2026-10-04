@@ -1,13 +1,13 @@
 package com.replaymod.recording.mixin;
 
-import net.minecraft.network.ClientConnection;
-import net.minecraft.network.listener.ServerConfigurationPacketListener;
-import net.minecraft.network.listener.TickablePacketListener;
+import net.minecraft.network.Connection;
+import net.minecraft.network.TickablePacketListener;
+import net.minecraft.network.protocol.configuration.ServerConfigurationPacketListener;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ConnectedClientData;
-import net.minecraft.server.network.ServerCommonNetworkHandler;
-import net.minecraft.server.network.ServerConfigurationNetworkHandler;
-import net.minecraft.server.network.ServerPlayerConfigurationTask;
+import net.minecraft.server.network.CommonListenerCookie;
+import net.minecraft.server.network.ConfigurationTask;
+import net.minecraft.server.network.ServerCommonPacketListenerImpl;
+import net.minecraft.server.network.ServerConfigurationPacketListenerImpl;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.network.configuration.SyncRegistries;
 import net.neoforged.neoforge.network.payload.FrozenRegistryPayload;
@@ -22,14 +22,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.Queue;
 
-@Mixin(ServerConfigurationNetworkHandler.class)
-public abstract class Mixin_NeoSync extends ServerCommonNetworkHandler implements ServerConfigurationPacketListener, TickablePacketListener {
+@Mixin(ServerConfigurationPacketListenerImpl.class)
+public abstract class Mixin_NeoSync extends ServerCommonPacketListenerImpl implements ServerConfigurationPacketListener, TickablePacketListener {
 
     @Final
     @Shadow
-    private Queue<ServerPlayerConfigurationTask> tasks;
+    private Queue<ConfigurationTask> configurationTasks;
 
-    public Mixin_NeoSync(MinecraftServer server, ClientConnection connection, ConnectedClientData clientData) {
+    public Mixin_NeoSync(MinecraftServer server, Connection connection, CommonListenerCookie clientData) {
         super(server, connection, clientData);
     }
 
@@ -38,8 +38,8 @@ public abstract class Mixin_NeoSync extends ServerCommonNetworkHandler implement
         if (this.hasChannel(FrozenRegistrySyncStartPayload.TYPE) &&
                 this.hasChannel(FrozenRegistryPayload.TYPE) &&
                 this.hasChannel(FrozenRegistrySyncCompletedPayload.TYPE) &&
-                this.getConnection().isLocal()) {
-            this.tasks.add(new SyncRegistries());
+                this.getConnection().isMemoryConnection()) {
+            this.configurationTasks.add(new SyncRegistries());
         }
     }
 }

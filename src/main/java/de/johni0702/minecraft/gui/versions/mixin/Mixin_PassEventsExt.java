@@ -1,7 +1,7 @@
 package de.johni0702.minecraft.gui.versions.mixin;
 
 import de.johni0702.minecraft.gui.versions.ScreenExt;
-import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.screens.Screen;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 //#else

@@ -10,16 +10,17 @@ import com.replaymod.replaystudio.util.Location;
 import de.johni0702.minecraft.gui.GuiRenderer;
 import de.johni0702.minecraft.gui.RenderInfo;
 import de.johni0702.minecraft.gui.element.advanced.AbstractGuiTimeline;
+import de.johni0702.minecraft.gui.function.Click;
 import de.johni0702.minecraft.gui.function.Draggable;
+import de.johni0702.minecraft.gui.function.KeyHandler;
+import de.johni0702.minecraft.gui.function.KeyInput;
 import de.johni0702.minecraft.gui.function.Typeable;
 import de.johni0702.minecraft.gui.utils.lwjgl.Point;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadablePoint;
-import net.minecraft.client.resource.language.I18n;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-
+import net.minecraft.client.resources.language.I18n;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
@@ -27,7 +28,7 @@ import java.util.function.Consumer;
 
 import static de.johni0702.minecraft.gui.utils.Utils.clamp;
 
-public class GuiMarkerTimeline extends AbstractGuiTimeline<GuiMarkerTimeline> implements Draggable, Typeable {
+public class GuiMarkerTimeline extends AbstractGuiTimeline<GuiMarkerTimeline> implements Draggable, KeyHandler {
     protected static final int TEXTURE_MARKER_X = 109;
     protected static final int TEXTURE_MARKER_Y = 20;
     protected static final int TEXTURE_MARKER_SELECTED_X = 114;
@@ -149,15 +150,15 @@ public class GuiMarkerTimeline extends AbstractGuiTimeline<GuiMarkerTimeline> im
     }
 
     @Override
-    public boolean mouseClick(ReadablePoint position, int button) {
-        Marker marker = getMarkerAt(position.getX(), position.getY());
+    public boolean mouseClick(Click click) {
+        Marker marker = getMarkerAt(click.x, click.y);
         if (marker != null) {
-            if (button == 0) { // Left click
+            if (click.button == 0) { // Left click
                 long now = System.currentTimeMillis();
                 selectedMarker = marker;
                 if (Math.abs(lastClickTime - now) > 500) { // Single click
-                    draggingStartX = position.getX();
-                    draggingTimeDelta = marker.getTime() - getTimeAt(position.getX(), position.getY());
+                    draggingStartX = click.x;
+                    draggingTimeDelta = marker.getTime() - getTimeAt(click.x, click.y);
                 } else { // Double click
                     new GuiEditMarkerPopup(getContainer(), marker, (updatedMarker) -> {
                         markers.remove(marker);
@@ -166,7 +167,7 @@ public class GuiMarkerTimeline extends AbstractGuiTimeline<GuiMarkerTimeline> im
                     }).open();
                 }
                 lastClickTime = now;
-            } else if (button == 1) { // Right click
+            } else if (click.button == 1) { // Right click
                 selectedMarker = null;
                 if (replayHandler != null) {
                     CameraEntity cameraEntity = replayHandler.getCameraEntity();
@@ -185,18 +186,18 @@ public class GuiMarkerTimeline extends AbstractGuiTimeline<GuiMarkerTimeline> im
         } else {
             selectedMarker = null;
         }
-        return super.mouseClick(position, button);
+        return super.mouseClick(click);
     }
 
     @Override
-    public boolean mouseDrag(ReadablePoint position, int button, long timeSinceLastCall) {
+    public boolean mouseDrag(Click click) {
         if (selectedMarker != null) {
-            int diff = position.getX() - draggingStartX;
+            int diff = click.x - draggingStartX;
             if (Math.abs(diff) > MARKER_SIZE) {
                 dragging = true;
             }
             if (dragging) {
-                int timeAt = getTimeAt(position.getX(), position.getY());
+                int timeAt = getTimeAt(click.x, click.y);
                 if (timeAt != -1) {
                     selectedMarker.setTime(draggingTimeDelta + timeAt);
                 }
@@ -207,9 +208,9 @@ public class GuiMarkerTimeline extends AbstractGuiTimeline<GuiMarkerTimeline> im
     }
 
     @Override
-    public boolean mouseRelease(ReadablePoint position, int button) {
+    public boolean mouseRelease(Click click) {
         if (selectedMarker != null) {
-            mouseDrag(position, button, 0);
+            mouseDrag(click);
             if (dragging) {
                 dragging = false;
                 saveMarkers.accept(markers);
@@ -223,7 +224,7 @@ public class GuiMarkerTimeline extends AbstractGuiTimeline<GuiMarkerTimeline> im
     protected String getTooltipText(RenderInfo renderInfo) {
         Marker marker = getMarkerAt(renderInfo.mouseX, renderInfo.mouseY);
         if (marker != null) {
-            return marker.getName() != null ? marker.getName() : I18n.translate("replaymod.gui.ingame.unnamedmarker");
+            return marker.getName() != null ? marker.getName() : I18n.get("replaymod.gui.ingame.unnamedmarker");
         }
         return super.getTooltipText(renderInfo);
     }
@@ -237,8 +238,8 @@ public class GuiMarkerTimeline extends AbstractGuiTimeline<GuiMarkerTimeline> im
     }
 
     @Override
-    public boolean typeKey(ReadablePoint mousePosition, int keyCode, char keyChar, boolean ctrlDown, boolean shiftDown) {
-        if (keyCode == Keyboard.KEY_DELETE && selectedMarker != null) {
+    public boolean handleKey(KeyInput keyInput) {
+        if (keyInput.key == Keyboard.KEY_DELETE && selectedMarker != null) {
             markers.remove(selectedMarker);
             saveMarkers.accept(markers);
             return true;

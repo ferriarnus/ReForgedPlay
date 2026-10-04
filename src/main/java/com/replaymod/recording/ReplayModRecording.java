@@ -12,7 +12,7 @@ import com.replaymod.recording.packet.PacketListener;
 import com.replaymod.replay.ReplayHandler;
 import io.netty.channel.Channel;
 import io.netty.util.AttributeKey;
-import net.minecraft.network.ClientConnection;
+import net.minecraft.network.Connection;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -107,7 +107,7 @@ public class ReplayModRecording implements Module {
     //$$ private static class RestrictionsChannelHandler extends ChannelDuplexHandler {}
     //#endif
 
-    public void initiateRecording(ClientConnection networkManager) {
+    public void initiateRecording(Connection networkManager) {
         Channel channel = ((NetworkManagerAccessor) networkManager).getChannel();
         if (channel.pipeline().get(ReplayHandler.PACKET_HANDLER_NAME) != null) return;
         //#if MC>=11400

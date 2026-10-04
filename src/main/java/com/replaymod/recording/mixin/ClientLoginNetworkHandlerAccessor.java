@@ -1,17 +1,15 @@
 package com.replaymod.recording.mixin;
 
-import net.minecraft.client.network.ClientLoginNetworkHandler;
+import net.minecraft.client.multiplayer.ClientHandshakePacketListenerImpl;
+import net.minecraft.client.multiplayer.ServerData;
 import org.spongepowered.asm.mixin.Mixin;
-
-//#if MC>=11903
-import net.minecraft.client.network.ServerInfo;
 import org.spongepowered.asm.mixin.gen.Accessor;
 //#endif
 
-@Mixin(ClientLoginNetworkHandler.class)
+@Mixin(ClientHandshakePacketListenerImpl.class)
 public interface ClientLoginNetworkHandlerAccessor {
     //#if MC>=11903
     @Accessor
-    ServerInfo getServerInfo();
+    ServerData getServerData();
     //#endif
 }

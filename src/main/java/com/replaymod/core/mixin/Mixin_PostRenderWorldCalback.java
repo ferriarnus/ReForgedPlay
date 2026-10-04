@@ -2,8 +2,7 @@
 package com.replaymod.core.mixin;
 
 import com.replaymod.core.events.PostRenderWorldCallback;
-import net.minecraft.client.render.WorldRenderer;
-import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.client.renderer.LevelRenderer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -12,13 +11,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 //#if MC>=11500
 import com.llamalad7.mixinextras.sugar.Local;
 //#endif
+import com.mojang.blaze3d.vertex.PoseStack;
 
-@Mixin(WorldRenderer.class)
+@Mixin(LevelRenderer.class)
 public class Mixin_PostRenderWorldCalback {
     //#if MC>=12005
-    @Inject(method = "render", at = @At(value = "INVOKE", target = "Lorg/joml/Matrix4fStack;popMatrix()Lorg/joml/Matrix4fStack;"))
+    @Inject(method = "renderLevel", at = @At(value = "INVOKE", target = "Lorg/joml/Matrix4fStack;popMatrix()Lorg/joml/Matrix4fStack;"))
     private void postRenderWorld(CallbackInfo ci) {
-        MatrixStack matrixStack = new MatrixStack();
+        PoseStack matrixStack = new PoseStack();
     //#else
     //$$ @Inject(method = "render", at = @At("RETURN"))
     //#if MC>=11500

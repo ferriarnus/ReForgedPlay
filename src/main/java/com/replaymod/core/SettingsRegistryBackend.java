@@ -7,7 +7,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.replaymod.core.events.SettingsChangedCallback;
-import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.Minecraft;
 import net.neoforged.fml.loading.FMLPaths;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -119,7 +119,7 @@ class SettingsRegistryBackend {
                     }
                     Path fileName = ((Path) event.context());
                     if (fileName.equals(configFile.getFileName())) {
-                        MinecraftClient.getInstance().send(this::reload);
+                        Minecraft.getInstance().schedule(this::reload);
                     }
                 }
                 if (!nextKey.reset()) {

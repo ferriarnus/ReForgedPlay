@@ -1,33 +1,27 @@
 package de.johni0702.minecraft.gui.versions;
 
+import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableColor;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.Tessellator;
-import net.minecraft.client.render.VertexConsumer;
-import net.minecraft.client.render.VertexConsumerProvider;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import net.minecraft.client.render.VertexFormats;
-import net.minecraft.client.util.Window;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.crash.CrashReportSection;
+import net.minecraft.resources.Identifier;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
 
 import java.util.ArrayDeque;
 import java.util.Objects;
 import java.util.concurrent.Callable;
+import net.minecraft.CrashReportCategory;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.network.chat.Component;
 
 /**
  * Abstraction over things that have changed between different MC versions.
  */
 public class MCVer {
-    public static MinecraftClient getMinecraft() {
-        return MinecraftClient.getInstance();
+    public static Minecraft getMinecraft() {
+        return Minecraft.getInstance();
     }
 
     private static class ScissorBounds {
@@ -98,7 +92,7 @@ public class MCVer {
     }
 
     //#if MC>=11400
-    public static Window newScaledResolution(MinecraftClient mc) {
+    public static Window newScaledResolution(Minecraft mc) {
         //#if MC>=11500
         return mc.getWindow();
         //#else
@@ -115,10 +109,10 @@ public class MCVer {
     //$$ }
     //#endif
 
-    public static void addDetail(CrashReportSection category, String name, Callable<String> callable) {
+    public static void addDetail(CrashReportCategory category, String name, Callable<String> callable) {
         //#if MC>=10904
         //#if MC>=11200
-        category.add(name, callable::call);
+        category.setDetail(name, callable::call);
         //#else
         //$$ category.setDetail(name, callable::call);
         //#endif
@@ -141,8 +135,8 @@ public class MCVer {
     //$$}
     //#endif
 
-    public static TextRenderer getFontRenderer() {
-        return getMinecraft().textRenderer;
+    public static Font getFontRenderer() {
+        return getMinecraft().font;
     }
 
     //#if FABRIC<=0
@@ -173,7 +167,7 @@ public class MCVer {
 
     public static void setClipboardString(String text) {
         //#if MC>=11400
-        getMinecraft().keyboard.setClipboard(text);
+        getMinecraft().keyboardHandler.setClipboard(text);
         //#else
         //$$ GuiScreen.setClipboardString(text);
         //#endif
@@ -181,15 +175,15 @@ public class MCVer {
 
     public static String getClipboardString() {
         //#if MC>=11400
-        return getMinecraft().keyboard.getClipboard();
+        return getMinecraft().keyboardHandler.getClipboard();
         //#else
         //$$ return GuiScreen.getClipboardString();
         //#endif
     }
 
-    public static Text literalText(String str) {
+    public static Component literalText(String str) {
         //#if MC>=11900
-        return Text.literal(str);
+        return Component.literal(str);
         //#else
         //$$ return new LiteralText(str);
         //#endif
@@ -197,7 +191,7 @@ public class MCVer {
 
     public static Identifier identifier(String id) {
         //#if MC>=12100
-        return Identifier.of(id);
+        return Identifier.parse(id);
         //#else
         //$$ return new Identifier(id);
         //#endif
@@ -205,7 +199,7 @@ public class MCVer {
 
     public static Identifier identifier(String namespace, String path) {
         //#if MC>=12100
-        return Identifier.of(namespace, path);
+        return Identifier.fromNamespaceAndPath(namespace, path);
         //#else
         //$$ return new Identifier(namespace, path);
         //#endif

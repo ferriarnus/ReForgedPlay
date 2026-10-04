@@ -1,7 +1,7 @@
 package com.replaymod.render.mixin;
 
 import com.replaymod.render.hooks.EntityRendererHandler;
-import net.minecraft.client.render.GameRenderer;
+import net.minecraft.client.renderer.GameRenderer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -24,7 +24,7 @@ public abstract class Mixin_Omnidirectional_Camera implements EntityRendererHand
     //$$ private static final float OMNIDIRECTIONAL_FOV = 90;
     //#endif
 
-    @ModifyArg(method = METHOD, at = @At(value = "INVOKE", target = TARGET, remap = TARGET_REMAP), index = 0)
+    @ModifyArg(method = METHOD, at = @At(value = "INVOKE", target = "Lorg/joml/Matrix4f;perspective(FFFF)Lorg/joml/Matrix4f;", remap = TARGET_REMAP), index = 0)
     //#if MC>=11903
     private float replayModRender_perspective_fov(float fovY) {
     //#else
@@ -33,7 +33,7 @@ public abstract class Mixin_Omnidirectional_Camera implements EntityRendererHand
         return isOmnidirectional() ? OMNIDIRECTIONAL_FOV : fovY;
     }
 
-    @ModifyArg(method = METHOD, at = @At(value = "INVOKE", target = TARGET, remap = TARGET_REMAP), index = 1)
+    @ModifyArg(method = METHOD, at = @At(value = "INVOKE", target = "Lorg/joml/Matrix4f;perspective(FFFF)Lorg/joml/Matrix4f;", remap = TARGET_REMAP), index = 1)
     private float replayModRender_perspective_aspect(float aspect) {
         return isOmnidirectional() ? 1 : aspect;
     }

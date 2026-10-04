@@ -31,14 +31,14 @@ import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.Point;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import de.johni0702.minecraft.gui.versions.MCVer;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.Minecraft;
+import net.minecraft.resources.Identifier;
 
 public abstract class AbstractGuiElement<T extends AbstractGuiElement<T>> implements GuiElement<T> {
-    protected static final Identifier TEXTURE = Identifier.of("jgui", "gui.png");
+    protected static final Identifier TEXTURE = Identifier.fromNamespaceAndPath("jgui", "gui.png");
 
 
-    private final MinecraftClient minecraft = MCVer.getMinecraft();
+    private final Minecraft minecraft = MCVer.getMinecraft();
 
     private GuiContainer container;
 
@@ -201,7 +201,7 @@ public abstract class AbstractGuiElement<T extends AbstractGuiElement<T>> implem
         return maxSize == null ? new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE) : maxSize;
     }
 
-    public MinecraftClient getMinecraft() {
+    public Minecraft getMinecraft() {
         return this.minecraft;
     }
 

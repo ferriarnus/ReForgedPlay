@@ -1,17 +1,10 @@
 package com.replaymod.core.mixin;
 
-import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.components.Renderable;
+import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.narration.NarratableEntry;
+import net.minecraft.client.gui.screens.Screen;
 import org.spongepowered.asm.mixin.Mixin;
-
-//#if MC>=11700
-import net.minecraft.client.gui.Drawable;
-import net.minecraft.client.gui.Element;
-import net.minecraft.client.gui.Selectable;
-//#else
-//#endif
-
-//#if MC>=11400
-import net.minecraft.client.gui.widget.ClickableWidget;
 import org.spongepowered.asm.mixin.gen.Invoker;
 //#else
 //$$ import net.minecraft.client.gui.GuiButton;
@@ -22,8 +15,8 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 @Mixin(Screen.class)
 public interface GuiScreenAccessor {
     //#if MC>=11700
-    @Invoker("addDrawableChild")
-    <T extends Element & Drawable & Selectable> T invokeAddButton(T drawableElement);
+    @Invoker("addRenderableWidget")
+    <T extends GuiEventListener & Renderable & NarratableEntry> T invokeAddButton(T drawableElement);
     //#elseif MC>=11400
     //$$ @Invoker
     //$$ <T extends AbstractButtonWidget> T invokeAddButton(T button);

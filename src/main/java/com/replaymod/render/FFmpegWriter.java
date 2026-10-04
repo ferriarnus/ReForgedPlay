@@ -8,8 +8,6 @@ import com.replaymod.render.rendering.VideoRenderer;
 import com.replaymod.render.utils.ByteBufferPool;
 import com.replaymod.render.utils.StreamPipe;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
-import net.minecraft.util.crash.CrashReport;
-import net.minecraft.util.crash.CrashReportSection;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -24,6 +22,8 @@ import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import net.minecraft.CrashReport;
+import net.minecraft.CrashReportCategory;
 
 import static com.replaymod.render.ReplayModRender.LOGGER;
 import static org.apache.commons.lang3.Validate.isTrue;
@@ -70,7 +70,7 @@ public class FFmpegWriter implements FrameConsumer<BitmapFrame> {
         } catch (IOException e) {
             throw new NoFFmpegException(e);
         }
-        File exportLogFile = new File(MCVer.getMinecraft().runDirectory, "export.log");
+        File exportLogFile = new File(MCVer.getMinecraft().gameDirectory, "export.log");
         OutputStream exportLogOut = new TeeOutputStream(new FileOutputStream(exportLogFile), ffmpegLog);
         new StreamPipe(process.getInputStream(), exportLogOut).start();
         new StreamPipe(process.getErrorStream(), exportLogOut).start();
@@ -124,11 +124,11 @@ public class FFmpegWriter implements FrameConsumer<BitmapFrame> {
                 renderer.setFailure(e);
                 return;
             }
-            CrashReport report = CrashReport.create(t, "Exporting frame");
-            CrashReportSection exportDetails = report.addElement("Export details");
-            exportDetails.add("Export command", settings::getExportCommand);
-            exportDetails.add("Export args", commandArgs::toString);
-            MCVer.getMinecraft().setCrashReportSupplier(report);
+            CrashReport report = CrashReport.forThrowable(t, "Exporting frame");
+            CrashReportCategory exportDetails = report.addCategory("Export details");
+            exportDetails.setDetail("Export command", settings::getExportCommand);
+            exportDetails.setDetail("Export args", commandArgs::toString);
+            MCVer.getMinecraft().delayCrash(report);
         } finally {
             channels.values().forEach(it -> ByteBufferPool.release(it.getByteBuffer()));
         }

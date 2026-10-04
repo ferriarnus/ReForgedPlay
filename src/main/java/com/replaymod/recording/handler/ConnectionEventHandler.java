@@ -10,34 +10,23 @@ import com.replaymod.recording.gui.GuiRecordingControls;
 import com.replaymod.recording.gui.GuiRecordingOverlay;
 import com.replaymod.recording.mixin.NetworkManagerAccessor;
 import com.replaymod.recording.packet.PacketListener;
+import com.replaymod.recording.packet.PacketListener.DecodedPacketListener;
 import com.replaymod.replaystudio.replay.ReplayFile;
 import com.replaymod.replaystudio.replay.ReplayMetaData;
 import io.netty.channel.Channel;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ServerInfo;
-import net.minecraft.client.resource.language.I18n;
-import net.minecraft.network.ClientConnection;
 import org.apache.logging.log4j.Logger;
 
 //#if MC>=11900
 import com.replaymod.recording.mixin.ClientLoginNetworkHandlerAccessor;
 //#endif
-
-//#if MC>=11600
-import net.minecraft.world.World;
-//#else
-//#if MC>=11400
-//$$ import net.minecraft.world.dimension.DimensionType;
-//#endif
-//$$
-//#if MC>=10800
-//$$ import net.minecraft.world.level.LevelGeneratorType;
-//#endif
-//#endif
-
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ServerData;
+import net.minecraft.client.resources.language.I18n;
+import net.minecraft.network.Connection;
+import net.minecraft.world.level.Level;
 
 import static com.replaymod.core.versions.MCVer.getMinecraft;
 
@@ -48,7 +37,7 @@ public class ConnectionEventHandler {
 
     private static final String DATE_FORMAT = "yyyy_MM_dd_HH_mm_ss";
     private static final SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT);
-    private static final MinecraftClient mc = getMinecraft();
+    private static final Minecraft mc = getMinecraft();
 
     private final Logger logger;
     private final ReplayMod core;
@@ -63,13 +52,13 @@ public class ConnectionEventHandler {
         this.core = core;
     }
 
-    public void onConnectedToServerEvent(ClientConnection networkManager) {
+    public void onConnectedToServerEvent(Connection networkManager) {
         try {
-            boolean local = networkManager.isLocal();
+            boolean local = networkManager.isMemoryConnection();
             if (local) {
                 //#if MC>=10800
                 //#if MC>=11600
-                if (mc.getServer().getWorld(World.OVERWORLD).isDebugWorld()) {
+                if (mc.getSingleplayerServer().getLevel(Level.OVERWORLD).isDebug()) {
                 //#else
                 //#if MC>=11400
                 //$$ if (mc.getServer().getWorld(DimensionType.OVERWORLD).getGeneratorType() == LevelGeneratorType.DEBUG_ALL_BLOCK_STATES) {
@@ -92,10 +81,10 @@ public class ConnectionEventHandler {
                 }
             }
 
-            ServerInfo serverInfo;
+            ServerData serverInfo;
             //#if MC>=11903
             serverInfo = networkManager.getPacketListener() instanceof ClientLoginNetworkHandlerAccessor loginNetworkHandler
-                    ? loginNetworkHandler.getServerInfo()
+                    ? loginNetworkHandler.getServerData()
                     : null;
             //#else
             //$$ serverInfo = mc.getCurrentServerEntry();
@@ -106,7 +95,7 @@ public class ConnectionEventHandler {
             boolean autoStart = core.getSettingsRegistry().get(Setting.AUTO_START_RECORDING);
             if (local) {
                 //#if MC>=11600
-                worldName = mc.getServer().getSaveProperties().getLevelName();
+                worldName = mc.getSingleplayerServer().getWorldData().getLevelName();
                 //#else
                 //$$ worldName = mc.getServer().getLevelName();
                 //#endif
@@ -121,8 +110,8 @@ public class ConnectionEventHandler {
                 worldName = "A Realms Server";
             //#endif
             } else if (serverInfo != null) {
-                worldName = serverInfo.address;
-                if (!I18n.translate("selectServer.defaultName").equals(serverInfo.name)) {
+                worldName = serverInfo.ip;
+                if (!I18n.get("selectServer.defaultName").equals(serverInfo.name)) {
                     serverName = serverInfo.name;
                 }
 

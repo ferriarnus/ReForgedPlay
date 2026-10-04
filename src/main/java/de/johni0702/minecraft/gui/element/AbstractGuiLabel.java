@@ -31,13 +31,12 @@ import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableColor;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import de.johni0702.minecraft.gui.versions.MCVer;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.resource.language.I18n;
-import net.minecraft.text.Style;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.resources.language.I18n;
+import net.minecraft.network.chat.Style;
 
 import static de.johni0702.minecraft.gui.versions.MCVer.literalText;
 //#endif
@@ -57,9 +56,9 @@ public abstract class AbstractGuiLabel<T extends AbstractGuiLabel<T>> extends Ab
     @Override
     public void draw(GuiRenderer renderer, ReadableDimension size, RenderInfo renderInfo) {
         super.draw(renderer, size, renderInfo);
-        TextRenderer fontRenderer = MCVer.getFontRenderer();
+        Font fontRenderer = MCVer.getFontRenderer();
         //#if MC>=11600
-        List<String> lines = fontRenderer.getTextHandler().wrapLines(literalText(text), size.getWidth(), Style.EMPTY).stream()
+        List<String> lines = fontRenderer.getSplitter().splitLines(literalText(text), size.getWidth(), Style.EMPTY).stream()
                 .map(it -> it.visit(Optional::of)).filter(Optional::isPresent).map(Optional::get)
                 .collect(Collectors.toList());
         //#else
@@ -69,14 +68,14 @@ public abstract class AbstractGuiLabel<T extends AbstractGuiLabel<T>> extends Ab
         int y = 0;
         for (String line : lines) {
             renderer.drawString(0, y, isEnabled() ? color : disabledColor, line);
-            y+=fontRenderer.fontHeight;
+            y+=fontRenderer.lineHeight;
         }
     }
 
     @Override
     public ReadableDimension calcMinSize() {
-        TextRenderer fontRenderer = MCVer.getFontRenderer();
-        return new Dimension(fontRenderer.getWidth(text), fontRenderer.fontHeight);
+        Font fontRenderer = MCVer.getFontRenderer();
+        return new Dimension(fontRenderer.width(text), fontRenderer.lineHeight);
     }
 
     @Override
@@ -92,7 +91,7 @@ public abstract class AbstractGuiLabel<T extends AbstractGuiLabel<T>> extends Ab
 
     @Override
     public T setI18nText(String text, Object... args) {
-        return setText(I18n.translate(text, args));
+        return setText(I18n.get(text, args));
     }
 
     @Override

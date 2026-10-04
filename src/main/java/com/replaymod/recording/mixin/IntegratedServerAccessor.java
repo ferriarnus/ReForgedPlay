@@ -1,6 +1,6 @@
 package com.replaymod.recording.mixin;
 
-import net.minecraft.server.integrated.IntegratedServer;
+import net.minecraft.client.server.IntegratedServer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 

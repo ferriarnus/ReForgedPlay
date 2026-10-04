@@ -12,12 +12,11 @@ import de.johni0702.minecraft.gui.element.GuiLabel;
 import de.johni0702.minecraft.gui.layout.CustomLayout;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.layout.VerticalLayout;
-import net.minecraft.util.crash.CrashReport;
-import net.minecraft.util.crash.CrashReportSection;
-import net.minecraft.util.crash.CrashException;
-
 import java.util.Arrays;
 import java.util.function.Consumer;
+import net.minecraft.CrashReport;
+import net.minecraft.CrashReportCategory;
+import net.minecraft.ReportedException;
 
 import static com.replaymod.render.ReplayModRender.LOGGER;
 
@@ -30,11 +29,11 @@ public class GuiExportFailed extends GuiScreen {
         // Check whether the user has configured some custom ffmpeg arguments
         if (settings.getEncodingPreset().getValue().equals(settings.getExportArguments())) {
             // If they haven't, then this is probably a faulty ffmpeg installation and there's nothing we can do
-            CrashReport crashReport = CrashReport.create(e, "Exporting video");
-            CrashReportSection details = crashReport.addElement("Export details");
-            details.add("Settings", settings::toString);
-            details.add("FFmpeg log", e::getLog);
-            throw new CrashException(crashReport);
+            CrashReport crashReport = CrashReport.forThrowable(e, "Exporting video");
+            CrashReportCategory details = crashReport.addCategory("Export details");
+            details.setDetail("Settings", settings::toString);
+            details.setDetail("FFmpeg log", e::getLog);
+            throw new ReportedException(crashReport);
         } else {
             // If they have, ask them whether it was intentional
             GuiExportFailed gui = new GuiExportFailed(e, doRestart);

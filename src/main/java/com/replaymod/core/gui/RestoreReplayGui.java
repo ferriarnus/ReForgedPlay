@@ -21,7 +21,6 @@ import de.johni0702.minecraft.gui.layout.CustomLayout;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.layout.VerticalLayout;
 import de.johni0702.minecraft.gui.utils.Colors;
-import net.minecraft.util.crash.CrashReport;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
@@ -31,6 +30,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.function.Consumer;
+import net.minecraft.CrashReport;
 
 import static com.replaymod.replaystudio.util.Utils.readInt;
 import static com.replaymod.replaystudio.util.Utils.writeInt;
@@ -105,8 +105,8 @@ public class RestoreReplayGui extends AbstractGuiScreen<RestoreReplayGui> {
                 tryRecover(progressBar::setProgress);
             } catch (IOException e) {
                 LOGGER.error("Recovering replay file:", e);
-                CrashReport crashReport = CrashReport.create(e, "Recovering replay file");
-                core.runLater(() -> Utils.error(LOGGER, VanillaGuiScreen.wrap(getMinecraft().currentScreen), crashReport, () -> {}));
+                CrashReport crashReport = CrashReport.forThrowable(e, "Recovering replay file");
+                core.runLater(() -> Utils.error(LOGGER, VanillaGuiScreen.wrap(getMinecraft().screen), crashReport, () -> {}));
             } finally {
                 core.runLater(() -> core.getBackgroundProcesses().removeProcess(savingProcess));
             }

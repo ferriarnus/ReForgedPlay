@@ -3,7 +3,7 @@ package com.replaymod.pathing.player;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.replaymod.replay.ReplayHandler;
 import com.replaymod.replaystudio.pathing.path.Timeline;
-import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.Minecraft;
 
 /**
  * Timeline player using the system time.
@@ -44,7 +44,7 @@ public class RealtimeTimelinePlayer extends AbstractTimelinePlayer {
         }
 
         //#if MC>=11400
-        if (MinecraftClient.getInstance().getOverlay() != null) {
+        if (Minecraft.getInstance().getOverlay() != null) {
             if (!loadingResources) {
                 timeBeforeResourceLoading = getTimePassed();
                 loadingResources = true;

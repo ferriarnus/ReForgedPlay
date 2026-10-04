@@ -3,16 +3,10 @@ package com.replaymod.replay.mixin.world_border;
 import com.replaymod.core.versions.MCVer;
 import com.replaymod.replay.ReplayHandler;
 import com.replaymod.replay.ReplayModReplay;
-import net.minecraft.client.render.WorldRenderer;
+import net.minecraft.client.renderer.WorldBorderRenderer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
-
-//#if MC>=12102
-import net.minecraft.client.render.WorldBorderRendering;
-//#else
-import net.minecraft.client.render.WorldRenderer;
-//#endif
 
 
 /**
@@ -20,13 +14,13 @@ import net.minecraft.client.render.WorldRenderer;
  * this redirect ensures that it is synced with the time in the Replay instead.
  */
 //#if MC>=12102
-@Mixin(WorldBorderRendering.class)
+@Mixin(WorldBorderRenderer.class)
 //#else
 //$$ @Mixin(WorldRenderer.class)
 //#endif
 public class Mixin_UseReplayTime_ForTexture {
     //#if MC>=11400
-    @Redirect(method = "*", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Util;getMeasuringTimeMs()J"))
+    @Redirect(method = "*", at = @At(value = "INVOKE", target = "Lnet/minecraft/Util;getMillis()J"))
     //#else
     //$$ @Redirect(method = "*", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;getSystemTime()J"))
     //#endif

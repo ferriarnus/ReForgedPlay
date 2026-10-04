@@ -1,139 +1,60 @@
 package com.replaymod.render.mixin;
 
-//#if MC>=10904
+import com.llamalad7.mixinextras.sugar.Local;
+import com.llamalad7.mixinextras.sugar.Share;
+import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import com.replaymod.core.versions.MCVer;
 import com.replaymod.render.hooks.EntityRendererHandler;
-import net.minecraft.client.particle.Particle;
-import net.minecraft.client.particle.ParticleManager;
-import net.minecraft.util.math.Vec3d;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Redirect;
-
-//#if MC>=11900
-//#else
-//$$ import com.replaymod.render.blend.exporters.ParticlesExporter;
-//#endif
-
-//#if MC>=11500
-import net.minecraft.client.render.VertexConsumer;
+import net.minecraft.client.Camera;
+import net.minecraft.client.particle.SingleQuadParticle;
+import net.minecraft.client.renderer.state.level.QuadParticleRenderState;
+import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionf;
-//#else
-//$$ import com.replaymod.render.blend.mixin.ParticleAccessor;
-//$$ import net.minecraft.client.render.BufferBuilder;
-//#endif
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-//#if MC>=11400
-import net.minecraft.client.render.Camera;
-
-//#else
-//$$ import net.minecraft.entity.Entity;
-//#endif
-
-@Mixin(ParticleManager.class)
+@Mixin(SingleQuadParticle.class)
 public abstract class MixinParticleManager {
-    //#if MC>=11500
-    //#if MC>=12104
-    @Redirect(method = "renderParticleType", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/particle/Particle;render(Lnet/minecraft/client/render/VertexConsumer;Lnet/minecraft/client/render/Camera;F)V"))
-    static
-    //#else
-    //$$ @Redirect(method = "renderParticles", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/particle/Particle;buildGeometry(Lnet/minecraft/client/render/VertexConsumer;Lnet/minecraft/client/render/Camera;F)V"))
-    private void buildOrientedGeometry(Particle particle, VertexConsumer vertexConsumer, Camera camera, float partialTicks) {
-    //#endif
+    @Shadow public abstract void extract(QuadParticleRenderState par1, Camera par2, float par3);
+
+    @Inject(method = "extract", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/particle/SingleQuadParticle$FacingCameraMode;setRotation(Lorg/joml/Quaternionf;Lnet/minecraft/client/Camera;F)V"))
+    private void faceCameraAtParticle(
+            CallbackInfo ci,
+            @Local(argsOnly = true) float partialTicks,
+            @Local(argsOnly = true) Camera camera,
+            @Share("orgRotation") LocalRef<Quaternionf> orgRotationRef
+    ) {
         EntityRendererHandler handler = ((EntityRendererHandler.IEntityRenderer) MCVer.getMinecraft().gameRenderer).replayModRender_getHandler();
         if (handler == null || !handler.omnidirectional) {
-            buildGeometry(particle, vertexConsumer, camera, partialTicks);
-        } else {
-            Quaternionf rotation = camera.getRotation();
-            Quaternionf org = new org.joml.Quaternionf(rotation);
-            try {
-                Vec3d from = new Vec3d(0, 0, 1);
-                Vec3d to = MCVer.getPosition(particle, partialTicks).subtract(camera.getPos()).normalize();
-                Vec3d axis = from.crossProduct(to);
-                rotation.set((float) axis.x, (float) axis.y, (float) axis.z, (float) (1 + from.dotProduct(to)));
-                rotation.normalize();
-
-                buildGeometry(particle, vertexConsumer, camera, partialTicks);
-            } finally {
-                rotation.set(org.w, org.x, org.y, org.z);
-            }
+            return;
         }
+
+        Quaternionf rotation = camera.rotation();
+        orgRotationRef.set(new Quaternionf(rotation));
+
+        Vec3 from = new Vec3(0, 0, -1);
+        Vec3 to = MCVer.getPosition((SingleQuadParticle)(Object) this, partialTicks)
+                .subtract(camera.position())
+                .normalize();
+        Vec3 axis = from.cross(to);
+        rotation.set((float) axis.x, (float) axis.y, (float) axis.z, (float) (1 + from.dot(to)));
+        rotation.normalize();
     }
 
-    private static void buildGeometry(Particle particle, VertexConsumer vertexConsumer, Camera camera, float partialTicks) {
-        //#if MC<11900
-        //$$ BlendState blendState = BlendState.getState();
-        //$$ if (blendState != null) {
-        //$$     blendState.get(ParticlesExporter.class).onRender(particle, partialTicks);
-        //$$ }
-        //#endif
-        particle.render(vertexConsumer, camera, partialTicks);
+    @Inject(method = "extract", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/particle/SingleQuadParticle$FacingCameraMode;setRotation(Lorg/joml/Quaternionf;Lnet/minecraft/client/Camera;F)V", shift = At.Shift.AFTER))
+    private void faceCameraAtParticleCleanup(
+            CallbackInfo ci,
+            @Local(argsOnly = true) Camera camera,
+            @Share("orgRotation") LocalRef<Quaternionf> orgRotationRef
+    ) {
+        Quaternionf orgRotation = orgRotationRef.get();
+        if (orgRotation == null) {
+            return;
+        }
+
+        camera.rotation().set(orgRotation.x, orgRotation.y, orgRotation.z, orgRotation.w);
     }
-    //#else
-    //#if MC>=11200
-    //#if MC>=11400
-    //$$ @Redirect(method = "renderParticles", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/particle/Particle;buildGeometry(Lnet/minecraft/client/render/BufferBuilder;Lnet/minecraft/client/render/Camera;FFFFFF)V"))
-    //$$ private void renderNormalParticle(Particle particle, BufferBuilder vertexBuffer, Camera view, float partialTicks,
-    //#else
-    //$$ @Redirect(method = "renderParticles", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/particle/Particle;renderParticle(Lnet/minecraft/client/renderer/BufferBuilder;Lnet/minecraft/entity/Entity;FFFFFF)V"))
-    //$$ private void renderNormalParticle(Particle particle, BufferBuilder vertexBuffer, Entity view, float partialTicks,
-    //#endif
-    //#else
-    //$$ @Redirect(method = "renderParticles", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/particle/Particle;renderParticle(Lnet/minecraft/client/renderer/VertexBuffer;Lnet/minecraft/entity/Entity;FFFFFF)V"))
-    //$$ private void renderNormalParticle(Particle particle, VertexBuffer vertexBuffer, Entity view, float partialTicks,
-    //#endif
-    //$$                                   float rotX, float rotXZ, float rotZ, float rotYZ, float rotXY) {
-    //$$     renderParticle(particle, vertexBuffer, view, partialTicks, rotX, rotXZ, rotZ, rotYZ, rotXY);
-    //$$ }
-    //$$
-    //$$ // Seems to be gone by 1.14
-    //#if MC<11400
-    //#if MC>=11200
-    //$$ @Redirect(method = "renderLitParticles", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/particle/Particle;renderParticle(Lnet/minecraft/client/renderer/BufferBuilder;Lnet/minecraft/entity/Entity;FFFFFF)V"))
-    //$$ private void renderLitParticle(Particle particle, BufferBuilder vertexBuffer, Entity view, float partialTicks,
-    //#else
-    //$$ @Redirect(method = "renderLitParticles", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/particle/Particle;renderParticle(Lnet/minecraft/client/renderer/VertexBuffer;Lnet/minecraft/entity/Entity;FFFFFF)V"))
-    //$$ private void renderLitParticle(Particle particle, VertexBuffer vertexBuffer, Entity view, float partialTicks,
-    //#endif
-    //$$                              float rotX, float rotXZ, float rotZ, float rotYZ, float rotXY) {
-    //$$     renderParticle(particle, vertexBuffer, view, partialTicks, rotX, rotXZ, rotZ, rotYZ, rotXY);
-    //$$ }
-    //#endif
-    //$$
-    //$$ private void renderParticle(Particle particle,
-    //$$                             BufferBuilder vertexBuffer,
-                                //#if MC>=11400
-                                //$$ Camera view,
-                                //#else
-                                //$$ Entity view,
-                                //#endif
-    //$$                             float partialTicks,
-    //$$                             float rotX, float rotXZ, float rotZ, float rotYZ, float rotXY) {
-    //$$     EntityRendererHandler handler = ((EntityRendererHandler.IEntityRenderer) MCVer.getMinecraft().gameRenderer).replayModRender_getHandler();
-    //$$     if (handler != null && handler.omnidirectional) {
-    //$$         // Align all particles towards the camera
-            //#if MC>=11400
-            //$$ Vec3d pos = view.getPos();
-            //#else
-            //$$ Vec3d pos = new Vec3d(view.posX, view.posY, view.posZ);
-            //#endif
-    //$$         Vec3d d = MCVer.getPosition(particle, partialTicks).subtract(pos);
-    //$$         double pitch = -Math.atan2(d.y, Math.sqrt(d.x * d.x + d.z * d.z));
-    //$$         double yaw = -Math.atan2(d.x, d.z);
-    //$$
-    //$$         rotX = (float) Math.cos(yaw);
-    //$$         rotZ = (float) Math.sin(yaw);
-    //$$         rotXZ = (float) Math.cos(pitch);
-    //$$
-    //$$         rotYZ = (float) (-rotZ * Math.sin(pitch));
-    //$$         rotXY = (float) (rotX * Math.sin(pitch));
-    //$$     }
-    //$$     BlendState blendState = BlendState.getState();
-    //$$             if (blendState != null) {
-    //$$             blendState.get(ParticlesExporter.class).onRender(particle, partialTicks);
-    //$$     }
-    //$$     particle.buildGeometry(vertexBuffer, view, partialTicks, rotX, rotXZ, rotZ, rotYZ, rotXY);
-    //$$ }
-    //#endif
 }
-//#endif

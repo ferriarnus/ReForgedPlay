@@ -13,10 +13,9 @@ import com.replaymod.replaystudio.pathing.path.Keyframe;
 import com.replaymod.replaystudio.pathing.path.Path;
 import com.replaymod.replaystudio.pathing.path.Timeline;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.RenderTickCounter;
-
 import javax.annotation.Nullable;
+import net.minecraft.client.DeltaTracker;
+import net.minecraft.client.Minecraft;
 import java.util.Iterator;
 
 import static com.replaymod.core.utils.Utils.DEFAULT_MS_PER_TICK;
@@ -26,13 +25,13 @@ import static com.replaymod.core.versions.MCVer.*;
  * Plays a timeline.
  */
 public abstract class AbstractTimelinePlayer extends EventRegistrations {
-    private final MinecraftClient mc = getMinecraft();
+    private final Minecraft mc = getMinecraft();
     private final ReplayHandler replayHandler;
     private Timeline timeline;
     protected long startOffset;
     private boolean wasAsyncMode;
     //#if MC>=12100
-    private RenderTickCounter.Dynamic orgTimer;
+    private DeltaTracker.Timer orgTimer;
     //#else
     //$$ private RenderTickCounter orgTimer;
     //#endif
@@ -136,7 +135,7 @@ public abstract class AbstractTimelinePlayer extends EventRegistrations {
         float timeInTicks = replayTime / 50f;
         float previousTimeInTicks = lastTime / 50f;
         float passedTicks = timeInTicks - previousTimeInTicks;
-        RenderTickCounter renderTickCounter = ((MinecraftAccessor) mc).getTimer();
+        DeltaTracker renderTickCounter = ((MinecraftAccessor) mc).getTimer();
         if (renderTickCounter instanceof ReplayTimer) {
             ReplayTimer timer = (ReplayTimer) renderTickCounter;
             timer.tickDelta += passedTicks;

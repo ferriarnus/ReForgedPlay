@@ -9,13 +9,12 @@ import de.johni0702.minecraft.gui.container.GuiScreen;
 import de.johni0702.minecraft.gui.element.GuiButton;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import de.johni0702.minecraft.gui.versions.callbacks.InitScreenCallback;
-import net.minecraft.util.crash.CrashReport;
-
 import java.io.IOException;
+import net.minecraft.CrashReport;
 
 public class GuiHandler extends EventRegistrations {
     { on(InitScreenCallback.EVENT, (vanillaGuiScreen, buttonList) -> injectIntoReplayViewer(vanillaGuiScreen)); }
-    public void injectIntoReplayViewer(net.minecraft.client.gui.screen.Screen vanillaGuiScreen) {
+    public void injectIntoReplayViewer(net.minecraft.client.gui.screens.Screen vanillaGuiScreen) {
         AbstractGuiScreen guiScreen = GuiScreen.from(vanillaGuiScreen);
         if (!(guiScreen instanceof GuiReplayViewer)) {
             return;
@@ -34,7 +33,7 @@ public class GuiHandler extends EventRegistrations {
                     }
                 }.open();
             } catch (IOException e) {
-                Utils.error(ReplayModEditor.LOGGER, replayViewer, CrashReport.create(e, "Opening replay editor"), () -> {});
+                Utils.error(ReplayModEditor.LOGGER, replayViewer, CrashReport.forThrowable(e, "Opening replay editor"), () -> {});
             }
         }).setSize(73, 20).setI18nLabel("replaymod.gui.edit").setDisabled());
     }

@@ -25,42 +25,36 @@ import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.DownloadingTerrainScreen;
-import net.minecraft.client.gui.screen.NoticeScreen;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.entity.Entity;
-import net.minecraft.network.state.NetworkState;
-import net.minecraft.network.packet.Packet;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.packet.s2c.common.CustomPayloadS2CPacket;
-import net.minecraft.network.packet.s2c.common.DisconnectS2CPacket;
-import net.minecraft.network.packet.s2c.common.ResourcePackSendS2CPacket;
-import net.minecraft.network.packet.s2c.config.ReadyS2CPacket;
-import net.minecraft.network.packet.s2c.login.LoginHelloS2CPacket;
-import net.minecraft.network.packet.s2c.play.*;
-import net.minecraft.network.packet.s2c.login.LoginSuccessS2CPacket;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.AlertScreen;
+import net.minecraft.client.gui.screens.LevelLoadingScreen;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.network.Connection;
+import net.minecraft.network.PacketListener;
+import net.minecraft.network.chat.Component;
+//#else
+//#endif
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
+import net.minecraft.network.protocol.common.ClientboundDisconnectPacket;
+import net.minecraft.network.protocol.common.ClientboundResourcePackPushPacket;
+import net.minecraft.network.protocol.common.ClientboundTransferPacket;
+import net.minecraft.network.protocol.configuration.ClientboundFinishConfigurationPacket;
+import net.minecraft.network.protocol.game.*;
+import net.minecraft.network.protocol.login.ClientboundHelloPacket;
+import net.minecraft.network.protocol.login.ClientboundLoginFinishedPacket;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Relative;
+import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.chunk.ChunkSource;
+import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.lighting.LevelLightEngine;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.network.payload.AdvancedOpenScreenPayload;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-
-//#if MC>=12105
-//#else
-//$$ import net.minecraft.network.packet.s2c.play.ExperienceOrbSpawnS2CPacket;
-//#endif
-
-//#if MC>=12005
-import net.minecraft.network.packet.s2c.common.ServerTransferS2CPacket;
-//#endif
-
-//#if MC>=12002
-import net.minecraft.network.packet.s2c.config.ReadyS2CPacket;
-import net.minecraft.network.packet.s2c.play.CommonPlayerSpawnInfo;
-import net.minecraft.network.packet.s2c.play.EnterReconfigurationS2CPacket;
-//#else
-//#endif
 
 //#if MC>=11904
 //#endif
@@ -85,42 +79,6 @@ import net.minecraft.network.packet.s2c.play.EnterReconfigurationS2CPacket;
 
 //#if MC>=11400
 import com.replaymod.core.versions.MCVer;
-import net.minecraft.entity.EntityType;
-import net.minecraft.world.chunk.ChunkManager;
-import net.minecraft.world.chunk.WorldChunk;
-import net.minecraft.world.chunk.light.LightingProvider;
-//#else
-//$$ import net.minecraft.client.resources.I18n;
-//$$ import net.minecraft.world.EnumDifficulty;
-//$$ import net.minecraft.world.World;
-//$$ import net.minecraft.world.WorldType;
-//$$ import net.minecraft.world.chunk.Chunk;
-//$$ import net.minecraft.world.chunk.IChunkProvider;
-//$$ import java.util.Iterator;
-//#endif
-
-//#if MC>=11400
-import net.minecraft.util.Identifier;
-//#if MC<11400
-//$$ import net.minecraft.world.dimension.DimensionType;
-//#endif
-//#endif
-
-//#if MC>=11200
-//#endif
-//#if MC>=11002
-import net.minecraft.world.GameMode;
-//#else
-//$$ import net.minecraft.world.WorldSettings.GameType;
-//#endif
-
-//#if MC>=10904
-//#else
-//$$ import net.minecraft.network.play.server.S21PacketChunkData;
-//#endif
-
-//#if MC>=10800
-import net.minecraft.network.NetworkSide;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 //#else
 //$$ import org.apache.commons.io.Charsets;
@@ -150,35 +108,35 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
      * These packets are ignored completely during replay.
      */
     private static final List<Class> BAD_PACKETS = Arrays.<Class>asList(
-            LoginHelloS2CPacket.class, // workaround for an issue where ReplayMod prior to 2.6.20 would record these
+            ClientboundHelloPacket.class, // workaround for an issue where ReplayMod prior to 2.6.20 would record these
             //#if MC>=12005
-            ServerTransferS2CPacket.class,
+            ClientboundTransferPacket.class,
             //#endif
             //#if MC>=11404
-            PlayerActionResponseS2CPacket.class,
+            ClientboundBlockChangedAckPacket.class,
             //#endif
             //#if MC>=11400
-            OpenWrittenBookS2CPacket.class,
-            OpenScreenS2CPacket.class,
+            ClientboundOpenBookPacket.class,
+            ClientboundOpenScreenPacket.class,
             //#endif
             //#if MC>=11200
-            SynchronizeRecipesS2CPacket.class,
-            AdvancementUpdateS2CPacket.class,
-            SelectAdvancementTabS2CPacket.class,
+            ClientboundUpdateRecipesPacket.class,
+            ClientboundUpdateAdvancementsPacket.class,
+            ClientboundSelectAdvancementsTabPacket.class,
             //#endif
             //#if MC>=10800
-            SetCameraEntityS2CPacket.class,
-            TitleS2CPacket.class,
+            ClientboundSetCameraPacket.class,
+            ClientboundSetTitleTextPacket.class,
             //#endif
-            HealthUpdateS2CPacket.class,
-            OpenHorseScreenS2CPacket.class,
-            CloseScreenS2CPacket.class,
-            ScreenHandlerSlotUpdateS2CPacket.class,
-            ScreenHandlerPropertyUpdateS2CPacket.class,
-            SignEditorOpenS2CPacket.class,
-            StatisticsS2CPacket.class,
-            ExperienceBarUpdateS2CPacket.class,
-            PlayerAbilitiesS2CPacket.class
+            ClientboundSetHealthPacket.class,
+            ClientboundMountScreenOpenPacket.class,
+            ClientboundContainerClosePacket.class,
+            ClientboundContainerSetSlotPacket.class,
+            ClientboundContainerSetDataPacket.class,
+            ClientboundOpenSignEditorPacket.class,
+            ClientboundAwardStatsPacket.class,
+            ClientboundSetExperiencePacket.class,
+            ClientboundPlayerAbilitiesPacket.class
     );
 
     private static int TP_DISTANCE_LIMIT = 128;
@@ -264,7 +222,7 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
     /**
      * The minecraft instance.
      */
-    protected MinecraftClient mc = getMinecraft();
+    protected Minecraft mc = getMinecraft();
 
     /**
      * The total length of this replay in milliseconds.
@@ -420,31 +378,31 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
                     maybeRemoveDeadEntities(p);
 
                     //#if MC>=11400
-                    if (p instanceof ChunkDataS2CPacket) {
+                    if (p instanceof ClientboundLevelChunkWithLightPacket) {
                         Runnable doLightUpdates = () -> {
-                            ClientWorld world = mc.world;
+                            ClientLevel world = mc.level;
                             if (world != null) {
                                 //#if MC>=11800
                                 MutableBoolean done = new MutableBoolean();
-                                world.enqueueChunkUpdate(done::setTrue);
+                                world.queueLightUpdate(done::setTrue);
                                 while (!done.booleanValue()) {
-                                    world.runQueuedChunkUpdates();
+                                    world.pollLightUpdates();
                                 }
                                 //#endif
-                                LightingProvider provider = world.getChunkManager().getLightingProvider();
-                                while (provider.hasUpdates()) {
+                                LevelLightEngine provider = world.getChunkSource().getLightEngine();
+                                while (provider.hasLightWork()) {
                                     //#if MC>=12000
-                                    provider.doLightUpdates();
+                                    provider.runLightUpdates();
                                     //#else
                                     //$$ provider.doLightUpdates(Integer.MAX_VALUE, true, true);
                                     //#endif
                                 }
                             }
                         };
-                        if (mc.isOnThread()) {
+                        if (mc.isSameThread()) {
                             doLightUpdates.run();
                         } else {
-                            mc.send(doLightUpdates);
+                            mc.schedule(doLightUpdates);
                         }
                     }
                     //#endif
@@ -465,7 +423,7 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
             return; // MC should have enough time to tick
         }
 
-        boolean relevantPacket = packet instanceof EntitySpawnS2CPacket
+        boolean relevantPacket = packet instanceof ClientboundAddEntityPacket
                 //#if MC<12002
                 //$$ || packet instanceof PlayerSpawnS2CPacket
                 //#endif
@@ -479,20 +437,20 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
                 //#if MC<12105
                 //$$|| packet instanceof ExperienceOrbSpawnS2CPacket
                 //#endif
-                || packet instanceof EntitiesDestroyS2CPacket;
+                || packet instanceof ClientboundRemoveEntitiesPacket;
         if (!relevantPacket) {
             return; // don't want to do it too often, only when there's likely to be a dead entity
         }
 
-        mc.send(() -> {
-            ClientWorld world = mc.world;
+        mc.schedule(() -> {
+            ClientLevel world = mc.level;
             if (world != null) {
                 removeDeadEntities(world);
             }
         });
     }
 
-    private void removeDeadEntities(ClientWorld world) {
+    private void removeDeadEntities(ClientLevel world) {
         //#if MC>=11700
         // From the looks of it, this has now been resolved (thanks to EntityChangeListener)
         //#elseif MC>=11400
@@ -532,25 +490,25 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
      * @return The processed packet or {@code null} if no packet shall be sent
      */
     protected Packet processPacket(Packet p) throws Exception {
-        if (p instanceof LoginSuccessS2CPacket) {
+        if (p instanceof ClientboundLoginFinishedPacket) {
             registry = registry.withLoginSuccess();
             return p;
         }
         //#if MC>=12002
-        if (p instanceof ReadyS2CPacket) {
+        if (p instanceof ClientboundFinishConfigurationPacket) {
             registry = registry.withState(State.PLAY);
             return p;
         }
-        if (p instanceof EnterReconfigurationS2CPacket) {
+        if (p instanceof ClientboundStartConfigurationPacket) {
             registry = registry.withState(State.CONFIGURATION);
             hasWorldLoaded = false;
             return p;
         }
         //#endif
 
-        if (p instanceof CustomPayloadS2CPacket) {
-            CustomPayloadS2CPacket packet = (CustomPayloadS2CPacket) p;
-            if (Restrictions.PLUGIN_CHANNEL.equals(packet.payload().getId().id())) {
+        if (p instanceof ClientboundCustomPayloadPacket) {
+            ClientboundCustomPayloadPacket packet = (ClientboundCustomPayloadPacket) p;
+            if (Restrictions.PLUGIN_CHANNEL.equals(packet.payload().type().id())) {
                 final String unknown = replayHandler.getRestrictions().handle(packet);
                 if (unknown == null) {
                     return null;
@@ -564,11 +522,11 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
-                        mc.setScreen(new NoticeScreen(
+                        mc.setScreen(new AlertScreen(
                                 //#if MC>=11400
                                 () -> mc.setScreen(null),
-                                net.minecraft.text.Text.translatable("replaymod.error.unknownrestriction1"),
-                                net.minecraft.text.Text.translatable("replaymod.error.unknownrestriction2", unknown)
+                                net.minecraft.network.chat.Component.translatable("replaymod.error.unknownrestriction1"),
+                                net.minecraft.network.chat.Component.translatable("replaymod.error.unknownrestriction2", unknown)
                                 //#else
                                 //$$ I18n.format("replaymod.error.unknownrestriction1"),
                                 //$$ I18n.format("replaymod.error.unknownrestriction2", unknown)
@@ -578,8 +536,8 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
                 }
             }
         }
-        if (p instanceof DisconnectS2CPacket) {
-            Text reason = ((DisconnectS2CPacket) p).reason();
+        if (p instanceof ClientboundDisconnectPacket) {
+            Component reason = ((ClientboundDisconnectPacket) p).reason();
             String message = reason.getString();
             if ("Please update to view this replay.".equals(message)) {
                 // This version of the mod supports replay restrictions so we are allowed
@@ -590,10 +548,10 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
 
         if(BAD_PACKETS.contains(p.getClass())) return null;
 
-        if (p instanceof CustomPayloadS2CPacket) {
-            CustomPayloadS2CPacket packet = (CustomPayloadS2CPacket) p;
+        if (p instanceof ClientboundCustomPayloadPacket) {
+            ClientboundCustomPayloadPacket packet = (ClientboundCustomPayloadPacket) p;
             //#if MC>=11400
-            Identifier channelName = packet.payload().getId().id();
+            Identifier channelName = packet.payload().type().id();
             //#else
             //$$ String channelName = packet.getChannelName();
             //#endif
@@ -621,8 +579,8 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
         //#if MC>=10800
         }
 
-        if(p instanceof ResourcePackSendS2CPacket) {
-            ResourcePackSendS2CPacket packet = (ResourcePackSendS2CPacket) p;
+        if(p instanceof ClientboundResourcePackPushPacket) {
+            ClientboundResourcePackPushPacket packet = (ClientboundResourcePackPushPacket) p;
             //#if MC>=12003
             String url = packet.url();
             //#else
@@ -644,7 +602,7 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
                             IOUtils.copy(replayFile.getResourcePack(hash).get(), new FileOutputStream(file));
                         }
                         //#if MC>=12003
-                        schedulePacketHandler(() -> mc.getServerResourcePackProvider().addResourcePack(packet.id(), file.toPath()));
+                        schedulePacketHandler(() -> mc.getDownloadedPackSource().pushLocalPack(packet.id(), file.toPath()));
                         //#else
                         //$$ setServerResourcePack(file);
                         //#endif
@@ -654,20 +612,20 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
             }
         }
 
-        if(p instanceof GameJoinS2CPacket) {
-            GameJoinS2CPacket packet = (GameJoinS2CPacket) p;
-            int entId = packet.playerEntityId();
+        if(p instanceof ClientboundLoginPacket) {
+            ClientboundLoginPacket packet = (ClientboundLoginPacket) p;
+            int entId = packet.playerId();
             schedulePacketHandler(() -> allowMovement = true);
             actualID = entId;
             entId = -1789435; // Camera entity id should be negative which is an invalid id and can't be used by servers
             //#if MC>=11400
-            p = new GameJoinS2CPacket(
+            p = new ClientboundLoginPacket(
                     entId,
                     //#if MC>=12002
                     packet.hardcore(),
-                    packet.dimensionIds(),
+                    packet.levels(),
                     packet.maxPlayers(),
-                    packet.viewDistance(),
+                    packet.chunkRadius(),
                     packet.simulationDistance(),
                     packet.reducedDebugInfo(),
                     packet.showDeathScreen(),
@@ -769,10 +727,10 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
             //#endif
         }
 
-        if(p instanceof PlayerRespawnS2CPacket) {
-            PlayerRespawnS2CPacket respawn = (PlayerRespawnS2CPacket) p;
+        if(p instanceof ClientboundRespawnPacket) {
+            ClientboundRespawnPacket respawn = (ClientboundRespawnPacket) p;
             //#if MC>=11400
-            p = new PlayerRespawnS2CPacket(
+            p = new ClientboundRespawnPacket(
                     //#if MC>=12002
                     withSpectatorMode(respawn.commonPlayerSpawnInfo()),
                     (byte) 0
@@ -824,12 +782,15 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
             schedulePacketHandler(() -> allowMovement = true);
         }
 
-        if(p instanceof PlayerPositionLookS2CPacket) {
-            final PlayerPositionLookS2CPacket ppl = (PlayerPositionLookS2CPacket) p;
+        if(p instanceof ClientboundPlayerPositionPacket) {
+            final ClientboundPlayerPositionPacket ppl = (ClientboundPlayerPositionPacket) p;
             if(!hasWorldLoaded) hasWorldLoaded = true;
 
             ReplayMod.instance.runLater(() -> {
-                if (mc.currentScreen instanceof DownloadingTerrainScreen) {
+                //#if MC>=12109
+                if (mc.screen instanceof LevelLoadingScreen) {
+                //#else
+                //$$ if (mc.screen instanceof ReceivingLevelScreen) {
                     // Close the world loading screen manually in case we swallow the packet
                     mc.setScreen(null);
                 }
@@ -840,11 +801,11 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
             //#if MC>=10800
             //#if MC>=11904
             //#if MC>=12102
-            for (PositionFlag relative : ppl.relatives()) {
+            for (Relative relative : ppl.relatives()) {
             //#else
             //$$ for (PositionFlag relative : ppl.getFlags()) {
             //#endif
-                if (relative == PositionFlag.X || relative == PositionFlag.Y || relative == PositionFlag.Z) {
+                if (relative == Relative.X || relative == Relative.Y || relative == Relative.Z) {
             //#elseif MC>=11400
             //$$ for (PlayerPositionLookS2CPacket.Flag relative : ppl.getFlags()) {
             //$$     if (relative == PlayerPositionLookS2CPacket.Flag.X
@@ -871,7 +832,7 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
                 public void run() {
                     // FIXME: world shouldn't ever be null at this point, now that we use the packet queue
                     //        probably fine to remove on the next non-patch version (don't want to break stuff now)
-                    if (mc.world == null || !mc.isOnThread()) {
+                    if (mc.level == null || !mc.isSameThread()) {
                         ReplayMod.instance.runLater(this);
                         return;
                     }
@@ -890,7 +851,7 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
                     }
                     //#if MC>=12102
                     cent.setCameraPosition(ppl.change().position().x, ppl.change().position().y, ppl.change().position().z);
-                    cent.setCameraRotation(ppl.change().yaw(), ppl.change().pitch(), cent.roll);
+                    cent.setCameraRotation(ppl.change().yRot(), ppl.change().xRot(), cent.roll);
                     //#else
                     //$$ cent.setCameraPosition(ppl.getX(), ppl.getY(), ppl.getZ());
                     //$$ cent.setCameraRotation(ppl.getYaw(), ppl.getPitch(), cent.roll);
@@ -901,8 +862,8 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
             return null;
         }
 
-        if(p instanceof GameStateChangeS2CPacket) {
-            GameStateChangeS2CPacket pg = (GameStateChangeS2CPacket)p;
+        if(p instanceof ClientboundGameEventPacket) {
+            ClientboundGameEventPacket pg = (ClientboundGameEventPacket)p;
             // only allow the following packets:
             // 1 - End raining
             // 2 - Begin raining
@@ -912,23 +873,23 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
             // 8 - Fade time
             if (!Arrays.asList(
                     //#if MC>=11600
-                    GameStateChangeS2CPacket.RAIN_STARTED,
-                    GameStateChangeS2CPacket.RAIN_STOPPED,
-                    GameStateChangeS2CPacket.RAIN_GRADIENT_CHANGED,
-                    GameStateChangeS2CPacket.THUNDER_GRADIENT_CHANGED
+                    ClientboundGameEventPacket.START_RAINING,
+                    ClientboundGameEventPacket.STOP_RAINING,
+                    ClientboundGameEventPacket.RAIN_LEVEL_CHANGE,
+                    ClientboundGameEventPacket.THUNDER_LEVEL_CHANGE
                     //#else
                     //$$ 1,
                     //$$ 2,
                     //$$ 7,
                     //$$ 8
                     //#endif
-            ).contains(pg.getReason())) {
+            ).contains(pg.getEvent())) {
                 return null;
             }
         }
 
         //#if MC>=11903
-        if (p instanceof GameMessageS2CPacket || p instanceof ChatMessageS2CPacket || p instanceof ProfilelessChatMessageS2CPacket) {
+        if (p instanceof ClientboundSystemChatPacket || p instanceof ClientboundPlayerChatPacket || p instanceof ClientboundDisguisedChatPacket) {
         //#elseif MC==11901 || MC==11902
         //$$ if (p instanceof GameMessageS2CPacket || p instanceof ChatMessageS2CPacket || p instanceof MessageHeaderS2CPacket) {
         //#elseif MC>=11900
@@ -945,7 +906,7 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
             return processPacketAsync(p);
         } else {
             Packet fp = p;
-            mc.send(() -> processPacketSync(fp));
+            schedulePacketHandler(() -> processPacketSync(fp));
             return p;
         }
     }
@@ -956,8 +917,8 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
                 org.dimensionType(),
                 org.dimension(),
                org.seed(),
-                GameMode.SPECTATOR,
-                GameMode.SPECTATOR,
+                GameType.SPECTATOR,
+                GameType.SPECTATOR,
                 org.isDebug(),
                 org.isFlat(),
                 org.lastDeathLocation(),
@@ -1189,12 +1150,12 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
     protected Packet processPacketAsync(Packet p) {
         //If hurrying, ignore some packets, except for short durations
         if(desiredTimeStamp - lastTimeStamp > 1000) {
-            if(p instanceof ParticleS2CPacket) return null;
+            if(p instanceof ClientboundLevelParticlesPacket) return null;
 
-            if(p instanceof EntitySpawnS2CPacket) {
-                EntitySpawnS2CPacket pso = (EntitySpawnS2CPacket)p;
+            if(p instanceof ClientboundAddEntityPacket) {
+                ClientboundAddEntityPacket pso = (ClientboundAddEntityPacket)p;
                 //#if MC>=11400
-                if (pso.getEntityType() == EntityType.FIREWORK_ROCKET) return null;
+                if (pso.getType() == EntityType.FIREWORK_ROCKET) return null;
                 //#else
                 //$$ int type = pso.getType();
                 //$$ if(type == 76) { // Firework rocket
@@ -1329,7 +1290,7 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
 
     private void executeTaskQueue() {
         //#if MC>=11400
-        ((MCVer.MinecraftMethodAccessor) mc).replayModExecuteTaskQueue();
+        ((MinecraftMethodAccessor) mc).replayModExecuteTaskQueue();
         //#else
         //$$ java.util.Queue<java.util.concurrent.FutureTask<?>> scheduledTasks = ((MinecraftAccessor) mc).getScheduledTasks();
         //$$
@@ -1355,11 +1316,21 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
      * Note that the packet handler queue has different behavior than the standard ReplayMod queue.
      */
     private void schedulePacketHandler(Runnable runnable) {
-        if (mc.isOnThread()) {
+        if (mc.isSameThread()) {
             runnable.run();
         } else {
-            //#if MC>=11400
-            mc.execute(runnable);
+            //#if MC>=12109
+            mc.packetProcessor().scheduleIfPossible(channel.pipeline().get(Connection.class).getPacketListener(), new Packet<>() {
+                 @Override
+                 public net.minecraft.network.protocol.PacketType<? extends Packet<PacketListener>> type() {
+                     return null;
+                 }
+                 @Override
+                 public void handle(PacketListener listener) {
+                     runnable.run();
+                }
+            });
+            //#elseif MC>=11400            mc.execute(runnable);
             //#else
             //$$ mc.addScheduledTask(runnable);
             //#endif
@@ -1368,10 +1339,14 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
 
     protected void processPacketSync(Packet p) {
         //#if MC>=10904
-        if (p instanceof UnloadChunkS2CPacket) {
-            UnloadChunkS2CPacket packet = (UnloadChunkS2CPacket) p;
-            int x = packet.pos().x;
-            int z = packet.pos().z;
+        if (p instanceof ClientboundForgetLevelChunkPacket) {
+            ClientboundForgetLevelChunkPacket packet = (ClientboundForgetLevelChunkPacket) p;
+            //#if MC >= 26.1
+            int x = packet.pos().x();
+            int z = packet.pos().z();
+            //#else
+            //$$ int x = packet.pos().x;
+            //$$ int z = packet.pos().z;
         //#else
         //$$ if (p instanceof S21PacketChunkData && ((S21PacketChunkData) p).getExtractedSize() == 0) {
         //$$     S21PacketChunkData packet = (S21PacketChunkData) p;
@@ -1389,9 +1364,9 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
             //        fixed (chunk unloading no longer removes the entities).
             // Get the chunk that will be unloaded
             //#if MC>=11400
-            ClientWorld world = mc.world;
-            ChunkManager chunkProvider = world.getChunkManager();
-            WorldChunk chunk = chunkProvider.getWorldChunk(x, z);
+            ClientLevel world = mc.level;
+            ChunkSource chunkProvider = world.getChunkSource();
+            LevelChunk chunk = chunkProvider.getChunkNow(x, z);
             if (chunk != null) {
             //#else
             //$$ World world = mc.world;
@@ -1402,8 +1377,8 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
                 List<Entity> entitiesInChunk = new ArrayList<>();
                 // Gather all entities in that chunk
                 //#if MC>=11700
-                for (Entity entity : mc.world.getEntities()) {
-                    if (entity.getChunkPos().equals(chunk.getPos())) {
+                for (Entity entity : mc.level.entitiesForRendering()) {
+                    if (entity.chunkPosition().equals(chunk.getPos())) {
                         entitiesInChunk.add(entity);
                     }
                 }
@@ -1491,15 +1466,15 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
         // Skip interpolation of position updates coming from server
         // (See: newX in EntityLivingBase or otherPlayerMPX in EntityOtherPlayerMP)
         int ticks = 0;
-        Vec3d prevPos;
+        Vec3 prevPos;
         do {
-            prevPos = entity.getPos();
+            prevPos = entity.position();
             if (vehicle != null) {
-                entity.tickRiding();
+                entity.rideTick();
             } else {
                 entity.tick();
             }
-        } while (prevPos.squaredDistanceTo(entity.getPos()) > 0.0001 && ticks++ < 100);
+        } while (prevPos.distanceToSqr(entity.position()) > 0.0001 && ticks++ < 100);
     }
 
     private static final class PacketData {

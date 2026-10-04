@@ -22,8 +22,6 @@ import de.johni0702.minecraft.gui.layout.VerticalLayout;
 import de.johni0702.minecraft.gui.utils.Colors;
 import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.util.crash.CrashReport;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -33,13 +31,15 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import net.minecraft.CrashReport;
+import net.minecraft.client.Minecraft;
 
 import static com.replaymod.core.versions.MCVer.getMinecraft;
 import static de.johni0702.minecraft.gui.utils.Utils.link;
 
 public class GuiSavingReplay {
 
-    private static final MinecraftClient mc = getMinecraft();
+    private static final Minecraft mc = getMinecraft();
     private static final Logger logger = LogManager.getLogger();
 
     private final GuiLabel label = new GuiLabel()
@@ -66,7 +66,7 @@ public class GuiSavingReplay {
 
     public void close() {
         core.getBackgroundProcesses().removeProcess(panel);
-        AbstractGuiScreen<?> currentScreen = GuiScreen.from(mc.currentScreen);
+        AbstractGuiScreen<?> currentScreen = GuiScreen.from(mc.screen);
         if (currentScreen instanceof GuiReplayViewer) {
             ((GuiReplayViewer) currentScreen).list.load();
         }
@@ -147,8 +147,8 @@ public class GuiSavingReplay {
                 Files.delete(path);
             } catch (IOException e) {
                 logger.error("Deleting replay file:", e);
-                CrashReport crashReport = CrashReport.create(e, "Deleting replay file");
-                core.runLater(() -> Utils.error(logger, VanillaGuiScreen.wrap(mc.currentScreen), crashReport, () -> {}));
+                CrashReport crashReport = CrashReport.forThrowable(e, "Deleting replay file");
+                core.runLater(() -> Utils.error(logger, VanillaGuiScreen.wrap(mc.screen), crashReport, () -> {}));
             }
             return;
         }
@@ -162,8 +162,8 @@ public class GuiSavingReplay {
             Files.move(path, newPath);
         } catch (IOException e) {
             logger.error("Renaming replay file:", e);
-            CrashReport crashReport = CrashReport.create(e, "Renaming replay file");
-            core.runLater(() -> Utils.error(logger, VanillaGuiScreen.wrap(mc.currentScreen), crashReport, () -> {}));
+            CrashReport crashReport = CrashReport.forThrowable(e, "Renaming replay file");
+            core.runLater(() -> Utils.error(logger, VanillaGuiScreen.wrap(mc.screen), crashReport, () -> {}));
         }
     }
 }

@@ -1,6 +1,6 @@
 package com.replaymod.render.mixin;
 
-import net.minecraft.client.util.Window;
+import com.mojang.blaze3d.platform.Window;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 import org.spongepowered.asm.mixin.gen.Invoker;
@@ -16,5 +16,5 @@ public interface MainWindowAccessor {
     @Accessor
     void setFramebufferHeight(int value);
     @Invoker
-    void invokeOnFramebufferSizeChanged(long window, int width, int height);
+    void invokeOnFramebufferResize(long window, int width, int height);
 }

@@ -1,18 +1,13 @@
 package com.replaymod.core.utils;
 
-import net.minecraft.network.packet.s2c.common.CustomPayloadS2CPacket;
-import net.minecraft.network.PacketByteBuf;
-//#if MC>=12006
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.packet.CustomPayload;
-//#endif
-//#if MC>=10904
-import net.minecraft.util.Identifier;
-//#endif
-
 //#if MC<=10710 || MC>=12002
 import io.netty.buffer.Unpooled;
 //#endif
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.Identifier;
 
 /**
  * Restrictions set by the server,
@@ -20,7 +15,7 @@ import io.netty.buffer.Unpooled;
  */
 public class Restrictions {
     //#if MC>=11400
-    public static final Identifier PLUGIN_CHANNEL = Identifier.of("replaymod", "restrict");
+    public static final Identifier PLUGIN_CHANNEL = Identifier.fromNamespaceAndPath("replaymod", "restrict");
     //#else
     //$$ public static final String PLUGIN_CHANNEL = "Replay|Restrict";
     //#endif
@@ -29,9 +24,9 @@ public class Restrictions {
     private boolean onlyFirstPerson;
     private boolean onlyRecordingPlayer;
 
-    public String handle(CustomPayloadS2CPacket packet) {
+    public String handle(ClientboundCustomPayloadPacket packet) {
         //#if MC>=12006
-        PacketByteBuf buffer = new PacketByteBuf(Unpooled.wrappedBuffer(((Payload) packet.payload()).bytes()));
+        FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.wrappedBuffer(((Payload) packet.payload()).bytes()));
         //#elseif MC>=12002
         //$$ PacketByteBuf buffer = new PacketByteBuf(Unpooled.buffer());
         //$$ packet.write(buffer);
@@ -41,7 +36,7 @@ public class Restrictions {
         //$$ PacketBuffer buffer = new PacketBuffer(Unpooled.wrappedBuffer(packet.func_149168_d()));
         //#endif
         while (buffer.isReadable()) {
-            String name = buffer.readString(64);
+            String name = buffer.readUtf(64);
             boolean active = buffer.readBoolean();
 //            if ("no_xray".equals(name)) {
 //                noXray = active;
@@ -75,8 +70,8 @@ public class Restrictions {
     }
 
     //#if MC>=12006
-    public static final CustomPayload.Id<Payload> ID = new CustomPayload.Id<>(PLUGIN_CHANNEL);
-    public static final PacketCodec<? super PacketByteBuf, Payload> CODEC = PacketCodec.ofStatic(
+    public static final CustomPacketPayload.Type<Payload> ID = new CustomPacketPayload.Type<>(PLUGIN_CHANNEL);
+    public static final StreamCodec<? super FriendlyByteBuf, Payload> CODEC = StreamCodec.of(
             (buf, payload) -> buf.writeBytes(payload.bytes()),
             buf -> {
                 byte[] bytes = new byte[buf.readableBytes()];
@@ -84,9 +79,9 @@ public class Restrictions {
                 return new Payload(bytes);
             }
     );
-    public record Payload(byte[] bytes) implements CustomPayload {
+    public record Payload(byte[] bytes) implements CustomPacketPayload {
         @Override
-        public Id<? extends CustomPayload> getId() {
+        public Type<? extends CustomPacketPayload> type() {
             return ID;
         }
     }

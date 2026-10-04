@@ -19,12 +19,11 @@ import com.replaymod.simplepathing.SPTimeline;
 import com.replaymod.simplepathing.SPTimeline.SPPath;
 import de.johni0702.minecraft.gui.GuiRenderer;
 import de.johni0702.minecraft.gui.element.advanced.AbstractGuiTimeline;
+import de.johni0702.minecraft.gui.function.Click;
 import de.johni0702.minecraft.gui.function.Draggable;
 import de.johni0702.minecraft.gui.utils.lwjgl.vector.Vector2f;
-import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.render.Tessellator;
-import net.minecraft.client.render.VertexFormats;
-import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.client.renderer.state.gui.pip.PictureInPictureRenderState;
 import org.apache.commons.lang3.tuple.Pair;
 import de.johni0702.minecraft.gui.utils.lwjgl.Point;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
@@ -33,6 +32,10 @@ import org.lwjgl.opengl.GL11;
 
 import java.util.Comparator;
 import java.util.Optional;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.navigation.ScreenRectangle;
+import net.minecraft.client.gui.render.pip.PictureInPictureRenderer;
+import net.minecraft.client.renderer.MultiBufferSource;
 
 import static com.replaymod.core.versions.MCVer.emitLine;
 import static de.johni0702.minecraft.gui.versions.MCVer.popScissorState;
@@ -42,24 +45,12 @@ import static de.johni0702.minecraft.gui.versions.MCVer.setScissorDisabled;
 //#if MC>=12106
 import com.replaymod.replay.mixin.DrawContextAccessor;
 import com.replaymod.render.mixin.GameRendererAccessor;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.ScreenRect;
-import net.minecraft.client.gui.render.SpecialGuiElementRenderer;
-import net.minecraft.client.gui.render.state.special.SpecialGuiElementRenderState;
-import net.minecraft.client.util.ClosableFactory;
-import net.minecraft.client.util.Pool;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.VertexConsumerProvider;
 import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 //#endif
-
-//#if MC>=12105
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.VertexConsumer;
-import net.minecraft.client.render.VertexConsumerProvider;
-//#endif
+import com.mojang.blaze3d.resource.CrossFrameResourcePool;
+import com.mojang.blaze3d.resource.ResourceDescriptor;
 
 //#if MC>=12102
 //#if MC<12105
@@ -69,8 +60,8 @@ import net.minecraft.client.render.VertexConsumerProvider;
 
 //#if MC>=11700
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.render.GameRenderer;
-//#endif
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 
 public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline> implements Draggable {
     protected static final int KEYFRAME_SIZE = 5;
@@ -187,10 +178,14 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
                     float positionXKeyframeTimeline = positonX + KEYFRAME_SIZE / 2f;
 
                     final int color = 0xff0000ff;
+                    final float lineWidth = 2f;
                     //#if MC>=12105
-                    VertexConsumerProvider.Immediate immediate = getMinecraft().getBufferBuilders().getEntityVertexConsumers();
-                    immediate.draw();
-                    VertexConsumer buffer = immediate.getBuffer(RenderLayer.LINE_STRIP);
+                    MultiBufferSource.BufferSource immediate = getMinecraft().renderBuffers().bufferSource();
+                    immediate.endBatch();
+                    //#if MC>=12111
+                    VertexConsumer buffer = immediate.getBuffer(RenderTypes.LINES);
+                    //#else
+                    //$$ VertexConsumer buffer = immediate.getBuffer(RenderType.LINE_STRIP);
                     //#else
                     //$$ Tessellator tessellator = Tessellator.getInstance();
                     //#if MC>=12100
@@ -212,6 +207,7 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
 
                     //#if MC>=12106
                     linesRenderState.color = color;
+                    linesRenderState.lineWidth = lineWidth;
                     linesRenderState.line(p1, p2);
                     linesRenderState.line(p2, p3);
                     linesRenderState.line(p3, p4);
@@ -258,19 +254,19 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
 
         //#if MC>=12106
         if (!linesRenderState.lines.isEmpty()) {
-            MinecraftClient mc = getMinecraft();
-            int scale = mc.getWindow().getScaleFactor();
+            Minecraft mc = getMinecraft();
+            int scale = mc.getWindow().getGuiScale();
             // MC's special rendering code has multiple issues, we'll use a size matching the screen to avoid some
             linesRenderState.x1 = 0;
             linesRenderState.y1 = 0;
-            linesRenderState.x2 = mc.getWindow().getFramebufferWidth() / scale;
-            linesRenderState.y2 = mc.getWindow().getFramebufferHeight() / scale;
+            linesRenderState.x2 = mc.getWindow().getWidth() / scale;
+            linesRenderState.y2 = mc.getWindow().getHeight() / scale;
 
-            Pool pool = ((GameRendererAccessor) mc.gameRenderer).getPool();
+            CrossFrameResourcePool pool = ((GameRendererAccessor) mc.gameRenderer).getResourcePool();
             TimeTimelineLinesRenderer linesRenderer = pool.acquire(TimeTimelineLinesRenderer.FACTORY);
             pushScissorState();
             setScissorDisabled();
-            linesRenderer.render(linesRenderState, ((DrawContextAccessor) renderer.getContext()).getState(), scale);
+            linesRenderer.prepare(linesRenderState, ((DrawContextAccessor) renderer.getContext()).getGuiRenderState(), scale);
             popScissorState();
             pool.release(TimeTimelineLinesRenderer.FACTORY, linesRenderer); // Note: Assumes we only render one per frame
         }
@@ -299,59 +295,59 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
     }
 
     //#if MC>=12106
-    private static class TimeTimelineLinesRenderState implements SpecialGuiElementRenderState {
+    private static class TimeTimelineLinesRenderState implements PictureInPictureRenderState {
         int x1, x2, y1, y2;
-        ScreenRect scissorState;
+        ScreenRectangle scissorState;
 
         List<Pair<Vector2f, Vector2f>> lines = new ArrayList<>();
         int color;
+        float lineWidth;
 
         public void line(Vector2f p1, Vector2f p2) {
             lines.add(Pair.of(p1, p2));
         }
 
-       @Override public int x1() {return x1;}
-       @Override public int x2() {return x2;}
-       @Override public int y1() {return y1;}
-       @Override public int y2() {return y2;}
+       @Override public int x0() {return x1;}
+       @Override public int x1() {return x2;}
+       @Override public int y0() {return y1;}
+       @Override public int y1() {return y2;}
        @Override public float scale() {return 1; /* scale */}
-       @Override public @Nullable ScreenRect scissorArea() {return scissorState;}
-       @Override public @Nullable ScreenRect bounds() {return SpecialGuiElementRenderState.createBounds(x1, y1, x2, y2, scissorState);}
+       @Override public @Nullable ScreenRectangle scissorArea() {return scissorState;}
+       @Override public @Nullable ScreenRectangle bounds() {return PictureInPictureRenderState.getBounds(x1, y1, x2, y2, scissorState);}
     }
 
-        private static class TimeTimelineLinesRenderer extends SpecialGuiElementRenderer<TimeTimelineLinesRenderState> {
-        private static ClosableFactory<TimeTimelineLinesRenderer> FACTORY = new ClosableFactory<>() {
+        private static class TimeTimelineLinesRenderer extends PictureInPictureRenderer<TimeTimelineLinesRenderState> {
+        private static ResourceDescriptor<TimeTimelineLinesRenderer> FACTORY = new ResourceDescriptor<>() {
             @Override
-            public TimeTimelineLinesRenderer create() {
-                return new TimeTimelineLinesRenderer(MinecraftClient.getInstance().getBufferBuilders().getEntityVertexConsumers());
+            public TimeTimelineLinesRenderer allocate() {
+                return new TimeTimelineLinesRenderer(Minecraft.getInstance().renderBuffers().bufferSource());
             }
 
             @Override
-            public void close(TimeTimelineLinesRenderer object) {
+            public void free(TimeTimelineLinesRenderer object) {
                 object.close();
             }
         };
 
-        protected TimeTimelineLinesRenderer(VertexConsumerProvider.Immediate immediate) {
+        protected TimeTimelineLinesRenderer(MultiBufferSource.BufferSource immediate) {
             super(immediate);
         }
 
         @Override
-        public Class<TimeTimelineLinesRenderState> getElementClass() {
+        public Class<TimeTimelineLinesRenderState> getRenderStateClass() {
              return TimeTimelineLinesRenderState.class;
         }
 
         @Override
-        protected void render(TimeTimelineLinesRenderState state, MatrixStack matrixStack) {
+        protected void renderToTexture(TimeTimelineLinesRenderState state, PoseStack matrixStack) {
             matrixStack.translate(-state.x2 / 2f, -state.y2, 100);
-            RenderSystem.lineWidth(2);
             for (Pair<Vector2f, Vector2f> line : state.lines) {
-                 emitLine(matrixStack, vertexConsumers.getBuffer(RenderLayer.LINES), line.getLeft(), line.getRight(), state.color);
+                 emitLine(matrixStack, bufferSource.getBuffer(RenderTypes.LINES), line.getLeft(), line.getRight(), state.color, state.lineWidth);
              }
         }
 
         @Override
-        protected String getName() {
+        protected String getTextureLabel() {
             return "time_timeline_lines";
         }
     }
@@ -409,14 +405,14 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
     }
 
     @Override
-    public boolean mouseClick(ReadablePoint position, int button) {
-        int time = getTimeAt(position.getX(), position.getY());
-        Pair<SPPath, Long> pathKeyframePair = getKeyframe(position);
+    public boolean mouseClick(Click click) {
+        int time = getTimeAt(click.x, click.y);
+        Pair<SPPath, Long> pathKeyframePair = getKeyframe(click);
         if (pathKeyframePair.getRight() != null) {
             SPPath path = pathKeyframePair.getLeft();
             // Clicked on keyframe
             long keyframeTime = pathKeyframePair.getRight();
-            if (button == 0) { // Left click
+            if (click.button == 0) { // Left click
                 long now = MCVer.milliTime();
                 if (lastClickedKeyframe == keyframeTime) {
                     // Clicked the same keyframe again, potentially a double click
@@ -432,9 +428,9 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
                 lastClickedPath = path;
                 gui.getMod().setSelected(lastClickedPath, lastClickedKeyframe);
                 // We might be dragging
-                draggingStartX = position.getX();
+                draggingStartX = click.x;
                 dragging = true;
-            } else if (button == 1) { // Right click
+            } else if (click.button == 1) { // Right click
                 Keyframe keyframe = gui.getMod().getCurrentTimeline().getKeyframe(path, keyframeTime);
                 for (Property property : keyframe.getProperties()) {
                     applyPropertyToGame(property, keyframe);
@@ -443,10 +439,10 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
             return true;
         } else if (time != -1) {
             // Clicked on timeline but not on any keyframe
-            if (button == 0) { // Left click
+            if (click.button == 0) { // Left click
                 setCursorPosition(time);
                 gui.getMod().setSelected(null, 0);
-            } else if (button == 1) { // Right click
+            } else if (click.button == 1) { // Right click
                 if (pathKeyframePair.getLeft() != null) {
                     // Apply the value of the clicked path at the clicked position
                     Path path = gui.getMod().getCurrentTimeline().getPath(pathKeyframePair.getLeft());
@@ -477,11 +473,11 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
     }
 
     @Override
-    public boolean mouseDrag(ReadablePoint position, int button, long timeSinceLastCall) {
+    public boolean mouseDrag(Click click) {
         if (!dragging) {
-            if (button == 0) {
+            if (click.button == 0) {
                 // Left click, the user might try to move the cursor by clicking and holding
-                int time = getTimeAt(position.getX(), position.getY());
+                int time = getTimeAt(click.x, click.y);
                 if (time != -1) {
                     // and they are still on the timeline, so update the time appropriately
                     setCursorPosition(time);
@@ -493,15 +489,15 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
 
         if (!actuallyDragging) {
             // Check if threshold has been passed by now
-            if (Math.abs(position.getX() - draggingStartX) >= DRAGGING_THRESHOLD) {
+            if (Math.abs(click.x - draggingStartX) >= DRAGGING_THRESHOLD) {
                 actuallyDragging = true;
             }
         }
         if (actuallyDragging) {
-            if (!gui.loadEntityTracker(() -> mouseDrag(position, button, timeSinceLastCall))) return true;
+            if (!gui.loadEntityTracker(() -> mouseDrag(click))) return true;
             // Threshold passed
             SPTimeline timeline = gui.getMod().getCurrentTimeline();
-            Point mouse = new Point(position);
+            Point mouse = new Point(click);
             getContainer().convertFor(this, mouse);
             int mouseX = mouse.getX();
             int width = getLastSize().getWidth();
@@ -534,7 +530,7 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
     }
 
     @Override
-    public boolean mouseRelease(ReadablePoint position, int button) {
+    public boolean mouseRelease(Click click) {
         if (dragging) {
             if (actuallyDragging) {
                 gui.getMod().getCurrentTimeline().getTimeline().pushChange(draggingChange);

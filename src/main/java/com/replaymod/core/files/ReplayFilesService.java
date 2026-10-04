@@ -6,7 +6,6 @@ import com.replaymod.replaystudio.replay.ReplayFile;
 import com.replaymod.replaystudio.replay.ZipReplayFile;
 import com.replaymod.replaystudio.studio.ReplayStudio;
 import de.johni0702.minecraft.gui.container.GuiScreen;
-import net.minecraft.util.Util;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 
@@ -99,7 +98,7 @@ public class ReplayFilesService {
                         Files.delete(noRecoverMarker);
                         continue;
                     }
-                    new RestoreReplayGui(core, GuiScreen.wrap(core.getMinecraft().currentScreen), original.toFile()).display();
+                    new RestoreReplayGui(core, GuiScreen.wrap(core.getMinecraft().screen), original.toFile()).display();
                 }
             }
         } catch (IOException e) {

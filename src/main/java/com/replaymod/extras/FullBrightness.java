@@ -12,9 +12,9 @@ import de.johni0702.minecraft.gui.element.GuiImage;
 import de.johni0702.minecraft.gui.element.IGuiImage;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
+import net.minecraft.client.Minecraft;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 
 public class FullBrightness extends EventRegistrations implements Extra {
     private ReplayMod core;
@@ -22,7 +22,7 @@ public class FullBrightness extends EventRegistrations implements Extra {
 
     private final IGuiImage indicator = new GuiImage().setTexture(ReplayMod.TEXTURE, 90, 20, 19, 16).setSize(19, 16);
 
-    private MinecraftClient mc;
+    private Minecraft mc;
     private boolean active;
     //#if MC>=11400
     private double originalGamma;
@@ -71,12 +71,12 @@ public class FullBrightness extends EventRegistrations implements Extra {
         if (active && module.getReplayHandler() != null) {
             Type type = getType();
             if (type == Type.Gamma || type == Type.Both) {
-                originalGamma = mc.options.getGamma().getValue();
-                ((com.replaymod.core.mixin.SimpleOptionAccessor<Double>) (Object) mc.options.getGamma()).setRawValue(1000.0);
+                originalGamma = mc.options.gamma().get();
+                ((com.replaymod.core.mixin.SimpleOptionAccessor<Double>) (Object) mc.options.gamma()).setRawValue(1000.0);
             }
             if (type == Type.NightVision || type == Type.Both) {
                 if (mc.player != null) {
-                    mc.player.addStatusEffect(new StatusEffectInstance(StatusEffects.NIGHT_VISION
+                    mc.player.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION
                             //#if MC<=10809
                             //$$ .id
                             //#endif
@@ -91,11 +91,11 @@ public class FullBrightness extends EventRegistrations implements Extra {
         if (active && module.getReplayHandler() != null) {
             Type type = getType();
             if (type == Type.Gamma || type == Type.Both) {
-                ((com.replaymod.core.mixin.SimpleOptionAccessor<Double>) (Object) mc.options.getGamma()).setRawValue(originalGamma);
+                ((com.replaymod.core.mixin.SimpleOptionAccessor<Double>) (Object) mc.options.gamma()).setRawValue(originalGamma);
             }
             if (type == Type.NightVision || type == Type.Both) {
                 if (mc.player != null) {
-                    mc.player.removeStatusEffect(StatusEffects.NIGHT_VISION
+                    mc.player.removeEffect(MobEffects.NIGHT_VISION
                             //#if MC<=10809
                             //$$ .id
                             //#endif

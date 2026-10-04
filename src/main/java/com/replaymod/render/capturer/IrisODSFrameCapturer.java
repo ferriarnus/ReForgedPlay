@@ -20,7 +20,7 @@ import java.util.Map;
 public class IrisODSFrameCapturer implements FrameCapturer<ODSOpenGlFrame> {
 
     public static final String SHADER_PACK_NAME = "assets/replaymod/iris/ods";
-    public static final Path SHADER_PACK_PATH = LoadingModList.get().getModFileById("replaymod").getFile().getSecureJar().getRootPath();
+    public static final Path SHADER_PACK_PATH = LoadingModList.get().getModFileById("replaymod").getFile().getFilePath().getRoot();
 
     public static IrisODSFrameCapturer INSTANCE;
     private final CubicPboOpenGlFrameCapturer left, right;

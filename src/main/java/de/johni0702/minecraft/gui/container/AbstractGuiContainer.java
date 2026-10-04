@@ -38,13 +38,13 @@ import de.johni0702.minecraft.gui.utils.lwjgl.ReadableColor;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadablePoint;
 import de.johni0702.minecraft.gui.versions.MCVer;
-import net.minecraft.util.crash.CrashException;
-import net.minecraft.util.crash.CrashReport;
-import net.minecraft.util.crash.CrashReportSection;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import net.minecraft.CrashReport;
+import net.minecraft.CrashReportCategory;
+import net.minecraft.ReportedException;
 
 import static com.google.common.base.Preconditions.checkState;
 
@@ -139,12 +139,12 @@ public abstract class AbstractGuiContainer<T extends AbstractGuiContainer<T>>
         try {
             layedOutElements = layout.layOut(this, size);
         } catch (Exception ex) {
-            CrashReport crashReport = CrashReport.create(ex, "Gui Layout");
+            CrashReport crashReport = CrashReport.forThrowable(ex, "Gui Layout");
             renderInfo.addTo(crashReport);
-            CrashReportSection category = crashReport.addElement("Gui container details");
+            CrashReportCategory category = crashReport.addCategory("Gui container details");
             MCVer.addDetail(category, "Container", this::toString);
             MCVer.addDetail(category, "Layout", layout::toString);
-            throw new CrashException(crashReport);
+            throw new ReportedException(crashReport);
         }
         for (final Map.Entry<GuiElement, Pair<ReadablePoint, ReadableDimension>> e : layedOutElements.entrySet()) {
             GuiElement element = e.getKey();
@@ -193,21 +193,21 @@ public abstract class AbstractGuiContainer<T extends AbstractGuiContainer<T>>
                         .layer(renderInfo.getLayer() - e.getKey().getLayer()));
                 eRenderer.stopUsing();
             } catch (Exception ex) {
-                CrashReport crashReport = CrashReport.create(ex, "Rendering Gui");
+                CrashReport crashReport = CrashReport.forThrowable(ex, "Rendering Gui");
                 renderInfo.addTo(crashReport);
-                CrashReportSection category = crashReport.addElement("Gui container details");
+                CrashReportCategory category = crashReport.addCategory("Gui container details");
                 MCVer.addDetail(category, "Container", this::toString);
                 MCVer.addDetail(category, "Width", () -> "" + size.getWidth());
                 MCVer.addDetail(category, "Height", () -> "" + size.getHeight());
                 MCVer.addDetail(category, "Layout", layout::toString);
-                category = crashReport.addElement("Gui element details");
+                category = crashReport.addCategory("Gui element details");
                 MCVer.addDetail(category, "Element", () -> e.getKey().toString());
                 MCVer.addDetail(category, "Position", ePosition::toString);
                 MCVer.addDetail(category, "Size", eSize::toString);
                 if (e.getKey() instanceof GuiContainer) {
                     MCVer.addDetail(category, "Layout", () -> ((GuiContainer) e.getKey()).getLayout().toString());
                 }
-                throw new CrashException(crashReport);
+                throw new ReportedException(crashReport);
             }
         }
     }

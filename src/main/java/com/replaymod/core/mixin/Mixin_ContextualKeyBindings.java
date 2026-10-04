@@ -2,7 +2,6 @@ package com.replaymod.core.mixin;
 
 import com.replaymod.core.ReplayMod;
 import com.replaymod.replay.ReplayModReplay;
-import net.minecraft.client.option.KeyBinding;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -16,36 +15,37 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import net.minecraft.client.KeyMapping;
 
 /**
  * We have bunch of keybindings which only have an effect while in a replay but heavily conflict with vanilla ones
  * otherwise. To work around this, we prevent our keybindings (or conflicting ones) from making it into the keysByCode
  * map, depending on the current context.
  */
-@Mixin(KeyBinding.class)
+@Mixin(KeyMapping.class)
 public class Mixin_ContextualKeyBindings {
     //#if MC>=11200
-    @Shadow @Final private static Map<String, KeyBinding> KEYS_BY_ID;
-    @Unique private static Collection<KeyBinding> keyBindings() { return Mixin_ContextualKeyBindings.KEYS_BY_ID.values(); }
+    @Shadow @Final private static Map<String, KeyMapping> ALL;
+    @Unique private static Collection<KeyMapping> keyBindings() { return Mixin_ContextualKeyBindings.ALL.values(); }
     //#else
     //$$ @Shadow @Final private static List<KeyBinding> KEYBIND_ARRAY;
     //$$ @Unique private static Collection<KeyBinding> keyBindings() { return Mixin_ContextualKeyBindings.KEYBIND_ARRAY; }
     //#endif
 
-    @Unique private static final List<KeyBinding> temporarilyRemoved = new ArrayList<>();
+    @Unique private static final List<KeyMapping> temporarilyRemoved = new ArrayList<>();
 
-    @Inject(method = "updateKeysByCode", at = @At("HEAD"))
+    @Inject(method = "resetMapping", at = @At("HEAD"))
     private static void preContextualKeyBindings(CallbackInfo ci) {
         ReplayMod mod = ReplayMod.instance;
         if (mod == null) {
             return;
         }
-        Set<KeyBinding> onlyInReplay = mod.getKeyBindingRegistry().getOnlyInReplay();
+        Set<KeyMapping> onlyInReplay = mod.getKeyBindingRegistry().getOnlyInReplay();
         if (ReplayModReplay.instance.getReplayHandler() != null) {
             // In replay, remove any conflicting key bindings, so that ours are guaranteed in
             keyBindings().removeIf(keyBinding -> {
-                for (KeyBinding exclusiveBinding : onlyInReplay) {
-                    if (keyBinding.equals(exclusiveBinding) && keyBinding != exclusiveBinding) {
+                for (KeyMapping exclusiveBinding : onlyInReplay) {
+                    if (keyBinding.same(exclusiveBinding) && keyBinding != exclusiveBinding) {
                         temporarilyRemoved.add(keyBinding);
                         return true;
                     }
@@ -64,11 +64,11 @@ public class Mixin_ContextualKeyBindings {
         }
     }
 
-    @Inject(method = "updateKeysByCode", at = @At("RETURN"))
+    @Inject(method = "resetMapping", at = @At("RETURN"))
     private static void postContextualKeyBindings(CallbackInfo ci) {
-        for (KeyBinding keyBinding : temporarilyRemoved) {
+        for (KeyMapping keyBinding : temporarilyRemoved) {
             //#if MC>=11200
-            Mixin_ContextualKeyBindings.KEYS_BY_ID.put(keyBinding.getTranslationKey(), keyBinding);
+            Mixin_ContextualKeyBindings.ALL.put(keyBinding.getName(), keyBinding);
             //#else
             //$$ keyBindings().add(keyBinding);
             //#endif

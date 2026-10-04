@@ -1,10 +1,9 @@
 package de.johni0702.minecraft.gui.versions.callbacks;
 
 import de.johni0702.minecraft.gui.utils.Event;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.ClickableWidget;
-
 import java.util.Collection;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.screens.Screen;
 
 public interface InitScreenCallback {
     Event<InitScreenCallback> EVENT = Event.create((listeners) ->
@@ -15,7 +14,7 @@ public interface InitScreenCallback {
             }
     );
 
-    void initScreen(Screen screen, Collection<ClickableWidget> buttons);
+    void initScreen(Screen screen, Collection<AbstractWidget> buttons);
 
     interface Pre {
         Event<Pre> EVENT = Event.create((listeners) ->

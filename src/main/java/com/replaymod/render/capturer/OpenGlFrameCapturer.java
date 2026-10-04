@@ -9,13 +9,12 @@ import com.replaymod.render.utils.ByteBufferPool;
 import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.WritableDimension;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gl.Framebuffer;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import net.minecraft.client.Minecraft;
 
 import static com.replaymod.core.versions.MCVer.popMatrix;
 import static com.replaymod.core.versions.MCVer.pushMatrix;
@@ -29,6 +28,7 @@ import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
 //$$ import com.mojang.blaze3d.buffers.BufferUsage;
 //#endif
 import com.mojang.blaze3d.buffers.GpuBuffer;
+import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.systems.GpuDevice;
 //#endif
 
@@ -36,9 +36,9 @@ public abstract class OpenGlFrameCapturer<F extends Frame, D extends CaptureData
     protected final WorldRenderer worldRenderer;
     protected final RenderInfo renderInfo;
     protected int framesDone;
-    private Framebuffer frameBuffer;
+    private RenderTarget frameBuffer;
 
-    protected final MinecraftClient mc = MCVer.getMinecraft();
+    protected final Minecraft mc = MCVer.getMinecraft();
 
     public OpenGlFrameCapturer(WorldRenderer worldRenderer, RenderInfo renderInfo) {
         this.worldRenderer = worldRenderer;
@@ -70,9 +70,9 @@ public abstract class OpenGlFrameCapturer<F extends Frame, D extends CaptureData
         return renderInfo.getFrameSize().getHeight();
     }
 
-    protected Framebuffer frameBuffer() {
+    protected RenderTarget frameBuffer() {
         if (frameBuffer == null) {
-            frameBuffer = mc.getFramebuffer();
+            frameBuffer = mc.getMainRenderTarget();
         }
         return frameBuffer;
     }
@@ -97,7 +97,7 @@ public abstract class OpenGlFrameCapturer<F extends Frame, D extends CaptureData
         //#if MC>=12105
         RenderSystem.getDevice()
                 .createCommandEncoder()
-                .clearColorAndDepthTextures(mc.getFramebuffer().getColorAttachment(), 0, mc.getFramebuffer().getDepthAttachment(), 1);
+                .clearColorAndDepthTextures(mc.getMainRenderTarget().getColorTexture(), 0, mc.getMainRenderTarget().getDepthTexture(), 1);
         //#else
         //$$ RenderSystem.clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
         //$$         //#if MC>=11400 && MC<12102
@@ -128,7 +128,7 @@ public abstract class OpenGlFrameCapturer<F extends Frame, D extends CaptureData
         //#else
         //$$ try (GpuBuffer gpuBuffer = device.createBuffer(null, BufferType.PIXEL_PACK, BufferUsage.STATIC_READ, getFrameWidth() * getFrameHeight() * 4)) {
         //#endif
-            device.createCommandEncoder().copyTextureToBuffer(frameBuffer().getColorAttachment(), gpuBuffer, 0, () -> {}, 0);
+            device.createCommandEncoder().copyTextureToBuffer(frameBuffer().getColorTexture(), gpuBuffer, 0, () -> {}, 0);
         //#if MC>=12106
             try (GpuBuffer.MappedView view = device.createCommandEncoder().mapBuffer(gpuBuffer, true, false)) {
         //#else

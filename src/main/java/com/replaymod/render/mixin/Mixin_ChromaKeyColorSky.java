@@ -3,8 +3,8 @@ package com.replaymod.render.mixin;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.replaymod.render.hooks.EntityRendererHandler;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableColor;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.WorldRenderer;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.LevelRenderer;
 import org.lwjgl.opengl.GL11;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -16,14 +16,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 /**
  * Instead of rendering the normal sky, clears the screen with a uniform color for use with chroma keying.
  */
-@Mixin(WorldRenderer.class)
+@Mixin(LevelRenderer.class)
 public abstract class Mixin_ChromaKeyColorSky {
-    @Shadow @Final private MinecraftClient client;
 
     //#if MC>=11800
     @Inject(
             //#if MC>=12102
-            method = "renderSky",
+            method = "addSkyPass",
             //#elseif MC>=12005
             //$$ method = "renderSky(Lorg/joml/Matrix4f;Lorg/joml/Matrix4f;FLnet/minecraft/client/render/Camera;ZLjava/lang/Runnable;)V",
             //#elseif MC>=11802
@@ -44,14 +43,17 @@ public abstract class Mixin_ChromaKeyColorSky {
     //#else
     //$$ @Inject(method = "renderSky(FI)V", at = @At("HEAD"), cancellable = true)
     //#endif
+    //#if MC>=12111
+    static
+    //#endif
     private void chromaKeyingSky(CallbackInfo ci) {
-        EntityRendererHandler handler = ((EntityRendererHandler.IEntityRenderer) this.client.gameRenderer).replayModRender_getHandler();
+        EntityRendererHandler handler = ((EntityRendererHandler.IEntityRenderer) Minecraft.getInstance().gameRenderer).replayModRender_getHandler();
         if (handler != null) {
             ReadableColor color = handler.getSettings().getChromaKeyingColor();
             if (color != null) {
                 //#if MC>=12105
                 RenderSystem.getDevice().createCommandEncoder().clearColorTexture(
-                        this.client.getFramebuffer().getColorAttachment(),
+                        Minecraft.getInstance().getMainRenderTarget().getColorTexture(),
                         (0xff << 24) | (color.getRed() << 16) | (color.getGreen() << 8) | color.getBlue()
                 );
                 //#else

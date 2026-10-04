@@ -3,7 +3,6 @@ package com.replaymod.core.files;
 import com.google.common.net.PercentEscaper;
 import com.replaymod.core.Setting;
 import com.replaymod.core.SettingsRegistry;
-import net.minecraft.client.MinecraftClient;
 import net.neoforged.fml.loading.FMLPaths;
 
 import java.io.IOException;

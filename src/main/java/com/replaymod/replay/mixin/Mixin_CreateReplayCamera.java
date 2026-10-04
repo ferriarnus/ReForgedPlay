@@ -2,61 +2,37 @@ package com.replaymod.replay.mixin;
 
 import com.replaymod.replay.ReplayModReplay;
 import com.replaymod.replay.camera.CameraEntity;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayerInteractionManager;
-import net.minecraft.client.network.ClientPlayNetworkHandler;
+import net.minecraft.client.ClientRecipeBook;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.client.multiplayer.MultiPlayerGameMode;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.stats.StatsCounter;
+import net.minecraft.world.entity.player.Input;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-//#if MC>=12106
-import net.minecraft.util.PlayerInput;
-//#endif
 
-//#if MC>=11400
-import net.minecraft.client.world.ClientWorld;
-//#else
-//$$ import net.minecraft.world.World;
-//#endif
-
-//#if MC>=11200
-//#if MC>=11400
-import net.minecraft.client.recipebook.ClientRecipeBook;
-//#else
-//$$ import net.minecraft.stats.RecipeBook;
-//#endif
-//#endif
-//#if MC>=10904
-import net.minecraft.stat.StatHandler;
-//#else
-//$$ import net.minecraft.stats.StatFileWriter;
-//#endif
-
-//#if MC>=10800
-import net.minecraft.client.network.ClientPlayerEntity;
-//#else
-//$$ import net.minecraft.client.entity.EntityClientPlayerMP;
-//#endif
-
-
-@Mixin(ClientPlayerInteractionManager.class)
+@Mixin(MultiPlayerGameMode.class)
 public abstract class Mixin_CreateReplayCamera {
 
     @Shadow
-    private MinecraftClient client;
+    private Minecraft minecraft;
 
     @Shadow
     //#if MC>=10904
-    private ClientPlayNetworkHandler networkHandler;
+    private ClientPacketListener connection;
     //#else
     //$$ private NetHandlerPlayClient netClientHandler;
     //#endif
 
     //#if MC>=11400
     //#if MC>=12106
-    @Inject(method = "createPlayer(Lnet/minecraft/client/world/ClientWorld;Lnet/minecraft/stat/StatHandler;Lnet/minecraft/client/recipebook/ClientRecipeBook;Lnet/minecraft/util/PlayerInput;Z)Lnet/minecraft/client/network/ClientPlayerEntity;", at=@At("HEAD"), cancellable = true)
+    @Inject(method = "createPlayer(Lnet/minecraft/client/multiplayer/ClientLevel;Lnet/minecraft/stats/StatsCounter;Lnet/minecraft/client/ClientRecipeBook;Lnet/minecraft/world/entity/player/Input;Z)Lnet/minecraft/client/player/LocalPlayer;", at=@At("HEAD"), cancellable = true)
     //#elseif MC>=11602
     //$$ @Inject(method = "createPlayer(Lnet/minecraft/client/world/ClientWorld;Lnet/minecraft/stat/StatHandler;Lnet/minecraft/client/recipebook/ClientRecipeBook;ZZ)Lnet/minecraft/client/network/ClientPlayerEntity;", at=@At("HEAD"), cancellable = true)
     //#else
@@ -64,24 +40,24 @@ public abstract class Mixin_CreateReplayCamera {
     //#endif
     private void replayModReplay_createReplayCamera(
             //#if MC>=11400
-            ClientWorld worldIn,
+            ClientLevel worldIn,
             //#else
             //$$ World worldIn,
             //#endif
-            StatHandler statisticsManager,
+            StatsCounter statisticsManager,
             ClientRecipeBook recipeBookClient,
             //#if MC>=11600
             //#if MC>=12106
-            PlayerInput playerInput,
+            Input playerInput,
             //#else
             //$$ boolean lastIsHoldingSneakKey,
             //#endif
             boolean lastSprinting,
             //#endif
-            CallbackInfoReturnable<ClientPlayerEntity> ci
+            CallbackInfoReturnable<LocalPlayer> ci
     ) {
         if (ReplayModReplay.instance.getReplayHandler() != null) {
-            ci.setReturnValue(new CameraEntity(this.client, worldIn, this.networkHandler, statisticsManager, recipeBookClient));
+            ci.setReturnValue(new CameraEntity(this.minecraft, worldIn, this.connection, statisticsManager, recipeBookClient));
             //#else
             //#if MC>=11200
             //$$ @Inject(method = "func_192830_a", at=@At("HEAD"), cancellable = true)

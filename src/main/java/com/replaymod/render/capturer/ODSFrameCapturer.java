@@ -11,17 +11,16 @@ import com.replaymod.render.hooks.Texture2DStateCallback;
 import com.replaymod.render.rendering.FrameCapturer;
 import com.replaymod.render.shader.Program;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
-import net.minecraft.util.crash.CrashReport;
-import net.minecraft.util.crash.CrashException;
-import net.minecraft.util.Identifier;
-
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import net.minecraft.CrashReport;
+import net.minecraft.ReportedException;
+import net.minecraft.resources.Identifier;
 
 public class ODSFrameCapturer implements FrameCapturer<ODSOpenGlFrame> {
-    private static final Identifier vertexResource = Identifier.of("replaymod", "shader/ods.vert");
-    private static final Identifier fragmentResource = Identifier.of("replaymod", "shader/ods.frag");
+    private static final Identifier vertexResource = Identifier.fromNamespaceAndPath("replaymod", "shader/ods.vert");
+    private static final Identifier fragmentResource = Identifier.fromNamespaceAndPath("replaymod", "shader/ods.frag");
 
     private final CubicPboOpenGlFrameCapturer left, right;
     private final Program shaderProgram;
@@ -71,7 +70,7 @@ public class ODSFrameCapturer implements FrameCapturer<ODSOpenGlFrame> {
             leftEyeVariable = shaderProgram.getUniformVariable("leftEye");
             directionVariable = shaderProgram.getUniformVariable("direction");
         } catch (Exception e) {
-            throw new CrashException(CrashReport.create(e, "Creating ODS shaders"));
+            throw new ReportedException(CrashReport.forThrowable(e, "Creating ODS shaders"));
         }
     }
 

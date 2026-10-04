@@ -7,7 +7,6 @@ import com.replaymod.render.rendering.FrameConsumer;
 import com.replaymod.render.utils.ByteBufferPool;
 import com.replaymod.render.utils.Lwjgl3Loader;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
-import net.minecraft.util.crash.CrashReport;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.util.tinyexr.EXRChannelInfo;
 import org.lwjgl.util.tinyexr.EXRHeader;
@@ -20,6 +19,7 @@ import java.nio.IntBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
+import net.minecraft.CrashReport;
 
 import static org.lwjgl.system.MemoryStack.*;
 import static org.lwjgl.system.MemoryUtil.*;
@@ -130,7 +130,7 @@ public class EXRWriter implements FrameConsumer<BitmapFrame> {
                 throw new IOException(message);
             }
         } catch (Throwable t) {
-            MCVer.getMinecraft().setCrashReportSupplier(CrashReport.create(t, "Exporting EXR frame"));
+            MCVer.getMinecraft().delayCrash(CrashReport.forThrowable(t, "Exporting EXR frame"));
         } finally {
             memFree(images);
             stackPop();

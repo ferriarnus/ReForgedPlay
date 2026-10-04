@@ -29,6 +29,9 @@ import de.johni0702.minecraft.gui.container.GuiPanel;
 import de.johni0702.minecraft.gui.element.GuiButton;
 import de.johni0702.minecraft.gui.element.GuiElement;
 import de.johni0702.minecraft.gui.element.GuiLabel;
+import de.johni0702.minecraft.gui.function.Click;
+import de.johni0702.minecraft.gui.function.KeyHandler;
+import de.johni0702.minecraft.gui.function.KeyInput;
 import de.johni0702.minecraft.gui.function.Typeable;
 import de.johni0702.minecraft.gui.layout.VerticalLayout;
 import de.johni0702.minecraft.gui.utils.Colors;
@@ -39,7 +42,7 @@ import de.johni0702.minecraft.gui.versions.MCVer.Keyboard;
 //$$ import org.lwjgl.input.Keyboard;
 //#endif
 
-public class GuiInfoPopup extends AbstractGuiPopup<GuiInfoPopup> implements Typeable {
+public class GuiInfoPopup extends AbstractGuiPopup<GuiInfoPopup> implements KeyHandler {
     public static GuiInfoPopup open(GuiContainer container, String...info) {
         GuiElement[] labels = new GuiElement[info.length];
         for (int i = 0; i < info.length; i++) {
@@ -97,9 +100,9 @@ public class GuiInfoPopup extends AbstractGuiPopup<GuiInfoPopup> implements Type
     }
 
     @Override
-    public boolean typeKey(ReadablePoint mousePosition, int keyCode, char keyChar, boolean ctrlDown, boolean shiftDown) {
-        if (keyCode == Keyboard.KEY_ESCAPE) {
-            closeButton.onClick();
+    public boolean handleKey(KeyInput keyInput) {
+        if (keyInput.isEscape()) {
+            closeButton.onClick(new Click(-1, -1, 0, keyInput.modifiers));
             return true;
         }
         return false;

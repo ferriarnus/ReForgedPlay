@@ -1,28 +1,32 @@
 package de.johni0702.minecraft.gui.container;
 
+import de.johni0702.minecraft.gui.function.CharHandler;
+import de.johni0702.minecraft.gui.function.CharInput;
+import de.johni0702.minecraft.gui.function.Click;
 import de.johni0702.minecraft.gui.function.Draggable;
+import de.johni0702.minecraft.gui.function.KeyHandler;
+import de.johni0702.minecraft.gui.function.KeyInput;
 import de.johni0702.minecraft.gui.function.Scrollable;
 import de.johni0702.minecraft.gui.function.Tickable;
-import de.johni0702.minecraft.gui.function.Typeable;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import de.johni0702.minecraft.gui.utils.MouseUtils;
 import de.johni0702.minecraft.gui.utils.lwjgl.Point;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadablePoint;
 import de.johni0702.minecraft.gui.versions.MCVer;
 import de.johni0702.minecraft.gui.versions.callbacks.*;
-import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 
 import java.util.Collections;
 import java.util.Map;
 import java.util.WeakHashMap;
 
 
-public class VanillaGuiScreen extends GuiScreen implements Draggable, Typeable, Scrollable, Tickable {
+public class VanillaGuiScreen extends GuiScreen implements Draggable, KeyHandler, CharHandler, Scrollable, Tickable {
 
-    private static final Map<net.minecraft.client.gui.screen.Screen, VanillaGuiScreen> WRAPPERS =
+    private static final Map<net.minecraft.client.gui.screens.Screen, VanillaGuiScreen> WRAPPERS =
             Collections.synchronizedMap(new WeakHashMap<>());
 
-    public static VanillaGuiScreen wrap(net.minecraft.client.gui.screen.Screen originalGuiScreen) {
+    public static VanillaGuiScreen wrap(net.minecraft.client.gui.screens.Screen originalGuiScreen) {
         VanillaGuiScreen gui = WRAPPERS.get(originalGuiScreen);
         if (gui == null) {
             WRAPPERS.put(originalGuiScreen, gui = new VanillaGuiScreen(originalGuiScreen));
@@ -34,16 +38,16 @@ public class VanillaGuiScreen extends GuiScreen implements Draggable, Typeable, 
     // Use wrap instead and make sure to preserve the existing layout.
     // (or if you really want your own, inline this code)
     @Deprecated
-    public static VanillaGuiScreen setup(net.minecraft.client.gui.screen.Screen originalGuiScreen) {
+    public static VanillaGuiScreen setup(net.minecraft.client.gui.screens.Screen originalGuiScreen) {
         VanillaGuiScreen gui = new VanillaGuiScreen(originalGuiScreen);
         gui.register();
         return gui;
     }
 
-    private final net.minecraft.client.gui.screen.Screen mcScreen;
+    private final net.minecraft.client.gui.screens.Screen mcScreen;
     private final EventHandler eventHandler = new EventHandler();
 
-    public VanillaGuiScreen(net.minecraft.client.gui.screen.Screen mcScreen) {
+    public VanillaGuiScreen(net.minecraft.client.gui.screens.Screen mcScreen) {
         this.mcScreen = mcScreen;
         this.suppressVanillaKeys = true;
 
@@ -57,7 +61,10 @@ public class VanillaGuiScreen extends GuiScreen implements Draggable, Typeable, 
 
             eventHandler.register();
 
-            getSuperMcGui().init(MCVer.getMinecraft(), mcScreen.width, mcScreen.height);
+            //#if MC>=12111
+            getSuperMcGui().init(mcScreen.width, mcScreen.height);
+            //#else
+            //$$ getSuperMcGui().init(MCVer.getMinecraft(), mcScreen.width, mcScreen.height);
         }
     }
 
@@ -67,7 +74,7 @@ public class VanillaGuiScreen extends GuiScreen implements Draggable, Typeable, 
     }
 
     @Override
-    public net.minecraft.client.gui.screen.Screen toMinecraft() {
+    public net.minecraft.client.gui.screens.Screen toMinecraft() {
         return mcScreen;
     }
 
@@ -76,12 +83,12 @@ public class VanillaGuiScreen extends GuiScreen implements Draggable, Typeable, 
         throw new UnsupportedOperationException("Cannot set background of vanilla gui screen.");
     }
 
-    private net.minecraft.client.gui.screen.Screen getSuperMcGui() {
+    private net.minecraft.client.gui.screens.Screen getSuperMcGui() {
         return super.toMinecraft();
     }
 
     @Override
-    public boolean mouseClick(ReadablePoint position, int button) {
+    public boolean mouseClick(Click click) {
         //#if MC>=11400
         //#else
         //$$ eventHandler.handled = false;
@@ -90,7 +97,7 @@ public class VanillaGuiScreen extends GuiScreen implements Draggable, Typeable, 
     }
 
     @Override
-    public boolean mouseDrag(ReadablePoint position, int button, long timeSinceLastCall) {
+    public boolean mouseDrag(Click click) {
         //#if MC>=11400
         //#else
         //$$ eventHandler.handled = false;
@@ -99,7 +106,7 @@ public class VanillaGuiScreen extends GuiScreen implements Draggable, Typeable, 
     }
 
     @Override
-    public boolean mouseRelease(ReadablePoint position, int button) {
+    public boolean mouseRelease(Click click) {
         //#if MC>=11400
         //#else
         //$$ eventHandler.handled = false;
@@ -117,10 +124,19 @@ public class VanillaGuiScreen extends GuiScreen implements Draggable, Typeable, 
     }
 
     @Override
-    public boolean typeKey(ReadablePoint mousePosition, int keyCode, char keyChar, boolean ctrlDown, boolean shiftDown) {
+    public boolean handleKey(KeyInput keyInput) {
         //#if MC>=11400
         //#else
         //$$ eventHandler.handled = false;
+        //#endif
+        return false;
+    }
+
+    @Override
+    public boolean handleChar(CharInput charInput) {
+        //#if MC>=11400
+        //#else
+        //$$ eventHandler.charHandled = false;
         //#endif
         return false;
     }
@@ -130,7 +146,7 @@ public class VanillaGuiScreen extends GuiScreen implements Draggable, Typeable, 
         // TODO this is a workaround for ReplayMod#560 until we remove the inner mc screen
         //      see also the note in ReplayMod's GuiBackgroundProcesses
         // If this screen ever becomes the main screen, something has gone wrong.
-        if (getSuperMcGui() == getMinecraft().currentScreen) {
+        if (getSuperMcGui() == getMinecraft().screen) {
             getMinecraft().setScreen(null);
         }
     }
@@ -160,7 +176,7 @@ public class VanillaGuiScreen extends GuiScreen implements Draggable, Typeable, 
         }
 
         { on(InitScreenCallback.Pre.EVENT, this::preGuiInit); }
-        private void preGuiInit(net.minecraft.client.gui.screen.Screen screen) {
+        private void preGuiInit(net.minecraft.client.gui.screens.Screen screen) {
             if (screen == mcScreen && active) {
                 active = false;
                 unregister();
@@ -171,7 +187,7 @@ public class VanillaGuiScreen extends GuiScreen implements Draggable, Typeable, 
 
         { on(PostRenderScreenCallback.EVENT, this::onGuiRender); }
         //#if MC>=12000
-        private void onGuiRender(DrawContext stack, float partialTicks) {
+        private void onGuiRender(GuiGraphicsExtractor stack, float partialTicks) {
             //#if MC<12106
             //$$ stack.draw(); // flush any buffered changes before we draw using legacy primitives
             //#endif
@@ -179,7 +195,7 @@ public class VanillaGuiScreen extends GuiScreen implements Draggable, Typeable, 
         //$$ private void onGuiRender(MatrixStack stack, float partialTicks) {
         //#endif
             Point mousePos = MouseUtils.getMousePos();
-            getSuperMcGui().render(
+            getSuperMcGui().extractRenderState(
                     //#if MC>=11600
                     stack,
                     //#endif
@@ -199,18 +215,30 @@ public class VanillaGuiScreen extends GuiScreen implements Draggable, Typeable, 
         { on(MouseCallback.EVENT, this); }
 
         @Override
-        public boolean mouseDown(double x, double y, int button) {
-            return getSuperMcGui().mouseClicked(x, y, button);
+        public boolean mouseDown(Click click) {
+            //#if MC>=12109
+            return getSuperMcGui().mouseClicked(click.toMC(), false);
+            //#else
+            //$$ return getSuperMcGui().mouseClicked(click.x, click.y, click.button);
+            //#endif
         }
 
         @Override
-        public boolean mouseDrag(double x, double y, int button, double dx, double dy) {
-            return getSuperMcGui().mouseDragged(x, y, button, dx, dy);
+        public boolean mouseDrag(Click click, double dx, double dy) {
+            //#if MC>=12109
+            return getSuperMcGui().mouseDragged(click.toMC(), dx, dy);
+            //#else
+            //$$ return getSuperMcGui().mouseDragged(click.x, click.y, click.button, dx, dy);
+            //#endif
         }
 
         @Override
-        public boolean mouseUp(double x, double y, int button) {
-            return getSuperMcGui().mouseReleased(x, y, button);
+        public boolean mouseUp(Click click) {
+            //#if MC>=12109
+            return getSuperMcGui().mouseReleased(click.toMC());
+            //#else
+            //$$ return getSuperMcGui().mouseReleased(click.x, click.y, click.button);
+            //#endif
         }
 
         @Override
@@ -225,18 +253,30 @@ public class VanillaGuiScreen extends GuiScreen implements Draggable, Typeable, 
         { on(KeyboardCallback.EVENT, this); }
 
         @Override
-        public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-            return getSuperMcGui().keyPressed(keyCode, scanCode, modifiers);
+        public boolean keyPressed(KeyInput keyInput) {
+            //#if MC>=12109
+            return getSuperMcGui().keyPressed(keyInput.toMC());
+            //#else
+            //$$ return getSuperMcGui().keyPressed(keyInput.key, keyInput.scancode, keyInput.modifiers);
+            //#endif
         }
 
         @Override
-        public boolean keyReleased(int keyCode, int scanCode, int modifiers) {
-            return getSuperMcGui().keyReleased(keyCode, scanCode, modifiers);
+        public boolean keyReleased(KeyInput keyInput) {
+            //#if MC>=12109
+            return getSuperMcGui().keyReleased(keyInput.toMC());
+            //#else
+            //$$ return getSuperMcGui().keyReleased(keyInput.key, keyInput.scancode, keyInput.modifiers);
+            //#endif
         }
 
         @Override
-        public boolean charTyped(char keyChar, int scanCode) {
-            return getSuperMcGui().charTyped(keyChar, scanCode);
+        public boolean charTyped(CharInput charInput) {
+            //#if MC>=12109
+            return getSuperMcGui().charTyped(charInput.toMC());
+            //#else
+            //$$ return getSuperMcGui().charTyped(charInput.character, charInput.modifiers);
+            //#endif
         }
         //#elseif MC<=11202
         //$$ private boolean handled;

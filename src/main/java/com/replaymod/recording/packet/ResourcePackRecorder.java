@@ -2,12 +2,6 @@ package com.replaymod.recording.packet;
 
 import com.google.common.hash.Hashing;
 import com.replaymod.replaystudio.replay.ReplayFile;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.ConfirmScreen;
-import net.minecraft.client.network.ServerInfo;
-import net.minecraft.client.option.ServerList;
-import net.minecraft.network.packet.c2s.common.ResourcePackStatusC2SPacket;
-import net.minecraft.network.packet.s2c.common.ResourcePackSendS2CPacket;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -19,14 +13,6 @@ import org.apache.logging.log4j.Logger;
 import java.net.MalformedURLException;
 import java.net.URL;
 //#endif
-
-//#if MC>=11400
-import net.minecraft.text.TranslatableTextContent;
-//#else
-//$$ import net.minecraft.client.gui.GuiYesNoCallback;
-//$$ import net.minecraft.client.resources.I18n;
-//#endif
-
 //#if MC>=10800
 import de.johni0702.minecraft.gui.utils.Consumer;
 //#else
@@ -42,19 +28,9 @@ import de.johni0702.minecraft.gui.utils.Consumer;
 //#if MC>=11400
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-//#else
-//$$ import com.google.common.util.concurrent.ListenableFuture;
-//#endif
-import net.minecraft.network.ClientConnection;
-//#else
-//$$ import com.replaymod.core.mixin.ResourcePackRepositoryAccessor;
-//$$ import net.minecraft.client.multiplayer.ServerData.ServerResourceMode;
-//$$ import net.minecraft.client.multiplayer.ServerList;
-//$$ import net.minecraft.client.resources.FileResourcePack;
-//$$ import net.minecraft.network.play.server.S3FPacketCustomPayload;
-//$$ import org.apache.commons.io.Charsets;
-//#endif
-
+import net.minecraft.client.Minecraft;
+import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.common.ClientboundResourcePackPushPacket;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -70,7 +46,7 @@ import static com.replaymod.core.versions.MCVer.*;
  */
 public class ResourcePackRecorder {
     private static final Logger logger = LogManager.getLogger();
-    private static final MinecraftClient mc = getMinecraft();
+    private static final Minecraft mc = getMinecraft();
 
     private final ReplayFile replayFile;
 
@@ -113,10 +89,10 @@ public class ResourcePackRecorder {
     //#if MC>=12003
     private final Map<UUID, Integer> mcIdToReplayId = new HashMap<>();
 
-    public synchronized ResourcePackSendS2CPacket handleResourcePack(ClientConnection netManager, ResourcePackSendS2CPacket packet) {
+    public synchronized ClientboundResourcePackPushPacket handleResourcePack(Connection netManager, ClientboundResourcePackPushPacket packet) {
         final int requestId = nextRequestId++;
         mcIdToReplayId.put(packet.id(), requestId);
-        return new ResourcePackSendS2CPacket(packet.id(), "replay://" + requestId, "", packet.required(), packet.prompt());
+        return new ClientboundResourcePackPushPacket(packet.id(), "replay://" + requestId, "", packet.required(), packet.prompt());
     }
 
     public void recordResourcePack(Path file, UUID uuid) {

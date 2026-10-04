@@ -1,7 +1,8 @@
 package com.replaymod.core.mixin;
 
 import com.replaymod.core.versions.MCVer;
-import net.minecraft.client.MinecraftClient;
+import net.minecraft.network.PacketProcessor;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -18,46 +19,48 @@ import com.replaymod.core.events.PreRenderCallback;
 //#endif
 
 import java.io.IOException;
+import net.minecraft.client.Minecraft;
+import net.minecraft.util.thread.ReentrantBlockableEventLoop;
 
-//#if MC>=11400
-import net.minecraft.util.thread.ReentrantThreadExecutor;
-//#endif
-
-@Mixin(MinecraftClient.class)
+@Mixin(Minecraft.class)
 public abstract class MixinMinecraft
         //#if MC>=11400
-        extends ReentrantThreadExecutor<Runnable>
+        extends ReentrantBlockableEventLoop<Runnable>
         //#endif
         implements MCVer.MinecraftMethodAccessor {
-    //#if MC>=11400
-    public MixinMinecraft(String string_1) { super(string_1); }
-    //#endif
 
     //#if MC>=11400
-    @Shadow protected abstract void handleInputEvents();
+    @Shadow protected abstract void handleKeybinds();
 
     @Override
     public void replayModProcessKeyBinds() {
-        handleInputEvents();
+        handleKeybinds();
     }
 
+    //#if MC>=12109
+    @Shadow @Final
+    private PacketProcessor packetProcessor;
+    //#endif
     //#if MC>=11400
     @Override
     public void replayModExecuteTaskQueue() {
-        runTasks();
+        //#if MC>=12109
+        this.packetProcessor.processQueuedPackets();
+        //#endif
+        runAllTasks();
     }
     //#endif
 
-    @Inject(method = "render",
+    @Inject(method = "runTick",
             at = @At(value = "INVOKE",
-                    target = "Lnet/minecraft/client/render/GameRenderer;render(Lnet/minecraft/client/render/RenderTickCounter;Z)V"))
+                    target = "Lnet/minecraft/client/Minecraft;renderFrame(Z)V"))
     private void preRender(boolean unused, CallbackInfo ci) {
         PreRenderCallback.EVENT.invoker().preRender();
     }
 
-    @Inject(method = "render",
+    @Inject(method = "runTick",
             at = @At(value = "INVOKE",
-                    target = "Lnet/minecraft/client/render/GameRenderer;render(Lnet/minecraft/client/render/RenderTickCounter;Z)V",
+                    target = "Lnet/minecraft/client/Minecraft;renderFrame(Z)V",
                     shift = At.Shift.AFTER))
     private void postRender(boolean unused, CallbackInfo ci) {
         PostRenderCallback.EVENT.invoker().postRender();
@@ -118,5 +121,11 @@ public abstract class MixinMinecraft
     //$$     InputReplayTimer.handleScroll(wheel);
     //$$     return wheel;
     //$$ }
+    //#endif
+
+    //#if MC >= 26.1
+    MixinMinecraft() { super(null, false); }
+    //#elseif MC>=11400
+    //$$ MixinMinecraft() { super(null); }
     //#endif
 }

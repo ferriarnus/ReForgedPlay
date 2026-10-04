@@ -27,27 +27,22 @@ package de.johni0702.minecraft.gui.element;
 import de.johni0702.minecraft.gui.GuiRenderer;
 import de.johni0702.minecraft.gui.RenderInfo;
 import de.johni0702.minecraft.gui.container.GuiContainer;
+import de.johni0702.minecraft.gui.function.Click;
 import de.johni0702.minecraft.gui.function.Clickable;
 import de.johni0702.minecraft.gui.function.Draggable;
 import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.Point;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadablePoint;
-import net.minecraft.client.resource.language.I18n;
-import net.minecraft.util.Identifier;
-//#if MC>=12106
-import net.minecraft.client.gl.RenderPipelines;
-//#endif
-
-//#if MC>=12102
-import net.minecraft.client.render.RenderLayer;
-//#endif
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.resources.language.I18n;
+import net.minecraft.resources.Identifier;
 
 // TODO: Currently assumes a height of 20
 public abstract class AbstractGuiSlider<T extends AbstractGuiSlider<T>> extends AbstractGuiElement<T> implements Clickable, Draggable, IGuiSlider<T> {
     //#if MC>=12002
-    protected static final Identifier TEXTURE = Identifier.of("widget/slider");
-    protected static final Identifier HANDLE_TEXTURE = Identifier.of("widget/slider_handle");
+    protected static final Identifier TEXTURE = Identifier.parse("widget/slider");
+    protected static final Identifier HANDLE_TEXTURE = Identifier.parse("widget/slider_handle");
     //#endif
 
     private Runnable onValueChanged;
@@ -72,8 +67,8 @@ public abstract class AbstractGuiSlider<T extends AbstractGuiSlider<T>> extends 
     }
 
     @Override
-    public boolean mouseClick(ReadablePoint position, int button) {
-        Point pos = new Point(position);
+    public boolean mouseClick(Click click) {
+        Point pos = new Point(click);
         if (getContainer() != null) {
             getContainer().convertFor(this, pos);
         }
@@ -87,9 +82,9 @@ public abstract class AbstractGuiSlider<T extends AbstractGuiSlider<T>> extends 
     }
 
     @Override
-    public boolean mouseDrag(ReadablePoint position, int button, long timeSinceLastCall) {
+    public boolean mouseDrag(Click click) {
         if (dragging) {
-            Point pos = new Point(position);
+            Point pos = new Point(click);
             if (getContainer() != null) {
                 getContainer().convertFor(this, pos);
             }
@@ -99,10 +94,10 @@ public abstract class AbstractGuiSlider<T extends AbstractGuiSlider<T>> extends 
     }
 
     @Override
-    public boolean mouseRelease(ReadablePoint position, int button) {
+    public boolean mouseRelease(Click click) {
         if (dragging) {
             dragging = false;
-            Point pos = new Point(position);
+            Point pos = new Point(click);
             if (getContainer() != null) {
                 getContainer().convertFor(this, pos);
             }
@@ -133,7 +128,7 @@ public abstract class AbstractGuiSlider<T extends AbstractGuiSlider<T>> extends 
 
         // Draw background
         //#if MC>=12106
-        renderer.getContext().drawGuiTexture(RenderPipelines.GUI_TEXTURED, TEXTURE, offset.getX(), offset.getY(), width, height);
+        renderer.getContext().blitSprite(RenderPipelines.GUI_TEXTURED, TEXTURE, offset.getX(), offset.getY(), width, height);
         //#elseif MC>=12102
         //$$ renderer.getContext().drawGuiTexture(RenderLayer::getGuiTextured, TEXTURE, offset.getX(), offset.getY(), width, height);
         //$$ renderer.getContext().draw();
@@ -147,7 +142,7 @@ public abstract class AbstractGuiSlider<T extends AbstractGuiSlider<T>> extends 
         // Draw slider
         int sliderX = (width - 8) * value / steps;
         //#if MC>=12106
-        renderer.getContext().drawGuiTexture(RenderPipelines.GUI_TEXTURED, HANDLE_TEXTURE, offset.getX() + sliderX, offset.getY(), 8, 20);
+        renderer.getContext().blitSprite(RenderPipelines.GUI_TEXTURED, HANDLE_TEXTURE, offset.getX() + sliderX, offset.getY(), 8, 20);
         //#elseif MC>=12102
         //$$ renderer.getContext().drawGuiTexture(RenderLayer::getGuiTextured, HANDLE_TEXTURE, offset.getX() + sliderX, offset.getY(), 8, 20);
         //$$ renderer.getContext().draw();
@@ -191,7 +186,7 @@ public abstract class AbstractGuiSlider<T extends AbstractGuiSlider<T>> extends 
 
     @Override
     public T setI18nText(String text, Object... args) {
-        return setText(I18n.translate(text, args));
+        return setText(I18n.get(text, args));
     }
 
     @Override

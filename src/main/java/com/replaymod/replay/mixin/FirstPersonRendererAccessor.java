@@ -1,24 +1,24 @@
 package com.replaymod.replay.mixin;
 
-import net.minecraft.client.render.item.HeldItemRenderer;
-import net.minecraft.item.ItemStack;
+import net.minecraft.client.renderer.ItemInHandRenderer;
+import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
-@Mixin(HeldItemRenderer.class)
+@Mixin(ItemInHandRenderer.class)
 public interface FirstPersonRendererAccessor {
     //#if MC>=10904
-    @Accessor("mainHand")
+    @Accessor("mainHandItem")
     void setItemStackMainHand(ItemStack value);
-    @Accessor("offHand")
+    @Accessor("offHandItem")
     void setItemStackOffHand(ItemStack value);
-    @Accessor("equipProgressMainHand")
+    @Accessor("mainHandHeight")
     void setEquippedProgressMainHand(float value);
-    @Accessor("lastEquipProgressMainHand")
+    @Accessor("oMainHandHeight")
     void setPrevEquippedProgressMainHand(float value);
-    @Accessor("equipProgressOffHand")
+    @Accessor("offHandHeight")
     void setEquippedProgressOffHand(float value);
-    @Accessor("lastEquipProgressOffHand")
+    @Accessor("oOffHandHeight")
     void setPrevEquippedProgressOffHand(float value);
     //#else
     //$$ @Accessor

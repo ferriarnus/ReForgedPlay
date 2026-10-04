@@ -1,6 +1,9 @@
 package com.replaymod.simplepathing.preview;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.core.events.PostRenderWorldCallback;
 import com.replaymod.core.versions.MCVer;
@@ -19,41 +22,21 @@ import com.replaymod.simplepathing.SPTimeline;
 import com.replaymod.simplepathing.gui.GuiPathing;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import de.johni0702.minecraft.gui.utils.lwjgl.vector.Vector3f;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.render.Tessellator;
-import net.minecraft.client.render.VertexFormats;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.renderer.entity.layers.RenderLayer;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.resources.Identifier;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.lwjgl.opengl.GL11;
-
-//#if MC>=12105
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.VertexConsumer;
-import net.minecraft.client.render.VertexConsumerProvider;
-//#else
-//$$ import static com.replaymod.core.versions.MCVer.bindTexture;
-//#endif
-
-//#if MC>=12102
-//#if MC<12105
-//$$ import net.minecraft.client.gl.ShaderProgramKeys;
-//#endif
-//#endif
-
-//#if MC>=11700
-import net.minecraft.client.render.GameRenderer;
-//#endif
-
 //#if MC>=11500
 import com.mojang.blaze3d.systems.RenderSystem;
 //#endif
 
 import java.util.Comparator;
 import java.util.Optional;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.world.entity.Entity;
 
 import static com.replaymod.core.ReplayMod.TEXTURE;
 import static com.replaymod.core.versions.MCVer.emitLine;
@@ -61,8 +44,8 @@ import static com.replaymod.core.versions.MCVer.popMatrix;
 import static com.replaymod.core.versions.MCVer.pushMatrix;
 
 public class PathPreviewRenderer extends EventRegistrations {
-    private static final Identifier CAMERA_HEAD = Identifier.of("replaymod", "camera_head.png");
-    private static final MinecraftClient mc = MCVer.getMinecraft();
+    private static final Identifier CAMERA_HEAD = Identifier.fromNamespaceAndPath("replaymod", "camera_head.png");
+    private static final Minecraft mc = MCVer.getMinecraft();
 
     private static final int SLOW_PATH_COLOR = 0xffcccc;
     private static final int FAST_PATH_COLOR = 0x660000;
@@ -77,8 +60,8 @@ public class PathPreviewRenderer extends EventRegistrations {
     }
 
     { on(PostRenderWorldCallback.EVENT, this::renderCameraPath); }
-    private void renderCameraPath(MatrixStack matrixStack) {
-        if (!replayHandler.getReplaySender().isAsyncMode() || mc.options.hudHidden) return;
+    private void renderCameraPath(PoseStack matrixStack) {
+        if (!replayHandler.getReplaySender().isAsyncMode() || mc.options.hideGui) return;
 
         Entity view = mc.getCameraEntity();
         if (view == null) return;
@@ -95,7 +78,7 @@ public class PathPreviewRenderer extends EventRegistrations {
 
         path.update();
 
-        int renderDistance = mc.options.getViewDistance().getValue() * 16;
+        int renderDistance = mc.options.renderDistance().get() * 16;
         int renderDistanceSquared = renderDistance * renderDistance;
 
         Vector3f viewPos = new Vector3f(
@@ -122,7 +105,7 @@ public class PathPreviewRenderer extends EventRegistrations {
 
             //#if MC>=11700
             //#if MC>=12006
-            RenderSystem.getModelViewStack().mul(matrixStack.peek().getPositionMatrix());
+            RenderSystem.getModelViewStack().mul(matrixStack.last().pose());
             //#else
             //$$ RenderSystem.getModelViewStack().multiplyPositionMatrix(matrixStack.peek().getPositionMatrix());
             //#endif
@@ -267,9 +250,13 @@ public class PathPreviewRenderer extends EventRegistrations {
         if (distanceSquared(view, pos2) > renderDistanceSquared) return;
 
         //#if MC>=12105
-        VertexConsumerProvider.Immediate immediate = mc.getBufferBuilders().getEntityVertexConsumers();
-        immediate.draw();
-        VertexConsumer buffer = immediate.getBuffer(RenderLayer.LINES);
+        MultiBufferSource.BufferSource immediate = mc.renderBuffers().bufferSource();
+        immediate.endBatch();
+        //#if MC>=12111
+        VertexConsumer buffer = immediate.getBuffer(RenderTypes.LINES);
+        //#else
+        //$$ VertexConsumer buffer = immediate.getBuffer(RenderType.LINES);
+        //#endif
         //#else
 
         //$$ Tessellator tessellator = Tessellator.getInstance();
@@ -280,12 +267,11 @@ public class PathPreviewRenderer extends EventRegistrations {
         //$$ buffer.begin(net.minecraft.client.render.VertexFormat.DrawMode.LINES, VertexFormats.LINES);
         //#endif
         //#endif
-        emitLine(new MatrixStack(), buffer, Vector3f.sub(pos1, view, null), Vector3f.sub(pos2, view, null), color);
 
-        RenderSystem.lineWidth(3);
+        emitLine(new PoseStack(), buffer, Vector3f.sub(pos1, view, null), Vector3f.sub(pos2, view, null), color, 3f);
 
         //#if MC>=12105
-        immediate.draw();
+        immediate.endBatch();
         //#else
         //#if MC>=11700
         //#if MC>=12102
@@ -332,16 +318,18 @@ public class PathPreviewRenderer extends EventRegistrations {
         float maxY = 0.5f;
 
         //#if MC>=12105
-        VertexConsumerProvider.Immediate immediate = mc.getBufferBuilders().getEntityVertexConsumers();
-        immediate.draw();
-        //#if MC>=12106
-        VertexConsumer buffer = immediate.getBuffer(RenderLayer.getTextSeeThrough(TEXTURE));
+        MultiBufferSource.BufferSource immediate = mc.renderBuffers().bufferSource();
+        immediate.endBatch();
+        //#if MC>=12111
+        VertexConsumer buffer = immediate.getBuffer(RenderTypes.textSeeThrough(TEXTURE));
+        //#elseif MC>=12106
+        //$$ VertexConsumer buffer = immediate.getBuffer(RenderType.textSeeThrough(TEXTURE));
         //#else
         //$$ VertexConsumer buffer = immediate.getBuffer(RenderLayer.getGuiTexturedOverlay(TEXTURE));
         //#endif
         //#else
 
-        Tessellator tessellator = Tessellator.getInstance();
+        Tesselator tessellator = Tesselator.getInstance();
         //#if MC>=12100
         //#elseBufferBuilder buffer = tessellator.begin(net.minecraft.client.render.VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);        //#else
         //$$ BufferBuilder buffer = tessellator.getBuffer();
@@ -357,12 +345,12 @@ public class PathPreviewRenderer extends EventRegistrations {
         pushMatrix();
 
         Vector3f t = Vector3f.sub(pos, view, null);
-        com.mojang.blaze3d.systems.RenderSystem.getModelViewStack().translate(t.x, t.y, t.z);
-        com.mojang.blaze3d.systems.RenderSystem.getModelViewStack().rotate(com.replaymod.core.versions.MCVer.quaternion(-mc.getEntityRenderDispatcher().camera.getYaw(), new org.joml.Vector3f(0, 1, 0)));
-        com.mojang.blaze3d.systems.RenderSystem.getModelViewStack().rotate(com.replaymod.core.versions.MCVer.quaternion(mc.getEntityRenderDispatcher().camera.getPitch(), new org.joml.Vector3f(1, 0, 0)));
+        RenderSystem.getModelViewStack().translate(t.x, t.y, t.z);
+        RenderSystem.getModelViewStack().rotate(MCVer.quaternion(-mc.getEntityRenderDispatcher().camera.yRot(), new org.joml.Vector3f(0, 1, 0)));
+        RenderSystem.getModelViewStack().rotate(MCVer.quaternion(mc.getEntityRenderDispatcher().camera.xRot(), new org.joml.Vector3f(1, 0, 0)));
 
         //#if MC>=12105
-        immediate.draw();
+        immediate.endBatch();
         //#else
         //#if MC>=12102
         //$$ RenderSystem.setShader(ShaderProgramKeys.POSITION_TEX_COLOR);
@@ -391,16 +379,19 @@ public class PathPreviewRenderer extends EventRegistrations {
         pushMatrix();
 
         Vector3f t = Vector3f.sub(pos, view, null);
-        com.mojang.blaze3d.systems.RenderSystem.getModelViewStack().translate(t.x, t.y, t.z);
-        com.mojang.blaze3d.systems.RenderSystem.getModelViewStack().rotate(com.replaymod.core.versions.MCVer.quaternion(-rot.x, new org.joml.Vector3f(0, 1, 0)));
-        com.mojang.blaze3d.systems.RenderSystem.getModelViewStack().rotate(com.replaymod.core.versions.MCVer.quaternion(rot.y, new org.joml.Vector3f(1, 0, 0)));
-        com.mojang.blaze3d.systems.RenderSystem.getModelViewStack().rotate(com.replaymod.core.versions.MCVer.quaternion(rot.z, new org.joml.Vector3f(0, 0, 1)));
+        RenderSystem.getModelViewStack().translate(t.x, t.y, t.z);
+        RenderSystem.getModelViewStack().rotate(MCVer.quaternion(-rot.x, new org.joml.Vector3f(0, 1, 0)));
+        RenderSystem.getModelViewStack().rotate(MCVer.quaternion(rot.y, new org.joml.Vector3f(1, 0, 0)));
+        RenderSystem.getModelViewStack().rotate(MCVer.quaternion(rot.z, new org.joml.Vector3f(0, 0, 1)));
 
         //draw the position line
         //#if MC>=12105
-        VertexConsumerProvider.Immediate immediate = mc.getBufferBuilders().getEntityVertexConsumers();
-        immediate.draw();
-        VertexConsumer buffer = immediate.getBuffer(RenderLayer.LINES);
+        MultiBufferSource.BufferSource immediate = mc.renderBuffers().bufferSource();
+        immediate.endBatch();
+        //#if MC>=12111
+        VertexConsumer buffer = immediate.getBuffer(RenderTypes.LINES);
+        //#else
+        //$$ VertexConsumer buffer = immediate.getBuffer(RenderType.LINES);
         //#else
         //$$ Tessellator tessellator = Tessellator.getInstance();
         //#if MC>=12100
@@ -411,10 +402,10 @@ public class PathPreviewRenderer extends EventRegistrations {
         //#endif
         //#endif
 
-        emitLine(new MatrixStack(), buffer, new Vector3f(0, 0, 0), new Vector3f(0, 0, 2), 0x00ff00aa);
+        emitLine(new PoseStack(), buffer, new Vector3f(0, 0, 0), new Vector3f(0, 0, 2), 0x00ff00aa, 3f);
 
         //#if MC>=12105
-        immediate.draw();
+        immediate.endBatch();
         //#else
         //#if MC>=12102
         //$$ RenderSystem.setShader(ShaderProgramKeys.RENDERTYPE_LINES);
@@ -447,7 +438,10 @@ public class PathPreviewRenderer extends EventRegistrations {
         float r = -cubeSize/2;
 
         //#if MC>=12106
-        buffer = immediate.getBuffer(RenderLayer.getText(CAMERA_HEAD));
+        //#if MC>=12111
+        buffer = immediate.getBuffer(RenderTypes.text(CAMERA_HEAD));
+        //#elseif MC>=12106
+        //$$ buffer = immediate.getBuffer(RenderType.text(CAMERA_HEAD));
         //#elseif MC>=12105
         //$$ buffer = immediate.getBuffer(RenderLayer.getGuiTextured(CAMERA_HEAD));
         //#elseif MC>=12100
@@ -493,7 +487,7 @@ public class PathPreviewRenderer extends EventRegistrations {
         vertex(buffer, r + cubeSize, r + cubeSize, r, 2 * 8 / 64f, 0, 200);
 
         //#if MC>=12105
-        immediate.draw();
+        immediate.endBatch();
         //#else
         //#if MC>=12102
         //$$ RenderSystem.setShader(ShaderProgramKeys.POSITION_TEX_COLOR);
@@ -519,7 +513,7 @@ public class PathPreviewRenderer extends EventRegistrations {
     //$$ private void vertex(BufferBuilder buffer, float x, float y, float z, float u, float v, int alpha) {
         //#endif
         //#if MC>=12106
-        buffer.vertex(x, y, z).color(255, 255, 255, alpha).texture(u, v).light(240, 240);
+        buffer.addVertex(x, y, z).setColor(255, 255, 255, alpha).setUv(u, v).setUv2(240, 240);
         //#else
         //$$ buffer.vertex(x, y, z).texture(u, v).color(255, 255, 255, alpha).next();
         //#endif

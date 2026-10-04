@@ -38,11 +38,12 @@ import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadablePoint;
 import de.johni0702.minecraft.gui.versions.MCVer;
 import de.johni0702.minecraft.gui.versions.MCVer.Keyboard;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.text.Text;
-import net.minecraft.util.crash.CrashException;
-import net.minecraft.util.crash.CrashReport;
-import net.minecraft.util.crash.CrashReportSection;
+import net.minecraft.CrashReport;
+import net.minecraft.CrashReportCategory;
+import net.minecraft.ReportedException;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.network.chat.Component;
 
 import static de.johni0702.minecraft.gui.versions.MCVer.literalText;
 //#else
@@ -72,7 +73,7 @@ public abstract class AbstractGuiScreen<T extends AbstractGuiScreen<T>> extends 
 
     protected boolean suppressVanillaKeys;
 
-    public net.minecraft.client.gui.screen.Screen toMinecraft() {
+    public net.minecraft.client.gui.screens.Screen toMinecraft() {
         return wrapped;
     }
 
@@ -162,17 +163,17 @@ public abstract class AbstractGuiScreen<T extends AbstractGuiScreen<T>> extends 
                     OffsetGuiRenderer eRenderer = new OffsetGuiRenderer(renderer, position, tooltipSize);
                     tooltip.draw(eRenderer, tooltipSize, renderInfo);
                 } catch (Exception ex) {
-                    CrashReport crashReport = CrashReport.create(ex, "Rendering Gui Tooltip");
+                    CrashReport crashReport = CrashReport.forThrowable(ex, "Rendering Gui Tooltip");
                     renderInfo.addTo(crashReport);
-                    CrashReportSection category = crashReport.addElement("Gui container details");
+                    CrashReportCategory category = crashReport.addCategory("Gui container details");
                     MCVer.addDetail(category, "Container", this::toString);
                     MCVer.addDetail(category, "Width", () -> "" + size.getWidth());
                     MCVer.addDetail(category, "Height", () -> "" + size.getHeight());
-                    category = crashReport.addElement("Tooltip details");
+                    category = crashReport.addCategory("Tooltip details");
                     MCVer.addDetail(category, "Element", tooltip::toString);
                     MCVer.addDetail(category, "Position", position::toString);
                     MCVer.addDetail(category, "Size", tooltipSize::toString);
-                    throw new CrashException(crashReport);
+                    throw new ReportedException(crashReport);
                 }
             }
         }
@@ -219,7 +220,7 @@ public abstract class AbstractGuiScreen<T extends AbstractGuiScreen<T>> extends 
         this.title = title;
     }
 
-    protected class MinecraftGuiScreen extends net.minecraft.client.gui.screen.Screen {
+    protected class MinecraftGuiScreen extends net.minecraft.client.gui.screens.Screen {
         private boolean active;
 
         //#if MC>=11400
@@ -228,7 +229,7 @@ public abstract class AbstractGuiScreen<T extends AbstractGuiScreen<T>> extends 
         }
 
         @Override
-        public Text getTitle() {
+        public Component getTitle() {
             GuiLabel title = AbstractGuiScreen.this.title;
             return literalText(title == null ? "" : title.getText());
         }
@@ -236,15 +237,15 @@ public abstract class AbstractGuiScreen<T extends AbstractGuiScreen<T>> extends 
 
         //#if MC>=12106
         @Override
-        public void renderBackground(DrawContext drawContext, int mouseX, int mouseY, float partialTicks) {
+        public void extractBackground(GuiGraphicsExtractor drawContext, int mouseX, int mouseY, float partialTicks) {
             switch (background) {
                 case NONE -> {}
-                case DEFAULT -> super.renderBackground(drawContext, mouseX, mouseY, partialTicks);
+                case DEFAULT -> super.extractBackground(drawContext, mouseX, mouseY, partialTicks);
                 case TRANSPARENT -> {} // handled in AbstractGuiScreen.draw
                 case DIRT -> {
-                    super.renderPanoramaBackground(drawContext, partialTicks);
-                    super.applyBlur(drawContext);
-                    super.renderDarkening(drawContext);
+                    super.extractPanorama(drawContext, partialTicks);
+                    super.extractBlurredBackground(drawContext);
+                    super.extractMenuBackground(drawContext);
                 }
             }
         }
@@ -252,7 +253,7 @@ public abstract class AbstractGuiScreen<T extends AbstractGuiScreen<T>> extends 
 
         @Override
         //#if MC>=12000
-        public void render(DrawContext stack, int mouseX, int mouseY, float partialTicks) {
+        public void extractRenderState(GuiGraphicsExtractor stack, int mouseX, int mouseY, float partialTicks) {
         //#elseif MC>=11600
         //$$ public void render(MatrixStack stack, int mouseX, int mouseY, float partialTicks) {
         //#else
@@ -283,29 +284,43 @@ public abstract class AbstractGuiScreen<T extends AbstractGuiScreen<T>> extends 
 
         //#if MC>=11400
         @Override
-        public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-            Point mouse = MouseUtils.getMousePos();
-            boolean ctrlDown = hasControlDown();
-            boolean shiftDown = hasShiftDown();
-            if (!invokeHandlers(Typeable.class, e -> e.typeKey(mouse, keyCode, '\0', ctrlDown, shiftDown))) {
+        //#if MC>=12109
+        public boolean keyPressed(net.minecraft.client.input.KeyEvent mcKeyInput) {
+            KeyInput keyInput = new KeyInput(mcKeyInput);
+        //#else
+        //$$ public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        //$$ KeyInput keyInput = new KeyInput(keyCode, scanCode, modifiers);
+        //#endif
+            if (!invokeHandlers(KeyHandler.class, e -> e.handleKey(keyInput))) {
                 if (suppressVanillaKeys) {
                     return false;
                 }
-                return super.keyPressed(keyCode, scanCode, modifiers);
+                //#if MC>=12109
+                return super.keyPressed(mcKeyInput);
+                //#else
+                //$$ return super.keyPressed(keyCode, scanCode, modifiers);
+                //#endif
             }
             return true;
         }
 
         @Override
-        public boolean charTyped(char keyChar, int scanCode) {
-            Point mouse = MouseUtils.getMousePos();
-            boolean ctrlDown = hasControlDown();
-            boolean shiftDown = hasShiftDown();
-            if (!invokeHandlers(Typeable.class, e -> e.typeKey(mouse, 0, keyChar, ctrlDown, shiftDown))) {
+            //#if MC>=12109
+        public boolean charTyped(net.minecraft.client.input.CharacterEvent mcCharInput) {
+            CharInput charInput = new CharInput(mcCharInput);
+            //#else
+                //$$ public boolean charTyped(char keyChar, int modifiers) {
+                //$$ CharInput charInput = new CharInput(keyChar, modifiers);
+                //#endif
+                if (!invokeHandlers(CharHandler.class, e -> e.handleChar(charInput))) {
                 if (suppressVanillaKeys) {
                     return false;
                 }
-                return super.charTyped(keyChar, scanCode);
+                //#if MC>=12109
+                return super.charTyped(mcCharInput);
+                //#else
+                //$$ return super.charTyped(keyChar, modifiers);
+                //#endif
             }
             return true;
         }
@@ -329,10 +344,14 @@ public abstract class AbstractGuiScreen<T extends AbstractGuiScreen<T>> extends 
         //#endif
 
         @Override
-        //#if MC>=11400
-        public boolean mouseClicked(double mouseXD, double mouseYD, int mouseButton) {
-            int mouseX = (int) Math.round(mouseXD), mouseY = (int) Math.round(mouseYD);
+        //#if MC>=12109
+        public boolean mouseClicked(MouseButtonEvent mcClick, boolean doubled) {
+            Click click = new Click(mcClick);
             return
+        //#elseif MC>=11400
+        //$$ public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
+        //$$     Click click = new Click(mouseX, mouseY, mouseButton);
+        //$$     return
         //#else
         //$$ protected void mouseClicked(int mouseX, int mouseY, int mouseButton)
                 //#if MC>=10800
@@ -340,30 +359,38 @@ public abstract class AbstractGuiScreen<T extends AbstractGuiScreen<T>> extends 
                 //#endif
         //$$ {
         //#endif
-            invokeHandlers(Clickable.class, e -> e.mouseClick(new Point(mouseX, mouseY), mouseButton));
+            invokeHandlers(Clickable.class, e -> e.mouseClick(click));
         }
 
         @Override
-        //#if MC>=11400
-        public boolean mouseReleased(double mouseXD, double mouseYD, int mouseButton) {
-            int mouseX = (int) Math.round(mouseXD), mouseY = (int) Math.round(mouseYD);
+        //#if MC>=12109
+        public boolean mouseReleased(MouseButtonEvent mcClick) {
+            Click click = new Click(mcClick);
             return
+        //#elseif MC>=11400
+        //$$ public boolean mouseReleased(double mouseX, double mouseY, int mouseButton) {
+        //$$     Click click = new Click(mouseX, mouseY, mouseButton);
+        //$$     return
         //#else
         //$$ protected void mouseReleased(int mouseX, int mouseY, int mouseButton) {
         //#endif
-            invokeHandlers(Draggable.class, e -> e.mouseRelease(new Point(mouseX, mouseY), mouseButton));
+            invokeHandlers(Draggable.class, e -> e.mouseRelease(click));
         }
 
         @Override
         //#if MC>=11400
-        public boolean mouseDragged(double mouseXD, double mouseYD, int mouseButton, double deltaX, double deltaY) {
-            int mouseX = (int) Math.round(mouseXD), mouseY = (int) Math.round(mouseYD);
-            long timeSinceLastClick = 0;
+        //#if MC>=12109
+        public boolean mouseDragged(MouseButtonEvent mcClick, double deltaX, double deltaY) {
+            Click click = new Click(mcClick);
             return
+        //#elseif MC>=11400
+        //$$ public boolean mouseDragged(double mouseX, double mouseY, int mouseButton, double deltaX, double deltaY) {
+        //$$      Click click = new Click(mouseX, mouseY, mouseButton);
+        //$$     return
         //#else
         //$$ protected void mouseClickMove(int mouseX, int mouseY, int mouseButton, long timeSinceLastClick) {
         //#endif
-            invokeHandlers(Draggable.class, e -> e.mouseDrag(new Point(mouseX, mouseY), mouseButton, timeSinceLastClick));
+            invokeHandlers(Draggable.class, e -> e.mouseDrag(click));
         }
 
         @Override
