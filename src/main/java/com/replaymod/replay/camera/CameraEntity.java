@@ -474,7 +474,8 @@ public class CameraEntity
     @Override
     public boolean isInvisible() {
         Entity view = this.client.getCameraEntity();
-        if (view != this) {
+        // The client has no camera entity yet while a replay is logging in (handleLogin -> resetPos)
+        if (view != null && view != this) {
             return view.isInvisible();
         }
         return super.isInvisible();

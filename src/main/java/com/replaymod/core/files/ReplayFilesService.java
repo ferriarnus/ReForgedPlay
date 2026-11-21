@@ -75,6 +75,9 @@ public class ReplayFilesService {
         // so it can be opened and/or recovered
         try (DirectoryStream<Path> paths = Files.newDirectoryStream(folders.getRecordingFolder())) {
             for (Path path : paths) {
+                if (isInUse(path)) {
+                    continue; // e.g. the recording of a session started via quick play
+                }
                 Path destination = folders.getReplayFolder().resolve(path.getFileName());
                 if (Files.exists(destination)) {
                     continue; // better play it save
@@ -108,6 +111,26 @@ public class ReplayFilesService {
 
         // Run general purpose, non-essential cleanup in a background thread
         new Thread(this::cleanup, "replaymod-cleanup").start();
+    }
+
+    /**
+     * Whether the given path is a replay file which is currently open, or one of its siblings (e.g. the
+     * {@code .mcpr.tmp} folder of a recording which is still being written, whose {@code .mcpr} file may not
+     * exist yet).
+     */
+    private boolean isInUse(Path path) {
+        Path realPath = path.toAbsolutePath().normalize();
+        String name = realPath.getFileName().toString();
+        for (Path locked : lockedPaths) {
+            if (realPath.equals(locked)) {
+                return true;
+            }
+            if (Objects.equals(realPath.getParent(), locked.getParent())
+                    && name.startsWith(locked.getFileName().toString() + ".")) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void cleanup() {
